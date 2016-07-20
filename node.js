@@ -73,11 +73,14 @@ class Node {
   // children.
   get textContent() { return this.textBetween(0, this.content.size, "") }
 
-  // :: (number, number, ?string) → string
-  // Get all text between positions `from` and `to`. When `separator`
-  // is given, it will be inserted whenever a new block node is
-  // started.
-  textBetween(from, to, separator) { return this.content.textBetween(from, to, separator) }
+  // :: (number, number, ?string, ?string) → string
+  // Get all text between positions `from` and `to`. When
+  // `blockSeparator` is given, it will be inserted whenever a new
+  // block node is started. When `leafText` is given, it'll be
+  // inserted for every non-text leaf node encountered.
+  textBetween(from, to, blockSeparator, leafText) {
+    return this.content.textBetween(from, to, blockSeparator, leafText)
+  }
 
   // :: ?Node
   // Returns this node's first child, or `null` if there are no

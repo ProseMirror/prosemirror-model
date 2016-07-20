@@ -34,15 +34,18 @@ class Fragment {
     }
   }
 
-  // : (number, number, string) → string
-  textBetween(from, to, separator) {
+  // : (number, number, ?string, ?string) → string
+  textBetween(from, to, blockSeparator, leafText) {
     let text = "", separated = true
     this.nodesBetween(from, to, (node, pos) => {
       if (node.isText) {
         text += node.text.slice(Math.max(from, pos) - pos, to - pos)
-        separated = !separator
+        separated = !blockSeparator
+      } else if (node.type.isLeaf && leafText) {
+        text += leafText
+        separated = !blockSeparator
       } else if (!separated && node.isBlock) {
-        text += separator
+        text += blockSeparator
         separated = true
       }
     }, 0)
