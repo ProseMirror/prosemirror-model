@@ -4,8 +4,13 @@ const {Mark} = require("./mark")
 const {ContentExpr} = require("./content")
 const {parseDOM} = require("./from_dom")
 
-const {copyObj} = require("../util/obj")
 const {OrderedMap} = require("../util/orderedmap")
+
+function copyObj(obj) {
+  let result = Object.create(null)
+  for (let prop in obj) result[prop] = obj[prop]
+  return result
+}
 
 // For node types where all attrs have a default value (or which don't
 // have any attributes), build up a single reusable default attribute
