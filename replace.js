@@ -1,10 +1,8 @@
-const {ProseMirrorError} = require("../util/error")
-
 const {Fragment} = require("./fragment")
 
 // ;; Error type raised by `Node.replace` when given an invalid
 // replacement.
-class ReplaceError extends ProseMirrorError {}
+class ReplaceError extends Error {}
 exports.ReplaceError = ReplaceError
 
 // ;; A slice represents a piece cut out of a larger document. It
