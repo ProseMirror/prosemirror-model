@@ -1,4 +1,4 @@
-const {compareDeep} = require("../util/comparedeep")
+const {compareDeep} = require("./comparedeep")
 
 // ;; A mark is a piece of information that can be attached to a node,
 // such as it being emphasized, in code font, or a link. It has a type

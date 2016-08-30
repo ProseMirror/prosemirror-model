@@ -3,7 +3,7 @@ const {Mark} = require("./mark")
 const {Slice, replace} = require("./replace")
 const {ResolvedPos} = require("./resolvedpos")
 const {nodeToDOM} = require("./to_dom")
-const {compareDeep} = require("../util/comparedeep")
+const {compareDeep} = require("./comparedeep")
 
 const emptyAttrs = Object.create(null)
 
