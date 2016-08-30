@@ -3,8 +3,7 @@ const {Fragment} = require("./fragment")
 const {Mark} = require("./mark")
 const {ContentExpr} = require("./content")
 const {parseDOM} = require("./from_dom")
-
-const {OrderedMap} = require("../util/orderedmap")
+const {OrderedMap} = require("./orderedmap")
 
 function copyObj(obj) {
   let result = Object.create(null)
