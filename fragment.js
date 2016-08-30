@@ -41,7 +41,7 @@ class Fragment {
       if (node.isText) {
         text += node.text.slice(Math.max(from, pos) - pos, to - pos)
         separated = !blockSeparator
-      } else if (node.type.isLeaf && leafText) {
+      } else if (node.isLeaf && leafText) {
         text += leafText
         separated = !blockSeparator
       } else if (!separated && node.isBlock) {
