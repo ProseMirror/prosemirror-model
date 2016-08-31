@@ -202,7 +202,7 @@ class NodeRange {
     // boundaries.
     this.$from = $from
     // :: ResolvedPos A position along the end of the content. See
-    // caveat for [`from`](#NodeRange.from).
+    // caveat for [`from`](#model.NodeRange.from).
     this.$to = $to
     // :: number The depth of the node that this range points into.
     this.depth = depth

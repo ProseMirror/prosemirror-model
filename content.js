@@ -170,7 +170,7 @@ class ContentElement {
 }
 
 // ::- Represents a partial match of a node type's [content
-// expression](#NodeSpec), and can be used to find out whether further
+// expression](#model.NodeSpec), and can be used to find out whether further
 // content matches here, and whether a given position is a valid end
 // of the parent node.
 class ContentMatch {

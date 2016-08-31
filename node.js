@@ -343,7 +343,7 @@ class Node {
   // Serialize this node to a DOM node. This can be useful when you
   // need to serialize a part of a document, as opposed to the whole
   // document, but you'll usually want to do
-  // `doc.content.`[`toDOM()`](#Fragment.toDOM) instead.
+  // `doc.content.`[`toDOM()`](#model.Fragment.toDOM) instead.
   toDOM(options = {}) { return nodeToDOM(this, options) }
 }
 exports.Node = Node

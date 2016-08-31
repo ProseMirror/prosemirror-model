@@ -3,9 +3,9 @@
 // structure used to define and inspect content documents. It
 // includes:
 //
-// * The [node](#Node) type that represents document elements
+// * The [node](#model.Node) type that represents document elements
 //
-// * The [schema](#Schema) types used to tag and constrain the
+// * The [schema](#model.Schema) types used to tag and constrain the
 //   document structure
 //
 // This module does not depend on the browser API being available

@@ -90,7 +90,7 @@ class NodeType {
 
   // :: bool
   // Controls whether nodes of this type can be selected (as a [node
-  // selection](#NodeSelection)).
+  // selection](#state.NodeSelection)).
   get selectable() { return true }
 
   // :: bool
@@ -129,7 +129,7 @@ class NodeType {
   }
 
   // :: (?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → Node
-  // Like [`create`](#NodeType.create), but check the given content
+  // Like [`create`](#model.NodeType.create), but check the given content
   // against the node type's content restrictions, and throw an error
   // if it doesn't match.
   createChecked(attrs, content, marks) {
@@ -141,7 +141,7 @@ class NodeType {
   }
 
   // :: (?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → ?Node
-  // Like [`create`](#NodeType.create), but see if it is necessary to
+  // Like [`create`](#model.NodeType.create), but see if it is necessary to
   // add nodes to the start or end of the given fragment to make it
   // fit the node. If no fitting wrapping can be found, return null.
   // Note that, due to the fact that required nodes can always be
@@ -179,7 +179,7 @@ class NodeType {
 
   // :: (Node) → DOMOutputSpec
   // Defines the way a node of this type should be serialized to
-  // DOM/HTML. Should return an [array structure](#DOMOutputSpec) that
+  // DOM/HTML. Should return an [array structure](#model.DOMOutputSpec) that
   // describes the resulting DOM structure, with an optional number
   // zero (“hole”) in it to indicate where the node's content should
   // be inserted.
@@ -189,7 +189,7 @@ class NodeType {
   // Defines the way nodes of this type are parsed. Should, if
   // present, contain an object mapping CSS selectors (such as `"p"`
   // for `<p>` tags, or `"div[data-type=foo]"` for `<div>` tags with a
-  // specific attribute) to [parse specs](#ParseSpec) or functions
+  // specific attribute) to [parse specs](#model.ParseSpec) or functions
   // that, when given a DOM node, return either `false` or a parse
   // spec.
   get matchDOMTag() {}

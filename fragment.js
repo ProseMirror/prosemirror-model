@@ -260,8 +260,8 @@ class Fragment {
   // document, should be passed so that the serialize can create
   // nodes.
   //
-  // To specify rendering behavior for your own [node](#NodeType) and
-  // [mark](#MarkType) types, define a [`toDOM`](#NodeType.toDOM)
+  // To specify rendering behavior for your own [node](#model.NodeType) and
+  // [mark](#model.MarkType) types, define a [`toDOM`](#NodeType.toDOM)
   // method on them.
   toDOM(options = {}) { return fragmentToDOM(this, options) }
 }
