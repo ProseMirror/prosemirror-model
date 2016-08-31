@@ -339,7 +339,7 @@ class Node {
     return type.create(json.attrs, content, json.marks && json.marks.map(schema.markFromJSON))
   }
 
-  // :: (?Object) → DOMNode
+  // :: (?Object) → dom.Node
   // Serialize this node to a DOM node. This can be useful when you
   // need to serialize a part of a document, as opposed to the whole
   // document, but you'll usually want to do

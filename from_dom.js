@@ -11,7 +11,7 @@ function parseDOM(schema, dom, options) {
 }
 exports.parseDOM = parseDOM
 
-// : (ResolvedPos, DOMNode, ?Object) → Slice
+// : (ResolvedPos, dom.Node, ?Object) → Slice
 // Parse a DOM fragment into a `Slice`, starting with the context at
 // `$context`. If the DOM nodes are known to be 'open' (as in
 // `Slice`), pass their left open depth as the `openLeft` option.
@@ -61,7 +61,7 @@ function builderFromContext($context) {
 // attributes and then an object describing the treatment of the
 // node's content. Such an object may have the following properties:
 //
-// **`content`**`: ?union<bool, DOMNode>`
+// **`content`**`: ?union<bool, dom.Node>`
 //   : If this is `false`, the content will be ignored. If it is not
 //     given, the DOM node's children will be parsed as content of the
 //     ProseMirror node or mark. If it is a DOM node, that DOM node's
@@ -244,7 +244,7 @@ class DOMParseState {
     return old
   }
 
-  // : (DOMNode)
+  // : (dom.Node)
   // Add a DOM node to the content. Text is inserted as text node,
   // otherwise, the node is passed to `addElement` or, if it has a
   // `style` attribute, `addElementWithStyles`.
@@ -273,7 +273,7 @@ class DOMParseState {
     }
   }
 
-  // : (DOMNode)
+  // : (dom.Node)
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
   addElement(dom) {
@@ -308,7 +308,7 @@ class DOMParseState {
     this.marks = oldMarks
   }
 
-  // (DOMNode, string) → bool
+  // (dom.Node, string) → bool
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
@@ -344,7 +344,7 @@ class DOMParseState {
     return true
   }
 
-  // : (DOMNode, ?NodeBuilder, ?number, ?number)
+  // : (dom.Node, ?NodeBuilder, ?number, ?number)
   // Add all child nodes between `startIndex` and `endIndex` (or the
   // whole node, if not given). If `sync` is passed, use it to
   // synchronize after every block element.

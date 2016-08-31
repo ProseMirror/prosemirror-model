@@ -254,7 +254,7 @@ class Fragment {
     }
   }
 
-  // :: (?Object) → DOMFragment
+  // :: (?Object) → dom.DocumentFragment
   // Serialize the content of this fragment to a DOM fragment. When
   // not in the browser, the `document` option, containing a DOM
   // document, should be passed so that the serialize can create

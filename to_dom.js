@@ -20,7 +20,7 @@ class DOMSerializer {
   constructor(options) {
     // : Object The options passed to the serializer.
     this.options = options || {}
-    // : DOMDocument The DOM document in which we are working.
+    // : dom.Document The DOM document in which we are working.
     this.doc = this.options.document || window.document
   }
 

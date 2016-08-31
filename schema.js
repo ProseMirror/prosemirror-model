@@ -185,7 +185,7 @@ class NodeType {
   // be inserted.
   toDOM(_) { throw new Error("Failed to override NodeType.toDOM") }
 
-  // :: Object<union<ParseSpec, (DOMNode) → union<bool, ParseSpec>>>
+  // :: Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
   // Defines the way nodes of this type are parsed. Should, if
   // present, contain an object mapping CSS selectors (such as `"p"`
   // for `<p>` tags, or `"div[data-type=foo]"` for `<div>` tags with a
@@ -314,7 +314,7 @@ class MarkType {
   // Defines the way marks of this type should be serialized to DOM/HTML.
   toDOM(_) { throw new Error("Failed to override MarkType.toDOM") }
 
-  // :: Object<union<ParseSpec, (DOMNode) → union<bool, ParseSpec>>>
+  // :: Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
   // Defines the way marks of this type are parsed. Works just like
   // `NodeType.matchTag`, but produces marks rather than nodes.
   get matchDOMTag() {}
@@ -466,7 +466,7 @@ class Schema {
     return found
   }
 
-  // :: (DOMNode, ?Object) → Node
+  // :: (dom.Node, ?Object) → Node
   // Parse a document from the content of a DOM node. To provide an
   // explicit parent document (for example, when not in a browser
   // window environment, where we simply use the global document),
