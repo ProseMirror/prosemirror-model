@@ -7,7 +7,7 @@ const {compareDeep} = require("./comparedeep")
 
 const emptyAttrs = Object.create(null)
 
-// ;; This class represents a node in the tree that makes up a
+// ::- This class represents a node in the tree that makes up a
 // ProseMirror document. So a document is an instance of `Node`, with
 // children that are also instances of `Node`.
 //
@@ -41,7 +41,7 @@ class Node {
     this.marks = marks || Mark.none
   }
 
-  // :: ?string #path=Node.prototype.text
+  // text:: ?string
   // For text nodes, this contains the node's text content.
 
   // :: number

@@ -1,7 +1,7 @@
 const {fragmentToDOM} = require("./to_dom")
 const {findDiffStart, findDiffEnd} = require("./diff")
 
-// ;; Fragment is the type used to represent a node's collection of
+// ::- Fragment is the type used to represent a node's collection of
 // child nodes.
 //
 // Fragments are persistent data structures. That means you should

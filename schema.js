@@ -43,7 +43,7 @@ function computeAttrs(attrs, value) {
   return built
 }
 
-// ;; Node types are objects allocated once per `Schema`
+// ::- Node types are objects allocated once per `Schema`
 // and used to tag `Node` instances with a type. They are
 // instances of sub-types of this class, and contain information about
 // the node type (its name, its allowed attributes, methods for
@@ -64,7 +64,7 @@ class NodeType {
     this.schema = schema
   }
 
-  // :: Object<Attribute> #path=NodeType.prototype.attrs
+  // attrs:: Object<Attribute>
   // The attributes for this node type.
 
   // :: bool
@@ -196,20 +196,20 @@ class NodeType {
 }
 exports.NodeType = NodeType
 
-// ;; Base type for block nodetypes.
+// ::- Base type for block nodetypes.
 class Block extends NodeType {
   get isBlock() { return true }
   get isTextblock() { return this.contentExpr.inlineContent }
 }
 exports.Block = Block
 
-// ;; Base type for inline node types.
+// ::- Base type for inline node types.
 class Inline extends NodeType {
   get isInline() { return true }
 }
 exports.Inline = Inline
 
-// ;; The text node type.
+// ::- The text node type.
 class Text extends Inline {
   get selectable() { return false }
   get isText() { return true }
@@ -223,7 +223,7 @@ exports.Text = Text
 
 // Attribute descriptors
 
-// ;; Attributes are named values associated with nodes and marks.
+// ::- Attributes are named values associated with nodes and marks.
 // Each node type or mark type has a fixed set of attributes, which
 // instances of this class are used to control. Attribute values must
 // be JSON-serializable.
@@ -256,7 +256,7 @@ exports.Attribute = Attribute
 
 // Marks
 
-// ;; Like nodes, marks (which are associated with nodes to signify
+// ::- Like nodes, marks (which are associated with nodes to signify
 // things like emphasis or being part of a link) are tagged with type
 // objects, which are instantiated once per `Schema`.
 class MarkType {
@@ -330,32 +330,33 @@ class MarkType {
 }
 exports.MarkType = MarkType
 
-// ;; #path=SchemaSpec #kind=interface
+// SchemaSpec:: interface
 // An object describing a schema, as passed to the `Schema`
 // constructor.
+//
+//   nodes:: union<Object<NodeSpec>, OrderedMap<NodeSpec>>
+//   The node types in this schema. Maps names to `NodeSpec` objects
+//   describing the node to be associated with that name. Their order
+//   is significant
+//
+//   marks:: ?union<Object<constructor<MarkType>>, OrderedMap<constructor<MarkType>>>
+//   The mark types that exist in this schema.
 
-// :: union<Object<NodeSpec>, OrderedMap<NodeSpec>> #path=SchemaSpec.nodes
-// The node types in this schema. Maps names to `NodeSpec` objects
-// describing the node to be associated with that name. Their order is significant
+// NodeSpec:: interface
+//
+//   type:: constructor<NodeType>
+//   The `NodeType` class to be used for this node.
+//
+//   content:: ?string
+//   The content expression for this node, as described in the [schema
+//   guide](guide/schema.html). When not given, the node does not allow
+//   any content.
+//
+//   group:: ?string
+//   The group or space-separated groups to which this node belongs, as
+//   referred to in the content expressions for the schema.
 
-// :: ?union<Object<constructor<MarkType>>, OrderedMap<constructor<MarkType>>> #path=SchemaSpec.marks
-// The mark types that exist in this schema.
-
-// ;; #path=NodeSpec #kind=interface
-
-// :: constructor<NodeType> #path=NodeSpec.type
-// The `NodeType` class to be used for this node.
-
-// :: ?string #path=NodeSpec.content
-// The content expression for this node, as described in the [schema
-// guide](guide/schema.html). When not given, the node does not allow
-// any content.
-
-// :: ?string #path=NodeSpec.group
-// The group or space-separated groups to which this node belongs, as
-// referred to in the content expressions for the schema.
-
-// ;; Each document is based on a single schema, which provides the
+// ::- Each document is based on a single schema, which provides the
 // node and mark types that it is made up of (which, in turn,
 // determine the structure it is allowed to have).
 class Schema {

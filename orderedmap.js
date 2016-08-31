@@ -1,4 +1,4 @@
-// ;; Persistent data structure representing an ordered mapping from
+// ::- Persistent data structure representing an ordered mapping from
 // strings to values, with some convenient update methods.
 class OrderedMap {
   constructor(content) {

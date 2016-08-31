@@ -1,11 +1,11 @@
 const {Fragment} = require("./fragment")
 
-// ;; Error type raised by `Node.replace` when given an invalid
+// ::- Error type raised by `Node.replace` when given an invalid
 // replacement.
 class ReplaceError extends Error {}
 exports.ReplaceError = ReplaceError
 
-// ;; A slice represents a piece cut out of a larger document. It
+// ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
 // both side are 'open' / cut through.
 class Slice {

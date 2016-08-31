@@ -1,4 +1,4 @@
-// ;; #path=DOMOutputSpec #kind=interface
+// DOMOutputSpec:: interface
 // A description of a DOM structure. Can be either a string, which is
 // interpreted as a text node, a DOM node, which is interpreted as
 // itself, or an array.

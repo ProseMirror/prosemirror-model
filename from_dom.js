@@ -50,7 +50,7 @@ function builderFromContext($context) {
   return {builder, top}
 }
 
-// ;; #path=ParseSpec #kind=interface
+// ParseSpec:: interface
 // A value that describes how to parse a given DOM node as a
 // ProseMirror node or mark type. Specifies the attributes of the new
 // node or mark, along with optional information about the way the

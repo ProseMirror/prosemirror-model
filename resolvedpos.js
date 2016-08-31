@@ -1,4 +1,4 @@
-// ;; The usual way to represent positions in a document is with a
+// ::- The usual way to represent positions in a document is with a
 // plain integer. Since those tell you very little about the context
 // of that position, you'll often have to 'resolve' a position to get
 // the context you need. Objects of this class represent such a
@@ -192,7 +192,7 @@ exports.ResolvedPos = ResolvedPos
 
 let resolveCache = [], resolveCachePos = 0, resolveCacheSize = 6
 
-// ;; Represents a flat range of content.
+// ::- Represents a flat range of content.
 class NodeRange {
   constructor($from, $to, depth) {
     // :: ResolvedPos A resolved position along the start of the
