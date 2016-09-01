@@ -261,7 +261,7 @@ class Fragment {
   // nodes.
   //
   // To specify rendering behavior for your own [node](#model.NodeType) and
-  // [mark](#model.MarkType) types, define a [`toDOM`](#NodeType.toDOM)
+  // [mark](#model.MarkType) types, define a [`toDOM`](#model.NodeType.toDOM)
   // method on them.
   toDOM(options = {}) { return fragmentToDOM(this, options) }
 }
