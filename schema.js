@@ -5,6 +5,8 @@ const {ContentExpr} = require("./content")
 const {parseDOM} = require("./from_dom")
 const {OrderedMap} = require("./orderedmap")
 
+// !! ### Document Schema
+
 function copyObj(obj) {
   let result = Object.create(null)
   for (let prop in obj) result[prop] = obj[prop]

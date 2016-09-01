@@ -1,6 +1,8 @@
 const {Fragment} = require("./fragment")
 const {Mark} = require("./mark")
 
+// !! ### Content Restriction
+
 class ContentExpr {
   constructor(nodeType, elements, inlineContent) {
     this.nodeType = nodeType
