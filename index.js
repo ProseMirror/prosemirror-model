@@ -1,7 +1,3 @@
-// !!
-// This module defines ProseMirror's document model, the data
-// structure used to define and inspect content documents.
-
 exports.Node = require("./node").Node
 ;({ResolvedPos: exports.ResolvedPos, NodeRange: exports.NodeRange} = require("./resolvedpos"))
 exports.Fragment = require("./fragment").Fragment

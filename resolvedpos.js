@@ -1,5 +1,3 @@
-// !! :: Resolved Positions
-
 // ::- The usual way to represent positions in a document is with a
 // plain integer. Since those tell you very little about the context
 // of that position, you'll often have to 'resolve' a position to get
