@@ -1,6 +1,6 @@
 const assert = require("assert")
 const {Fragment} = require("../src/")
-const {schema, doc, blockquote, p, li, ul, em, strong, code, br, img} = require("./build")
+const {schema, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
 
 function docEq(a, b, msg) {
   if (!a.eq(b)) assert.fail(a.toString(), b.toString(), msg)
@@ -115,5 +115,21 @@ describe("Node", () => {
 
     it("joins adjacent text", () =>
        from([schema.text("a"), schema.text("b")], p("ab")))
+  })
+
+  describe("toJSON", () => {
+    function roundTrip(doc) {
+      assert(schema.nodeFromJSON(doc.toJSON()).eq(doc))
+    }
+
+    it("can serialize a simple node", () => roundTrip(doc(p("foo"))))
+
+    it("can serialize marks", () => roundTrip(doc(p("foo", em("bar", strong("baz")), " ", a("x")))))
+
+    it("can serialize inline leaf nodes", () => roundTrip(doc(p("foo", em(img, "bar")))))
+
+    it("can serialize block leaf nodes", () => roundTrip(doc(p("a"), hr, p("b"), p())))
+
+    it("can serialize nested nodes", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img))), p("c")), p("d"))))
   })
 })
