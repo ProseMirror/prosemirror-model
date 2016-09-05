@@ -20,7 +20,7 @@
     "rimraf": "^2.5.4"
   },
   "scripts": {
-    "test": "mocha test/*.js",
+    "test": "mocha test/test-*.js",
     "x-prepublish": "rimraf dist && babel -d dist src"
   }
 }
