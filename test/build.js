@@ -1,6 +1,5 @@
 const {schema} = require("./schema")
 const {Node, Schema} = require("../src")
-const assert = require("assert")
 
 exports.schema = schema
 
@@ -76,9 +75,7 @@ function mark(type, attrs) {
   }
 }
 
-exports.sameDoc = function(a, b) {
-  if (!a.eq(b)) assert.fail(a, b, null, "==")
-}
+exports.sameDoc = function sameDoc(a, b) { return a.eq(b) }
 
 const dataImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 exports.dataImage = dataImage

@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "mocha": "^3.0.2",
+    "ist": "1.0.0",
     "rimraf": "^2.5.4"
   },
   "scripts": {

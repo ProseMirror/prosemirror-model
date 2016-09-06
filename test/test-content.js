@@ -1,6 +1,6 @@
 const {ContentExpr} = require("../src/content")
 const {schema, sameDoc, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
-const assert = require("assert")
+const ist = require("ist")
 
 function get(expr) { return ContentExpr.parse(schema.nodes.heading, expr, schema.nodeSpec) }
 
@@ -29,8 +29,8 @@ function normalize(obj) {
 describe("ContentExpr", () => {
   describe("parse", () => {
     function parse(expr, ...expected) {
-      assert.equal(JSON.stringify(get(expr).elements.map(simplify)),
-                   JSON.stringify(expected.map(normalize)))
+      ist(JSON.stringify(get(expr).elements.map(simplify)),
+          JSON.stringify(expected.map(normalize)))
     }
 
     it("parses a plain name", () => parse("paragraph", {types: ["paragraph"]}))
@@ -89,7 +89,7 @@ describe("ContentExpr", () => {
        parse("paragraph{.level}", {types: ["paragraph"], min: ".level", max: ".level"}))
 
     function noParse(expr) {
-      assert.throws(() => get(expr))
+      ist.throws(() => get(expr))
     }
 
     it("fails on an invalid character", () => noParse("paragraph/image"))
@@ -114,8 +114,8 @@ describe("ContentExpr", () => {
   const attrs = {level: 3}
 
   describe("matches", () => {
-    function valid(expr, frag) { assert(get(expr).matches(attrs, frag.content)) }
-    function invalid(expr, frag) { assert(!get(expr).matches(attrs, frag.content)) }
+    function valid(expr, frag) { ist(get(expr).matches(attrs, frag.content)) }
+    function invalid(expr, frag) { ist(!get(expr).matches(attrs, frag.content)) }
 
     it("accepts empty content for the empty expr", () => valid("", p()))
     it("doesn't accept content in the empty expr", () => invalid("", p(img)))
@@ -176,10 +176,10 @@ describe("ContentExpr", () => {
     function fill(expr, before, after, result) {
       let filled = get(expr).getMatchAt(attrs, before.content).fillBefore(after.content, true)
       if (result) {
-        assert(filled)
-        sameDoc(filled, result.content)
+        ist(filled)
+        ist(filled, result.content, sameDoc)
       } else {
-        assert(!filled)
+        ist(!filled)
       }
     }
 
@@ -221,10 +221,13 @@ describe("ContentExpr", () => {
       let content = get(expr)
       let a = content.getMatchAt(attrs, before.content).fillBefore(mid.content)
       let b = a && content.getMatchAt(attrs, before.content.append(a).append(mid.content)).fillBefore(after.content, true)
-      if (left)
-        assert(b && a.eq(left.content) && b.eq(right.content))
-      else
-        assert(!b)
+      if (left) {
+        ist(b)
+        ist(a, left.content, sameDoc)
+        ist(b, right.content, sameDoc)
+      } else {
+        ist(!b)
+      }
     }
 
     it("completes a sequence", () =>

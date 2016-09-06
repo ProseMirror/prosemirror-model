@@ -1,12 +1,12 @@
 const {Slice, ReplaceError} = require("../src")
 const {sameDoc, doc, blockquote, h1, p, ul, li} = require("./build")
-const assert = require("assert")
+const ist = require("ist")
 
 describe("Node", () => {
   describe("replace", () => {
     function rpl(doc, insert, expected) {
       let slice = insert ? insert.slice(insert.tag.a, insert.tag.b) : Slice.empty
-      sameDoc(doc.replace(doc.tag.a, doc.tag.b, slice), expected)
+      ist(doc.replace(doc.tag.a, doc.tag.b, slice), expected, sameDoc)
     }
 
     it("joins on delete", () =>
@@ -87,7 +87,7 @@ describe("Node", () => {
 
     function bad(doc, insert, pattern) {
       let slice = insert ? insert.slice(insert.tag.a, insert.tag.b) : Slice.empty
-      assert.throws(() => doc.replace(doc.tag.a, doc.tag.b, slice), new RegExp(pattern, "i"))
+      ist.throws(() => doc.replace(doc.tag.a, doc.tag.b, slice), new RegExp(pattern, "i"))
     }
 
     it("doesn't allow the left side to be too deep", () =>

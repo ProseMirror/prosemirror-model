@@ -1,28 +1,28 @@
-const assert = require("assert")
+const ist = require("ist")
 const {Fragment} = require("../src/")
 const {schema, sameDoc, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
 
 describe("Node", () => {
   describe("toString", () => {
     it("nests", () => {
-      assert.equal(doc(ul(li(p("hey"), p()), li(p("foo")))).toString(),
-                   'doc(bullet_list(list_item(paragraph("hey"), paragraph), list_item(paragraph("foo"))))')
+      ist(doc(ul(li(p("hey"), p()), li(p("foo")))).toString(),
+          'doc(bullet_list(list_item(paragraph("hey"), paragraph), list_item(paragraph("foo"))))')
     })
 
     it("shows inline children", () => {
-      assert.equal(doc(p("foo", img, br, "bar")).toString(),
-                   'doc(paragraph("foo", image, hard_break, "bar"))')
+      ist(doc(p("foo", img, br, "bar")).toString(),
+          'doc(paragraph("foo", image, hard_break, "bar"))')
     })
 
     it("shows marks", () => {
-      assert.equal(doc(p("foo", em("bar", strong("quux")), code("baz"))).toString(),
-                   'doc(paragraph("foo", em("bar"), em(strong("quux")), code("baz")))')
+      ist(doc(p("foo", em("bar", strong("quux")), code("baz"))).toString(),
+          'doc(paragraph("foo", em("bar"), em(strong("quux")), code("baz")))')
     })
   })
 
   describe("cut", () => {
     function cut(doc, cut) {
-      sameDoc(doc.cut(doc.tag.a || 0, doc.tag.b), cut)
+      ist(doc.cut(doc.tag.a || 0, doc.tag.b), cut, sameDoc)
     }
 
     it("extracts a full block", () =>
@@ -79,22 +79,22 @@ describe("Node", () => {
 
   describe("textContent", () => {
     it("works on a whole doc", () => {
-      assert.equal(doc(p("foo")).textContent, "foo")
+      ist(doc(p("foo")).textContent, "foo")
     })
 
     it("works on a text node", () => {
-      assert.equal(schema.text("foo").textContent, "foo")
+      ist(schema.text("foo").textContent, "foo")
     })
 
     it("works on a nested element", () => {
-      assert.equal(doc(ul(li(p("hi")), li(p(em("a"), "b")))).textContent,
-                   "hiab")
+      ist(doc(ul(li(p("hi")), li(p(em("a"), "b")))).textContent,
+          "hiab")
     })
   })
 
   describe("from", () => {
     function from(arg, expect) {
-      sameDoc(expect.copy(Fragment.from(arg)), expect)
+      ist(expect.copy(Fragment.from(arg)), expect, sameDoc)
     }
 
     it("wraps a single node", () =>
@@ -115,7 +115,7 @@ describe("Node", () => {
 
   describe("toJSON", () => {
     function roundTrip(doc) {
-      sameDoc(schema.nodeFromJSON(doc.toJSON()), doc)
+      ist(schema.nodeFromJSON(doc.toJSON()), doc, sameDoc)
     }
 
     it("can serialize a simple node", () => roundTrip(doc(p("foo"))))

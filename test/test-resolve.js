@@ -1,5 +1,5 @@
 const {doc, p, em, blockquote} = require("./build")
-const assert = require("assert")
+const ist = require("ist")
 
 const testDoc = doc(p("ab"), blockquote(p(em("cd"), "ef")))
 const _doc = {node: testDoc, start: 0, end: 12}
@@ -28,21 +28,21 @@ describe("Node", () => {
 
       for (let pos = 0; pos <= testDoc.content.size; pos++) {
         let $pos = testDoc.resolve(pos), exp = expected[pos]
-        assert.equal($pos.depth, exp.length - 4, pos + " depth")
+        ist($pos.depth, exp.length - 4)
         for (let i = 0; i < exp.length - 3; i++) {
-          assert($pos.node(i).eq(exp[i].node), pos + " " + i + " node")
-          assert.equal($pos.start(i), exp[i].start, pos + " " + i + " start")
-          assert.equal($pos.end(i), exp[i].end, pos + " " + i + " end")
+          ist($pos.node(i).eq(exp[i].node))
+          ist($pos.start(i), exp[i].start)
+          ist($pos.end(i), exp[i].end)
           if (i) {
-            assert.equal($pos.before(i), exp[i].start - 1, pos + " " + i + " before")
-            assert.equal($pos.after(i), exp[i].end + 1, pos + " " + i + " end")
+            ist($pos.before(i), exp[i].start - 1)
+            ist($pos.after(i), exp[i].end + 1)
           }
         }
-        assert.equal($pos.parentOffset, exp[exp.length - 3], pos + " parentOffset")
+        ist($pos.parentOffset, exp[exp.length - 3])
         let before = $pos.nodeBefore, eBefore = exp[exp.length - 2]
-        assert.equal(typeof eBefore == "string" ? before.textContent : before, eBefore)
+        ist(typeof eBefore == "string" ? before.textContent : before, eBefore)
         let after = $pos.nodeAfter, eAfter = exp[exp.length - 1]
-        assert.equal(typeof eAfter == "string" ? after.textContent : after, eAfter)
+        ist(typeof eAfter == "string" ? after.textContent : after, eAfter)
       }
     })
   })

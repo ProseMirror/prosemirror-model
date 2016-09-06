@@ -1,13 +1,13 @@
 const {doc, p, li, ul, em, a, blockquote} = require("./build")
-const assert = require("assert")
+const ist = require("ist")
 
 describe("Node", () => {
   describe("slice", () => {
     function t(doc, expect, openLeft, openRight) {
       let slice = doc.slice(doc.tag.a || 0, doc.tag.b)
-      assert(slice.content.eq(expect.content))
-      assert.equal(slice.openLeft, openLeft, "openLeft")
-      assert.equal(slice.openRight, openRight, "openRight")
+      ist(slice.content.eq(expect.content))
+      ist(slice.openLeft, openLeft)
+      ist(slice.openRight, openRight)
     }
 
     it("can cut half a paragraph", () =>

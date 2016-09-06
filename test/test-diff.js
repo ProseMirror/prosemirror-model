@@ -1,10 +1,10 @@
 const {doc, blockquote, h1, h2, p, em, strong} = require("./build")
-const assert = require("assert")
+const ist = require("ist")
 
 describe("Fragment", () => {
   describe("findDiffStart", () => {
     function start(a, b, pos) {
-      assert.equal(a.content.findDiffStart(b.content), a.tag.a)
+      ist(a.content.findDiffStart(b.content), a.tag.a)
     }
 
     it("returns null for identical nodes", () =>
@@ -47,7 +47,7 @@ describe("Fragment", () => {
   describe("findDiffEnd", () => {
     function end(a, b, pos) {
       let found = a.content.findDiffEnd(b.content)
-      assert.equal(found && found.a, a.tag.a)
+      ist(found && found.a, a.tag.a)
     }
 
     it("returns null when there is no difference", () =>
