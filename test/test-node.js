@@ -1,10 +1,6 @@
 const assert = require("assert")
 const {Fragment} = require("../src/")
-const {schema, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
-
-function docEq(a, b, msg) {
-  if (!a.eq(b)) assert.fail(a.toString(), b.toString(), msg)
-}
+const {schema, sameDoc, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
 
 describe("Node", () => {
   describe("toString", () => {
@@ -26,7 +22,7 @@ describe("Node", () => {
 
   describe("cut", () => {
     function cut(doc, cut) {
-      docEq(doc.cut(doc.tag.a || 0, doc.tag.b), cut)
+      sameDoc(doc.cut(doc.tag.a || 0, doc.tag.b), cut)
     }
 
     it("extracts a full block", () =>
@@ -98,7 +94,7 @@ describe("Node", () => {
 
   describe("from", () => {
     function from(arg, expect) {
-      docEq(expect.copy(Fragment.from(arg)), expect)
+      sameDoc(expect.copy(Fragment.from(arg)), expect)
     }
 
     it("wraps a single node", () =>
@@ -119,7 +115,7 @@ describe("Node", () => {
 
   describe("toJSON", () => {
     function roundTrip(doc) {
-      assert(schema.nodeFromJSON(doc.toJSON()).eq(doc))
+      sameDoc(schema.nodeFromJSON(doc.toJSON()), doc)
     }
 
     it("can serialize a simple node", () => roundTrip(doc(p("foo"))))

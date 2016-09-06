@@ -1,5 +1,5 @@
 const {ContentExpr} = require("../src/content")
-const {schema, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
+const {schema, sameDoc, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
 const assert = require("assert")
 
 function get(expr) { return ContentExpr.parse(schema.nodes.heading, expr, schema.nodeSpec) }
@@ -177,7 +177,7 @@ describe("ContentExpr", () => {
       let filled = get(expr).getMatchAt(attrs, before.content).fillBefore(after.content, true)
       if (result) {
         assert(filled)
-        assert(filled.eq(result.content))
+        sameDoc(filled, result.content)
       } else {
         assert(!filled)
       }

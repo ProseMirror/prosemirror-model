@@ -1,5 +1,6 @@
 const {schema} = require("./schema")
 const {Node, Schema} = require("../src")
+const assert = require("assert")
 
 exports.schema = schema
 
@@ -73,6 +74,10 @@ function mark(type, attrs) {
     let {nodes, tag} = flatten(arguments, n => mark.type.isInSet(n.marks) ? n : n.mark(mark.addToSet(n.marks)))
     return {flat: nodes, tag}
   }
+}
+
+exports.sameDoc = function(a, b) {
+  if (!a.eq(b)) assert.fail(a, b, null, "==")
 }
 
 const dataImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
