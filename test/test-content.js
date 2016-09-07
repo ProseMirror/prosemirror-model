@@ -1,5 +1,5 @@
 const {ContentExpr} = require("../src/content")
-const {schema, sameDoc, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
+const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
 const ist = require("ist")
 
 function get(expr) { return ContentExpr.parse(schema.nodes.heading, expr, schema.nodeSpec) }
@@ -177,7 +177,7 @@ describe("ContentExpr", () => {
       let filled = get(expr).getMatchAt(attrs, before.content).fillBefore(after.content, true)
       if (result) {
         ist(filled)
-        ist(filled, result.content, sameDoc)
+        ist(filled, result.content, eq)
       } else {
         ist(!filled)
       }
@@ -223,8 +223,8 @@ describe("ContentExpr", () => {
       let b = a && content.getMatchAt(attrs, before.content.append(a).append(mid.content)).fillBefore(after.content, true)
       if (left) {
         ist(b)
-        ist(a, left.content, sameDoc)
-        ist(b, right.content, sameDoc)
+        ist(a, left.content, eq)
+        ist(b, right.content, eq)
       } else {
         ist(!b)
       }

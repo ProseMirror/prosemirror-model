@@ -1,12 +1,12 @@
 const {Slice, ReplaceError} = require("../src")
-const {sameDoc, doc, blockquote, h1, p, ul, li} = require("./build")
+const {eq, doc, blockquote, h1, p, ul, li} = require("./build")
 const ist = require("ist")
 
 describe("Node", () => {
   describe("replace", () => {
     function rpl(doc, insert, expected) {
       let slice = insert ? insert.slice(insert.tag.a, insert.tag.b) : Slice.empty
-      ist(doc.replace(doc.tag.a, doc.tag.b, slice), expected, sameDoc)
+      ist(doc.replace(doc.tag.a, doc.tag.b, slice), expected, eq)
     }
 
     it("joins on delete", () =>

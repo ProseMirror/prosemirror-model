@@ -1,6 +1,6 @@
 const ist = require("ist")
 const {Fragment} = require("../src/")
-const {schema, sameDoc, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
+const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
 
 describe("Node", () => {
   describe("toString", () => {
@@ -22,7 +22,7 @@ describe("Node", () => {
 
   describe("cut", () => {
     function cut(doc, cut) {
-      ist(doc.cut(doc.tag.a || 0, doc.tag.b), cut, sameDoc)
+      ist(doc.cut(doc.tag.a || 0, doc.tag.b), cut, eq)
     }
 
     it("extracts a full block", () =>
@@ -94,7 +94,7 @@ describe("Node", () => {
 
   describe("from", () => {
     function from(arg, expect) {
-      ist(expect.copy(Fragment.from(arg)), expect, sameDoc)
+      ist(expect.copy(Fragment.from(arg)), expect, eq)
     }
 
     it("wraps a single node", () =>
@@ -115,7 +115,7 @@ describe("Node", () => {
 
   describe("toJSON", () => {
     function roundTrip(doc) {
-      ist(schema.nodeFromJSON(doc.toJSON()), doc, sameDoc)
+      ist(schema.nodeFromJSON(doc.toJSON()), doc, eq)
     }
 
     it("can serialize a simple node", () => roundTrip(doc(p("foo"))))

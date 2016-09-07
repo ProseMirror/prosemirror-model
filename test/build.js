@@ -75,7 +75,7 @@ function mark(type, attrs) {
   }
 }
 
-exports.sameDoc = function sameDoc(a, b) { return a.eq(b) }
+exports.eq = function eq(a, b) { return a.eq(b) }
 
 const dataImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 exports.dataImage = dataImage
