@@ -54,6 +54,10 @@ class Slice {
     return new Slice(removeRange(this.content, from + this.openLeft, to + this.openLeft), this.openLeft, this.openRight)
   }
 
+  eq(other) {
+    return this.content.eq(other.content) && this.openLeft == other.openLeft && this.openRight == other.openRight
+  }
+
   toString() {
     return this.content + "(" + this.openLeft + "," + this.openRight + ")"
   }
