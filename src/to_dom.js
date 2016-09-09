@@ -14,6 +14,8 @@
 // The number zero (pronounced “hole”) is used to indicate the place
 // where a ProseMirror node's content should be inserted.
 
+// declare global: window
+
 // Object used to to expose relevant values and methods
 // to DOM serializer functions.
 class DOMSerializer {
