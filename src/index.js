@@ -5,7 +5,7 @@ exports.Fragment = require("./fragment").Fragment
 exports.Mark = require("./mark").Mark
 
 ;({SchemaSpec: exports.SchemaSpec, Schema: exports.Schema, NodeType: exports.NodeType,
-   Block: exports.Block, Inline: exports.Inline, Text: exports.Text,
+   Block: exports.Block, Doc: exports.Doc, Inline: exports.Inline, Text: exports.Text,
    MarkType: exports.MarkType, Attribute: exports.Attribute, NodeKind: exports.NodeKind} = require("./schema"))
 ;({ContentMatch: exports.ContentMatch} = require("./content"))
 

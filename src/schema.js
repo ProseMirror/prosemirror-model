@@ -221,6 +221,10 @@ class Text extends Inline {
 }
 exports.Text = Text
 
+// ::- A default top-level document node type.
+class Doc extends Block {}
+exports.Doc = Doc
+
 // Attribute descriptors
 
 // ::- Attributes are named values associated with nodes and marks.

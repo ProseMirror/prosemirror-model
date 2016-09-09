@@ -24,6 +24,7 @@ used to define and inspect content documents.
 @Block
 @Inline
 @Text
+@Doc
 @Attribute
 @SchemaSpec
 @NodeSpec
