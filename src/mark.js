@@ -16,14 +16,6 @@ class Mark {
     this.attrs = attrs
   }
 
-  // :: () → Object
-  // Convert this mark to a JSON-serializeable representation.
-  toJSON() {
-    let obj = {_: this.type.name}
-    for (let attr in this.attrs) obj[attr] = this.attrs[attr]
-    return obj
-  }
-
   // :: ([Mark]) → [Mark]
   // Given a set of marks, create a new set which contains this one as
   // well, in the right position. If this mark is already in the set,
@@ -71,6 +63,25 @@ class Mark {
     if (this.type != other.type) return false
     if (!compareDeep(other.attrs, this.attrs)) return false
     return true
+  }
+
+  // :: () → Object
+  // Convert this mark to a JSON-serializeable representation.
+  toJSON() {
+    let obj = {_: this.type.name}
+    for (let attr in this.attrs) obj[attr] = this.attrs[attr]
+    return obj
+  }
+
+  // :: (Schema, Object) → Mark
+  static fromJSON(schema, json) {
+    let type = schema.marks[json._]
+    let attrs = null
+    for (let prop in json) if (prop != "_") {
+      if (!attrs) attrs = Object.create(null)
+      attrs[prop] = json[prop]
+    }
+    return attrs ? type.create(attrs) : type.instance
   }
 
   // :: ([Mark], [Mark]) → bool
