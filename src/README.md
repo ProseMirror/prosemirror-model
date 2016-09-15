@@ -16,20 +16,19 @@ used to define and inspect content documents.
 
 ### Document Schema
 
-@NodeType
-@MarkType
 @Schema
-@OrderedMap
 
-@Block
-@Inline
-@Text
-@Doc
-@Attribute
 @SchemaSpec
 @NodeSpec
+@MarkSpec
+@AttributeSpec
+
+@NodeType
+@MarkType
 
 @ContentMatch
+
+@OrderedMap
 
 ### DOM Representation
 

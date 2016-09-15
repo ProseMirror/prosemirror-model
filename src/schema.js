@@ -5,12 +5,6 @@ const {ContentExpr} = require("./content")
 const {parseDOM} = require("./from_dom")
 const {OrderedMap} = require("./orderedmap")
 
-function copyObj(obj) {
-  let result = Object.create(null)
-  for (let prop in obj) result[prop] = obj[prop]
-  return result
-}
-
 // For node types where all attrs have a default value (or which don't
 // have any attributes), build up a single reusable default attribute
 // object, and use it for all nodes that don't specify specific
@@ -43,6 +37,12 @@ function computeAttrs(attrs, value) {
   return built
 }
 
+function initAttrs(attrs) {
+  let result = Object.create(null)
+  if (attrs) for (let name in attrs) result[name] = new Attribute(attrs[name])
+  return result
+}
+
 // ::- Node types are objects allocated once per `Schema`
 // and used to tag `Node` instances with a type. They are
 // instances of sub-types of this class, and contain information about
@@ -50,57 +50,45 @@ function computeAttrs(attrs, value) {
 // serializing it to various formats, information to guide
 // deserialization, and so on).
 class NodeType {
-  constructor(name, schema) {
+  constructor(name, schema, spec) {
     // :: string
     // The name the node type has in this schema.
     this.name = name
-    // Freeze the attributes, to avoid calling a potentially expensive
-    // getter all the time.
-    Object.defineProperty(this, "attrs", {value: copyObj(this.attrs)})
-    this.defaultAttrs = defaultAttrs(this.attrs)
-    this.contentExpr = null
+
     // :: Schema
     // A link back to the `Schema` the node type belongs to.
     this.schema = schema
+
+    // :: NodeSpec
+    // The spec that this type is based on
+    this.spec = spec
+
+    this.attrs = initAttrs(spec.attrs)
+
+    this.defaultAttrs = defaultAttrs(this.attrs)
+    this.contentExpr = null
+
+    // :: bool
+    // True if this is a block type
+    this.isBlock = !(spec.inline || spec.text)
+
+    // :: bool
+    // True if this is the text node type.
+    this.isText = !!spec.text
   }
 
-  // attrs:: Object<Attribute>
-  // The attributes for this node type.
-
   // :: bool
-  // True if this is a block type.
-  get isBlock() { return false }
+  // True if this is an inline type.
+  get isInline() { return !this.isBlock }
 
   // :: bool
   // True if this is a textblock type, a block that contains inline
   // content.
-  get isTextblock() { return false }
-
-  // :: bool
-  // True if this is an inline type.
-  get isInline() { return false }
-
-  // :: bool
-  // True if this is the text node type.
-  get isText() { return false }
+  get isTextblock() { return this.isBlock && this.contentExpr.inlineContent }
 
   // :: bool
   // True for node types that allow no content.
   get isLeaf() { return this.contentExpr.isLeaf }
-
-  // :: bool
-  // Controls whether nodes of this type can be selected (as a [node
-  // selection](#state.NodeSelection)).
-  get selectable() { return true }
-
-  // :: bool
-  // Determines whether nodes of this type can be dragged. Enabling it
-  // causes ProseMirror to set a `draggable` attribute on its DOM
-  // representation, and to put its HTML serialization into the drag
-  // event's [data
-  // transfer](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
-  // when dragged.
-  get draggable() { return false }
 
   hasRequiredAttrs(ignore) {
     for (let n in this.attrs)
@@ -125,6 +113,7 @@ class NodeType {
   // `null`. Similarly `marks` may be `null` to default to the empty
   // set of marks.
   create(attrs, content, marks) {
+    if (typeof content == "string") throw new Error("Calling create with string")
     return new Node(this, this.computeAttrs(attrs), Fragment.from(content), Mark.setFrom(marks))
   }
 
@@ -169,85 +158,20 @@ class NodeType {
 
   static compile(nodes, schema) {
     let result = Object.create(null)
-    nodes.forEach((name, spec) => result[name] = new spec.type(name, schema))
+    nodes.forEach((name, spec) => result[name] = new NodeType(name, schema, spec))
 
     if (!result.doc) throw new RangeError("Every schema needs a 'doc' type")
     if (!result.text) throw new RangeError("Every schema needs a 'text' type")
 
     return result
   }
-
-  // :: (Node) → DOMOutputSpec
-  // Defines the way a node of this type should be serialized to
-  // DOM/HTML. Should return an [array structure](#model.DOMOutputSpec) that
-  // describes the resulting DOM structure, with an optional number
-  // zero (“hole”) in it to indicate where the node's content should
-  // be inserted.
-  toDOM(_) { throw new Error("Failed to override NodeType.toDOM") }
-
-  // :: Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
-  // Defines the way nodes of this type are parsed. Should, if
-  // present, contain an object mapping CSS selectors (such as `"p"`
-  // for `<p>` tags, or `"div[data-type=foo]"` for `<div>` tags with a
-  // specific attribute) to [parse specs](#model.ParseSpec) or functions
-  // that, when given a DOM node, return either `false` or a parse
-  // spec.
-  get matchDOMTag() {}
 }
 exports.NodeType = NodeType
 
-// ::- Base type for block nodetypes.
-class Block extends NodeType {
-  get isBlock() { return true }
-  get isTextblock() { return this.contentExpr.inlineContent }
-}
-exports.Block = Block
-
-// ::- Base type for inline node types.
-class Inline extends NodeType {
-  get isInline() { return true }
-}
-exports.Inline = Inline
-
-// ::- The text node type.
-class Text extends Inline {
-  get selectable() { return false }
-  get isText() { return true }
-
-  create(attrs, content, marks) {
-    return new TextNode(this, this.computeAttrs(attrs), content, marks)
-  }
-  toDOM(node) { return node.text }
-}
-exports.Text = Text
-
-// ::- A default top-level document node type.
-class Doc extends Block {}
-exports.Doc = Doc
-
 // Attribute descriptors
 
-// ::- Attributes are named values associated with nodes and marks.
-// Each node type or mark type has a fixed set of attributes, which
-// instances of this class are used to control. Attribute values must
-// be JSON-serializable.
 class Attribute {
-  // :: (Object)
-  // Create an attribute. `options` is an object containing the
-  // settings for the attributes. The following settings are
-  // supported:
-  //
-  // **`default`**`: ?any`
-  //   : The default value for this attribute, to choose when no
-  //     explicit value is provided.
-  //
-  // **`compute`**`: ?() → any`
-  //   : A function that computes a default value for the attribute.
-  //
-  // Attributes that have no default or compute property must be
-  // provided whenever a node or mark of a type that has them is
-  // created.
-  constructor(options = {}) {
+  constructor(options) {
     this.default = options.default
     this.compute = options.compute
   }
@@ -256,7 +180,6 @@ class Attribute {
     return this.default === undefined && !this.compute
   }
 }
-exports.Attribute = Attribute
 
 // Marks
 
@@ -264,23 +187,25 @@ exports.Attribute = Attribute
 // things like emphasis or being part of a link) are tagged with type
 // objects, which are instantiated once per `Schema`.
 class MarkType {
-  constructor(name, rank, schema) {
+  constructor(name, rank, schema, spec) {
     // :: string
     // The name of the mark type.
     this.name = name
-    Object.defineProperty(this, "attrs", {value: copyObj(this.attrs)})
-    this.rank = rank
+
     // :: Schema
     // The schema that this mark type instance is part of.
     this.schema = schema
+
+    // :: MarkSpec
+    // The spec on which the type is based.
+    this.spec = spec
+
+    this.attrs = initAttrs(spec.attrs)
+
+    this.rank = rank
     let defaults = defaultAttrs(this.attrs)
     this.instance = defaults && new Mark(this, defaults)
   }
-
-  // :: bool
-  // Whether this mark should be active when the cursor is positioned
-  // at the end of the mark.
-  get inclusiveRight() { return true }
 
   // :: (?Object) → Mark
   // Create a mark of this type. `attrs` may be `null` or an object
@@ -293,7 +218,7 @@ class MarkType {
 
   static compile(marks, schema) {
     let result = Object.create(null), rank = 0
-    marks.forEach((name, markType) => result[name] = new markType(name, rank++, schema))
+    marks.forEach((name, spec) => result[name] = new MarkType(name, rank++, schema, spec))
     return result
   }
 
@@ -313,24 +238,6 @@ class MarkType {
     for (let i = 0; i < set.length; i++)
       if (set[i].type == this) return set[i]
   }
-
-  // :: (mark: Mark) → DOMOutputSpec
-  // Defines the way marks of this type should be serialized to DOM/HTML.
-  toDOM(_) { throw new Error("Failed to override MarkType.toDOM") }
-
-  // :: Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
-  // Defines the way marks of this type are parsed. Works just like
-  // `NodeType.matchTag`, but produces marks rather than nodes.
-  get matchDOMTag() {}
-
-  // :: Object<union<?Object, (string) → union<bool, ?Object>>>
-  // Defines the way DOM styles are mapped to marks of this type. Should
-  // contain an object mapping CSS property names, as found in inline
-  // styles, to either attributes for this mark (null for default
-  // attributes), or a function mapping the style's value to either a
-  // set of attributes or `false` to indicate that the style does not
-  // match.
-  get matchDOMStyle() {}
 }
 exports.MarkType = MarkType
 
@@ -343,13 +250,10 @@ exports.MarkType = MarkType
 //   describing the node to be associated with that name. Their order
 //   is significant
 //
-//   marks:: ?union<Object<constructor<MarkType>>, OrderedMap<constructor<MarkType>>>
+//   marks:: ?union<Object<MarkSpec>, OrderedMap<MarkSpec>>
 //   The mark types that exist in this schema.
 
 // NodeSpec:: interface
-//
-//   type:: constructor<NodeType>
-//   The `NodeType` class to be used for this node.
 //
 //   content:: ?string
 //   The content expression for this node, as described in the [schema
@@ -359,6 +263,85 @@ exports.MarkType = MarkType
 //   group:: ?string
 //   The group or space-separated groups to which this node belongs, as
 //   referred to in the content expressions for the schema.
+//
+//   inline:: ?bool
+//   Should be set to a truthy value for inline nodes.
+//
+//   text:: ?bool
+//   Should be set to a truthy value for text nodes (implies `inline`).
+//
+//   attrs:: ?Object<AttributeSpec>
+//   The attributes that nodes of this type get.
+//
+//   selectable:: ?bool
+//   Controls whether nodes of this type can be selected (as a [node
+//   selection](#state.NodeSelection)).
+//
+//   draggable:: ?bool
+//   Determines whether nodes of this type can be dragged. Enabling it
+//   causes ProseMirror to set a `draggable` attribute on its DOM
+//   representation, and to put its HTML serialization into the drag
+//   event's [data
+//   transfer](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
+//   when dragged.
+//
+//   code:: ?bool
+//   Can be used to indicate that this node contains code, which
+//   causes some commands to behave differently.
+//
+//   toDOM:: ?(Node) → DOMOutputSpec
+//   Defines the way a node of this type should be serialized to
+//   DOM/HTML. Should return an [array
+//   structure](#model.DOMOutputSpec) that describes the resulting DOM
+//   structure, with an optional number zero (“hole”) in it to
+//   indicate where the node's content should be inserted.
+//
+//   matchDOMTag:: ?Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
+//   Defines the way nodes of this type are parsed. Should, if
+//   present, contain an object mapping CSS selectors (such as `"p"`
+//   for `<p>` tags, or `"div[data-type=foo]"` for `<div>` tags with a
+//   specific attribute) to [parse specs](#model.ParseSpec) or
+//   functions that, when given a DOM node, return either `false` or a
+//   parse spec.
+
+// MarkSpec:: interface
+//
+//   attrs:: ?Object<AttributeSpec>
+//   The attributes that marks of this type get.
+//
+//   inclusiveRight:: ?bool
+//   Whether this mark should be active when the cursor is positioned
+//   at the end of the mark. Defaults to true.
+//
+//   toDOM:: ?(mark: Mark) → DOMOutputSpec
+//   Defines the way marks of this type should be serialized to DOM/HTML.
+//
+//   matchDOMTag:: ?Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
+//   Defines the way marks of this type are parsed. Works just like
+//   `NodeType.matchTag`, but produces marks rather than nodes.
+//
+//   matchDOMStyle:: ?Object<union<?Object, (string) → union<bool, ?Object>>>
+//   Defines the way DOM styles are mapped to marks of this type.
+//   Should contain an object mapping CSS property names, as found in
+//   inline styles, to either attributes for this mark (null for
+//   default attributes), or a function mapping the style's value to
+//   either a set of attributes or `false` to indicate that the style
+//   does not match.
+
+// AttributeSpec:: interface
+//
+// Used to define attributes. Attributes that have no default or
+// compute property must be provided whenever a node or mark of a type
+// that has them is created.
+//
+// The following fields are supported:
+//
+//   default:: ?any
+//   The default value for this attribute, to choose when no
+//   explicit value is provided.
+//
+//   compute:: ?() → any
+//   A function that computes a default value for the attribute.
 
 // ::- Each document is based on a single schema, which provides the
 // node and mark types that it is made up of (which, in turn,
@@ -374,15 +357,17 @@ class Schema {
 
     // :: any A generic field that you can use (by passing a value to
     // the constructor) to store arbitrary data or references in your
-    // schema object, for use by node- or mark- methods.
+    // schema object, for use by your own code.
     this.data = data
 
     // :: Object<NodeType>
     // An object mapping the schema's node names to node type objects.
     this.nodes = NodeType.compile(this.nodeSpec, this)
+
     // :: Object<MarkType>
     // A map from mark names to mark type objects.
     this.marks = MarkType.compile(this.markSpec, this)
+
     for (let prop in this.nodes) {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
@@ -430,7 +415,8 @@ class Schema {
   // Create a text node in the schema. This method is bound to the
   // Schema. Empty text nodes are not allowed.
   text(text, marks) {
-    return this.nodes.text.create(null, text, Mark.setFrom(marks))
+    let type = this.nodes.text
+    return new TextNode(type, type.defaultAttrs, text, Mark.setFrom(marks))
   }
 
   // :: (string, ?Object) → Mark

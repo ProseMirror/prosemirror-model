@@ -466,16 +466,16 @@ function schemaInfo(schema) {
 function summarizeSchemaInfo(schema) {
   let selectors = [], styles = []
   for (let name in schema.nodes) {
-    let type = schema.nodes[name], match = type.matchDOMTag
+    let type = schema.nodes[name], match = type.spec.matchDOMTag
     if (match) for (let selector in match)
       selectors.push({selector, node: type, value: match[selector]})
   }
   for (let name in schema.marks) {
-    let type = schema.marks[name], match = type.matchDOMTag, props = type.matchDOMStyle
+    let type = schema.marks[name], match = type.spec.matchDOMTag, mStyles = type.spec.matchDOMStyle
     if (match) for (let selector in match)
       selectors.push({selector, mark: type, value: match[selector]})
-    if (props) for (let prop in props)
-      styles.push({prop, mark: type, value: props[prop]})
+    if (mStyles) for (let prop in mStyles)
+      styles.push({prop, mark: type, value: mStyles[prop]})
   }
   return {selectors, styles}
 }

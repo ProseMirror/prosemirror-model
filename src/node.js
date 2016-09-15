@@ -216,9 +216,9 @@ class Node {
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
   // :: (number) → [Mark]
-  // Get the marks at the given position factoring in the surrounding marks'
-  // inclusiveLeft and inclusiveRight properties. If the position is at the
-  // start of a non-empty node, the marks of the node after it are returned.
+  // Get the marks at the given position factoring in the surrounding
+  // marks' inclusiveRight property. If the position is at the start
+  // of a non-empty node, the marks of the node after it are returned.
   marksAt(pos) {
     let $pos = this.resolve(pos), parent = $pos.parent, index = $pos.index()
 
@@ -228,7 +228,7 @@ class Node {
     if (index == 0 || !$pos.atNodeBoundary) return parent.child(index).marks
 
     let marks = parent.child(index - 1).marks
-    for (var i = 0; i < marks.length; i++) if (!marks[i].type.inclusiveRight)
+    for (var i = 0; i < marks.length; i++) if (marks[i].type.inclusiveRight === false)
       marks = marks[i--].removeFromSet(marks)
     return marks
   }
@@ -334,9 +334,9 @@ class Node {
   // :: (Schema, Object) → Node
   // Deserialize a node from its JSON representation.
   static fromJSON(schema, json) {
-    let type = schema.nodeType(json.type)
-    let content = json.text != null ? json.text : Fragment.fromJSON(schema, json.content)
-    return type.create(json.attrs, content, json.marks && json.marks.map(schema.markFromJSON))
+    let marks = json.marks && json.marks.map(schema.markFromJSON)
+    if (json.type == "text") return schema.text(json.text, marks)
+    return schema.nodeType(json.type).create(json.attrs, Fragment.fromJSON(schema, json.content), marks)
   }
 
   // :: (?Object) → dom.Node

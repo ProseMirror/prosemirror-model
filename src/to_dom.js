@@ -27,7 +27,7 @@ class DOMSerializer {
   }
 
   renderNode(node, pos, offset) {
-    let dom = this.renderStructure(node.type.toDOM(node), node.content, pos + 1)
+    let dom = this.renderStructure(node.type.spec.toDOM(node), node.content, pos + 1)
     if (this.options.onRender)
       dom = this.options.onRender(node, dom, pos, offset) || dom
     return dom
@@ -109,7 +109,7 @@ class DOMSerializer {
   }
 
   renderMark(mark) {
-    return this.renderStructure(mark.type.toDOM(mark))
+    return this.renderStructure(mark.type.spec.toDOM(mark))
   }
 
   wrapInlineFlat(dom, marks) {
