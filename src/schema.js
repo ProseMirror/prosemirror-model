@@ -2,7 +2,6 @@ const {Node, TextNode} = require("./node")
 const {Fragment} = require("./fragment")
 const {Mark} = require("./mark")
 const {ContentExpr} = require("./content")
-const {parseDOM} = require("./from_dom")
 const {OrderedMap} = require("./orderedmap")
 
 // For node types where all attrs have a default value (or which don't
@@ -296,13 +295,13 @@ exports.MarkType = MarkType
 //   structure, with an optional number zero (“hole”) in it to
 //   indicate where the node's content should be inserted.
 //
-//   matchDOMTag:: ?Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
-//   Defines the way nodes of this type are parsed. Should, if
-//   present, contain an object mapping CSS selectors (such as `"p"`
-//   for `<p>` tags, or `"div[data-type=foo]"` for `<div>` tags with a
-//   specific attribute) to [parse specs](#model.ParseSpec) or
-//   functions that, when given a DOM node, return either `false` or a
-//   parse spec.
+//   parseDOM:: ?[ParseRule]
+//   Associates DOM parser information with this node, which an be
+//   used by [`DOMParser.fromSchema`](#model.DOMParser.fromSchema) to
+//   automatically derive a parser. The `node` field in the rules is
+//   implied (the name of this node will be filled in automatically).
+//   If you supply your own parser, you do not need to also specify
+//   parsing rules in your schema.
 
 // MarkSpec:: interface
 //
@@ -316,17 +315,10 @@ exports.MarkType = MarkType
 //   toDOM:: ?(mark: Mark) → DOMOutputSpec
 //   Defines the way marks of this type should be serialized to DOM/HTML.
 //
-//   matchDOMTag:: ?Object<union<ParseSpec, (dom.Node) → union<bool, ParseSpec>>>
-//   Defines the way marks of this type are parsed. Works just like
-//   `NodeType.matchTag`, but produces marks rather than nodes.
-//
-//   matchDOMStyle:: ?Object<union<?Object, (string) → union<bool, ?Object>>>
-//   Defines the way DOM styles are mapped to marks of this type.
-//   Should contain an object mapping CSS property names, as found in
-//   inline styles, to either attributes for this mark (null for
-//   default attributes), or a function mapping the style's value to
-//   either a set of attributes or `false` to indicate that the style
-//   does not match.
+//   parseDOM:: ?[ParseRule]
+//   Associates DOM parser information with this mark (see the
+//   corresponding [node spec field](#model.NodeSpec.parseDOM). The
+//   `mark` field in the rules is implied.
 
 // AttributeSpec:: interface
 //
@@ -448,15 +440,6 @@ class Schema {
     let found = this.nodes[name]
     if (!found) throw new RangeError("Unknown node type: " + name)
     return found
-  }
-
-  // :: (dom.Node, ?Object) → Node
-  // Parse a document from the content of a DOM node. To provide an
-  // explicit parent document (for example, when not in a browser
-  // window environment, where we simply use the global document),
-  // pass it as the `document` property of `options`.
-  parseDOM(dom, options = {}) {
-    return parseDOM(this, dom, options)
   }
 }
 exports.Schema = Schema

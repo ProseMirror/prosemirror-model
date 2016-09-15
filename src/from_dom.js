@@ -1,42 +1,175 @@
 const {Fragment} = require("./fragment")
 const {Mark} = require("./mark")
 
-function parseDOM(schema, dom, options) {
-  let topNode = options.topNode
-  let top = new NodeBuilder(topNode ? topNode.type : schema.nodes.doc,
-                            topNode ? topNode.attrs : null, true, null, null, options.preserveWhitespace)
-  let state = new DOMParseState(schema, options, top)
-  state.addAll(dom, null, options.from, options.to)
-  return top.finish()
-}
-exports.parseDOM = parseDOM
+// ParseRule:: interface
+// A value that describes how to parse a given DOM node or inline
+// style as a ProseMirror node or mark.
+//
+//   tag:: ?string
+//   A CSS selector describing the kind of DOM elements to match. A
+//   single rule should have _either_ a `tag` or a `style` property.
+//
+//   style:: ?string
+//   A CSS property name to match. When given, this rule matches
+//   inline styles that list that property.
+//
+//   node:: ?string
+//   The name of the node type to create when this rule matches. Only
+//   valid for rules with a `tag` property, not for style rules. Each
+//   rule should have one of a `node`, `mark`, or `ignore` property
+//   (except when it appears in a [node](#model.NodeSpec.parseDOM) or
+//   [mark spec](#model.MarkSpec.parseDOM), in which case the `node`
+//   or `mark` property will be derived from its position).
+//
+//   mark:: ?string
+//   The name of the mark type to wrap the matched content in.
+//
+//   ignore:: ?bool
+//   When true, ignore content that matches this rule.
+//
+//   attrs:: ?Object
+//   Attributes for the node or mark created by this rule. When
+//   `getAttrs` is provided, it takes precedence.
+//
+//   getAttrs:: ?(union<dom.Node, string>) → ?union<bool, Object>
+//   A function used to compute the attributes for the node or mark
+//   created by this rule. Can also be used to describe further
+//   conditions the DOM element or style must match. When it returns
+//   `false`, the rule won't match. When it returns null or undefined,
+//   that is interpreted as an empty/default set of attributes.
+//
+//   Called with a DOM Element for `tag` rules, and with a string (the
+//   style's value) for `style` rules.
+//
+//   contentElement:: ?string
+//   For `tag` rules that produce non-leaf nodes or marks, by default
+//   the content of the DOM element is parsed as content of the mark
+//   or node. If the child nodes are in a descendent node, this may be
+//   a CSS selector string that the parser must use to find the actual
+//   content element.
+//
+//   preserveWhitespace:: ?bool
+//   Controls whether whitespace should be preserved when parsing the
+//   content inside the matched element.
 
-// : (ResolvedPos, dom.Node, ?Object) → Slice
-// Parse a DOM fragment into a `Slice`, starting with the context at
-// `$context`. If the DOM nodes are known to be 'open' (as in
-// `Slice`), pass their left open depth as the `openLeft` option.
-function parseDOMInContext($context, dom, options = {}) {
-  let schema = $context.parent.type.schema
+// ::- A DOM parser represents a strategy for parsing DOM content into
+// a ProseMirror document conforming to a given schema. Its behavior
+// is defined by an array of [rules](#model.ParseRule).
+class DOMParser {
+  // :: (Schema, [ParseRule])
+  // Create a parser that targets the given schema, using the given
+  // parsing rules.
+  constructor(schema, rules) {
+    // :: Schema
+    this.schema = schema
+    // :: [ParseRule]
+    this.rules = rules
+    this.tags = []
+    this.styles = []
 
-  let {builder, top} = builderFromContext($context, options.preserveWhitespace)
-  let openLeft = options.openLeft, startPos = $context.depth
+    rules.forEach(rule => {
+      if (rule.tag) this.tags.push(rule)
+      else if (rule.style) this.styles.push(rule)
+    })
+  }
 
-  new class extends DOMParseState {
-    enter(type, attrs, preserveWhitespace) {
-      if (openLeft == null) openLeft = type.isTextblock ? 1 : 0
-      if (openLeft > 0 && this.top.match.matchType(type, attrs)) openLeft = 0
-      if (openLeft == 0) return super.enter(type, attrs, preserveWhitespace)
+  // :: (dom.Node, ?Object) → Node
+  // Parse a document from the content of a DOM node. To provide an
+  // explicit parent document (for example, when not in a browser
+  // window environment, where we simply use the global document),
+  // pass it as the `document` property of `options`.
+  parse(dom, options = {}) {
+    let topNode = options.topNode
+    let top = new NodeBuilder(topNode ? topNode.type : this.schema.nodes.doc,
+                              topNode ? topNode.attrs : null, true, null, null, options.preserveWhitespace)
+    let state = new DOMParseState(this, options, top)
+    state.addAll(dom, null, options.from, options.to)
+    return top.finish()
+  }
 
-      openLeft--
-      return null
+  // : (ResolvedPos, dom.Node, ?Object) → Slice
+  // Parse a DOM fragment into a `Slice`, starting with the context at
+  // `$context`. If the DOM nodes are known to be 'open' (as in
+  // `Slice`), pass their left open depth as the `openLeft` option.
+  parseInContext($context, dom, options = {}) {
+    let {builder, top} = builderFromContext($context, options.preserveWhitespace)
+    let openLeft = options.openLeft, startPos = $context.depth
+
+    new class extends DOMParseState {
+      enter(type, attrs, preserveWhitespace) {
+        if (openLeft == null) openLeft = type.isTextblock ? 1 : 0
+        if (openLeft > 0 && this.top.match.matchType(type, attrs)) openLeft = 0
+        if (openLeft == 0) return super.enter(type, attrs, preserveWhitespace)
+
+        openLeft--
+        return null
+      }
+    }(this, options, builder).addAll(dom)
+
+    let openTo = top.openDepth, doc = top.finish(openTo), $startPos = doc.resolve(startPos)
+    for (let d = $startPos.depth; d >= 0 && startPos == $startPos.end(d); d--) ++startPos
+    return doc.slice(startPos, doc.content.size - openTo)
+  }
+
+  matchTag(dom) {
+    for (let i = 0; i < this.tags.length; i++) {
+      let rule = this.tags[i]
+      if (matches(dom, rule.tag)) {
+        if (rule.getAttrs) {
+          let result = rule.getAttrs(dom)
+          if (result === false) continue
+          rule.attrs = result
+        }
+        return rule
+      }
     }
-  }(schema, options, builder).addAll(dom)
+  }
 
-  let openTo = top.openDepth, doc = top.finish(openTo), $startPos = doc.resolve(startPos)
-  for (let d = $startPos.depth; d >= 0 && startPos == $startPos.end(d); d--) ++startPos
-  return doc.slice(startPos, doc.content.size - openTo)
+  matchStyle(prop, value) {
+    for (let i = 0; i < this.styles.length; i++) {
+      let rule = this.styles[i]
+      if (rule.style == prop) {
+        if (rule.getAttrs) {
+          let result = rule.getAttrs(value)
+          if (result === false) continue
+          rule.attrs = result
+        }
+        return rule
+      }
+    }
+  }
+
+  // :: (Schema) → [ParseRule]
+  // Extract the parse rules listed in a schema's [node
+  // specs](#model.NodeSpec.parseDOM).
+  static schemaRules(schema) {
+    if (schema.cached.domParseRules) return schema.cached.domParseRules
+    let result = schema.cached.domParseRules = []
+    for (let name in schema.marks) {
+      let rules = schema.marks[name].spec.parseDOM
+      if (rules) rules.forEach(rule => {
+        result.push(rule = copy(rule))
+        rule.mark = name
+      })
+    }
+    for (let name in schema.nodes) {
+      let rules = schema.nodes[name].spec.parseDOM
+      if (rules) rules.forEach(rule => {
+        result.push(rule = copy(rule))
+        rule.node = name
+      })
+    }
+    return result
+  }
+
+  // :: (Schema) → DOMParser
+  // Construct a DOM parser using the parsing rules listed in a
+  // schema's [node specs](#model.NodeSpec.parseDOM).
+  static fromSchema(schema) {
+    return new DOMParser(schema, DOMParser.schemaRules(schema))
+  }
 }
-exports.parseDOMInContext = parseDOMInContext
+exports.DOMParser = DOMParser
 
 function builderFromContext($context, preserveWhitespace) {
   let top, builder
@@ -49,29 +182,6 @@ function builderFromContext($context, preserveWhitespace) {
   }
   return {builder, top}
 }
-
-// ParseSpec:: interface
-// A value that describes how to parse a given DOM node as a
-// ProseMirror node or mark type. Specifies the attributes of the new
-// node or mark, along with optional information about the way the
-// node's content should be treated.
-//
-// May either be a set of attributes, where `null` indicates the
-// node's default attributes, or an array containing first a set of
-// attributes and then an object describing the treatment of the
-// node's content. Such an object may have the following properties:
-//
-// **`content`**`: ?union<bool, dom.Node>`
-//   : If this is `false`, the content will be ignored. If it is not
-//     given, the DOM node's children will be parsed as content of the
-//     ProseMirror node or mark. If it is a DOM node, that DOM node's
-//     content is treated as the content of the new node or mark (this
-//     is useful if, for example, your DOM representation puts its
-//     child nodes in an inner wrapping node).
-//
-// **`preserveWhitespace`**`: ?bool`
-//   : When given, this enables or disables preserving of whitespace
-//     when parsing the content.
 
 class NodeBuilder {
   constructor(type, attrs, solid, prev, match, preserveWhitespace) {
@@ -224,16 +334,15 @@ const listTags = {ol: true, ul: true}
 
 // A state object used to track context during a parse.
 class DOMParseState {
-  // : (Schema, Object, NodeBuilder)
-  constructor(schema, options, top) {
+  // : (DOMParser, Object, NodeBuilder)
+  constructor(parser, options, top) {
     // : Object The options passed to this parse.
     this.options = options || {}
-    // : Schema The schema that we are parsing into.
-    this.schema = schema
+    // : DOMParser The parser we are using.
+    this.parser = parser
     this.top = top
     // : [Mark] The current set of marks
     this.marks = Mark.none
-    this.info = schemaInfo(schema)
     this.find = options.findPositions
   }
 
@@ -262,7 +371,7 @@ class DOMParseState {
           if (/^\s/.test(value)) top.stripTrailingSpace()
         }
         if (value)
-          this.insertNode(this.schema.text(value, this.marks))
+          this.insertNode(this.parser.schema.text(value, this.marks))
         this.findInText(dom)
       } else {
         this.findInside(dom)
@@ -299,10 +408,10 @@ class DOMParseState {
   addElementWithStyles(styles, dom) {
     let oldMarks = this.marks, marks = this.marks
     for (let i = 0; i < styles.length; i += 2) {
-      let result = matchStyle(this.info.styles, styles[i], styles[i + 1])
-      if (!result) continue
-      if (result.attrs === false) return
-      marks = result.mark.create(result.attrs).addToSet(marks)
+      let rule = this.parser.matchStyle(styles[i], styles[i + 1])
+      if (!rule) continue
+      if (rule.ignore) return
+      marks = this.parser.schema.marks[rule.mark].create(rule.attrs).addToSet(marks)
     }
     this.marks = marks
     this.addElement(dom)
@@ -314,29 +423,28 @@ class DOMParseState {
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
   parseNodeType(dom) {
-    let result = matchTag(this.info.selectors, dom)
-    if (!result) return false
+    let rule = this.parser.matchTag(dom)
+    if (!rule) return false
+    if (rule.ignore) return true
 
-    let sync, before, contentNode = dom, preserve = this.top.preserveWhitespace
-    if (result.content) {
-      if (result.content.content === false) contentNode = null
-      else if (result.content.content) contentNode = result.content.content
-      if (result.content.preserveWhitespace != null) preserve = result.content.preserveWhitespace
-    } else if (result.node && result.node.isLeaf) {
-      contentNode = null
+    let sync, before, nodeType, markType
+    let contentDOM = (rule.contentElement && dom.querySelector(rule.contentElement)) || dom
+
+    if (rule.node) {
+      nodeType = this.parser.schema.nodes[rule.node]
+      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs))
+      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
+    } else {
+      markType = this.parser.schema.marks[rule.mark]
+      before = this.addMark(markType.create(rule.attrs))
     }
 
-    if (result.node && result.node.isLeaf) this.insertNode(result.node.create(result.attrs))
-    else if (result.node) sync = this.enter(result.node, result.attrs, preserve)
-    else before = this.addMark(result.mark.create(result.attrs))
-
-
-    if (contentNode) {
-      this.findAround(dom, contentNode, true)
-      this.addAll(contentNode, sync)
+    if (markType || !nodeType.isLeaf) {
+      this.findAround(dom, contentDOM, true)
+      this.addAll(contentDOM, sync)
       if (sync) this.sync(sync.prev)
       else if (before) this.marks = before
-      this.findAround(dom, contentNode, true)
+      this.findAround(dom, contentDOM, true)
     } else {
       this.findInside(dom)
     }
@@ -459,54 +567,8 @@ function parseStyles(style) {
   return result
 }
 
-function schemaInfo(schema) {
-  return schema.cached.parseDOMInfo || (schema.cached.parseDOMInfo = summarizeSchemaInfo(schema))
-}
-
-function summarizeSchemaInfo(schema) {
-  let selectors = [], styles = []
-  for (let name in schema.nodes) {
-    let type = schema.nodes[name], match = type.spec.matchDOMTag
-    if (match) for (let selector in match)
-      selectors.push({selector, node: type, value: match[selector]})
-  }
-  for (let name in schema.marks) {
-    let type = schema.marks[name], match = type.spec.matchDOMTag, mStyles = type.spec.matchDOMStyle
-    if (match) for (let selector in match)
-      selectors.push({selector, mark: type, value: match[selector]})
-    if (mStyles) for (let prop in mStyles)
-      styles.push({prop, mark: type, value: mStyles[prop]})
-  }
-  return {selectors, styles}
-}
-
-function matchTag(selectors, dom) {
-  for (let i = 0; i < selectors.length; i++) {
-    let cur = selectors[i]
-    if (matches(dom, cur.selector)) {
-      let value = cur.value, content
-      if (value instanceof Function) {
-        value = value(dom)
-        if (value === false) continue
-      }
-      if (Array.isArray(value)) {
-        ;([value, content] = value)
-      }
-      return {node: cur.node, mark: cur.mark, attrs: value, content}
-    }
-  }
-}
-
-function matchStyle(styles, prop, value) {
-  for (let i = 0; i < styles.length; i++) {
-    let cur = styles[i]
-    if (cur.prop == prop) {
-      let attrs = cur.value
-      if (attrs instanceof Function) {
-        attrs = attrs(value)
-        if (attrs === false) continue
-      }
-      return {mark: cur.mark, attrs}
-    }
-  }
+function copy(obj) {
+  let copy = {}
+  for (let prop in obj) copy[prop] = obj[prop]
+  return copy
 }

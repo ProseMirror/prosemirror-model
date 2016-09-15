@@ -32,5 +32,5 @@ used to define and inspect content documents.
 
 ### DOM Representation
 
-@ParseSpec
-@DOMOutputSpec
+@DOMParser
+@ParseRule

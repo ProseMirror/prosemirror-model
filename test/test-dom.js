@@ -1,12 +1,14 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
 const ist = require("ist")
-const {parseDOMInContext} = require("../src")
+const {DOMParser} = require("../src")
 
 // declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
 
-describe("Schema", () => {
-  describe("parseDOM", () => {
+const parser = DOMParser.fromSchema(schema)
+
+describe("DOMParser", () => {
+  describe("parse", () => {
     function test(doc, dom) {
       return () => {
         let derivedDOM = document.createElement("div")
@@ -15,7 +17,7 @@ describe("Schema", () => {
         declaredDOM.innerHTML = dom
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
-        ist(schema.parseDOM(derivedDOM), doc, eq)
+        ist(parser.parse(derivedDOM), doc, eq)
       }
     }
 
@@ -71,7 +73,7 @@ describe("Schema", () => {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
-        ist(schema.parseDOM(dom), doc, eq)
+        ist(parser.parse(dom), doc, eq)
       }
     }
 
@@ -160,7 +162,7 @@ describe("Schema", () => {
           pos = {node: tag.parentNode, offset: Array.prototype.indexOf.call(tag.parentNode.childNodes, tag)}
         }
         tag.parentNode.removeChild(tag)
-        let result = schema.parseDOM(dom, {
+        let result = parser.parse(dom, {
           findPositions: [pos]
         })
         ist(result, doc, eq)
@@ -196,65 +198,65 @@ describe("Schema", () => {
        find("<p>hi</p><var></var>",
             doc(p("hi"), "<a>")))
   })
-})
 
-describe("parseDOMInContext", () => {
-  function test(doc, html, openLeft, slice) {
-    return () => {
-      let dom = document.createElement("div")
-      dom.innerHTML = html
-      let insert = doc.tag.a, $insert = doc.resolve(insert)
-      for (let d = $insert.depth; d > 0 && insert == $insert.start(d) && $insert.end(d) == $insert.after(d + 1); d--) insert--
-      let result = parseDOMInContext(doc.resolve(insert), dom, {openLeft})
-      let sliceContent = slice.content, sliceEnd = sliceContent.size
-      while (sliceContent.lastChild && !sliceContent.lastChild.isLeaf) { sliceEnd--; sliceContent = sliceContent.lastChild.content }
-      let expected = slice.slice(slice.tag.a, sliceEnd)
-      ist(result, expected, eq)
+  describe("parseInContext", () => {
+    function test(doc, html, openLeft, slice) {
+      return () => {
+        let dom = document.createElement("div")
+        dom.innerHTML = html
+        let insert = doc.tag.a, $insert = doc.resolve(insert)
+        for (let d = $insert.depth; d > 0 && insert == $insert.start(d) && $insert.end(d) == $insert.after(d + 1); d--) insert--
+        let result = parser.parseInContext(doc.resolve(insert), dom, {openLeft})
+        let sliceContent = slice.content, sliceEnd = sliceContent.size
+        while (sliceContent.lastChild && !sliceContent.lastChild.isLeaf) { sliceEnd--; sliceContent = sliceContent.lastChild.content }
+        let expected = slice.slice(slice.tag.a, sliceEnd)
+        ist(result, expected, eq)
+      }
     }
-  }
 
-  it("can place a list item in a list",
-     test(doc(ul(li(p("foo")), "<a>")),
-          "<li>bar</li>", 0,
-          ul("<a>", li(p("bar")))))
+    it("can place a list item in a list",
+       test(doc(ul(li(p("foo")), "<a>")),
+            "<li>bar</li>", 0,
+            ul("<a>", li(p("bar")))))
 
-  it("can move a list item out of a list item",
-     test(doc(ul(li(p("foo<a>")))),
-          "<li>bar</li>", 0,
-          ul("<a>", li(p("bar")))))
+    it("can move a list item out of a list item",
+       test(doc(ul(li(p("foo<a>")))),
+            "<li>bar</li>", 0,
+            ul("<a>", li(p("bar")))))
 
-  it("can insert text after text",
-     test(doc(p("foo<a>")),
-          "<h1>bar</h1>", 1,
-          p("<a>bar")))
+    it("can insert text after text",
+       test(doc(p("foo<a>")),
+            "<h1>bar</h1>", 1,
+            p("<a>bar")))
 
-  it("can organize messy input",
-     test(doc(p("foo<a>")),
-          "<p>a</p>b<li>c</li>", 0,
-          doc("<a>", p("a"), p("b"), ol(li(p("c"))))))
+    it("can organize messy input",
+       test(doc(p("foo<a>")),
+            "<p>a</p>b<li>c</li>", 0,
+            doc("<a>", p("a"), p("b"), ol(li(p("c"))))))
 
-  it("preserves openLeft",
-     test(doc(p("foo<a>")),
-          "<p>hello</p><p>there</p>", 1,
-          doc(p("<a>hello"), p("there"))))
+    it("preserves openLeft",
+       test(doc(p("foo<a>")),
+            "<p>hello</p><p>there</p>", 1,
+            doc(p("<a>hello"), p("there"))))
 
-  it("preserves node type when adding to an empty node",
-     test(doc(p("<a>")),
-          "<h1>bar</h1>", 1,
-          doc("<a>", h1("bar"))))
+    it("preserves node type when adding to an empty node",
+       test(doc(p("<a>")),
+            "<h1>bar</h1>", 1,
+            doc("<a>", h1("bar"))))
 
-  it("preserves marks",
-     test(doc(pre("<a>")),
-          "<p>foo<strong>bar</strong></p>", 1,
-          doc("<a>", p("foo", strong("bar")))))
+    it("preserves marks",
+       test(doc(pre("<a>")),
+            "<p>foo<strong>bar</strong></p>", 1,
+            doc("<a>", p("foo", strong("bar")))))
 
-  it("does the right thing for a pasted list",
-     test(doc(p("<a>")),
-          "<ol><li><p>foo</p></li><li><p>bar</p></li></ol>", 3,
-          doc("<a>", ol(li(p("foo")), li(p("bar"))))))
+    it("does the right thing for a pasted list",
+       test(doc(p("<a>")),
+            "<ol><li><p>foo</p></li><li><p>bar</p></li></ol>", 3,
+            doc("<a>", ol(li(p("foo")), li(p("bar"))))))
 
-  it("joins open list nodes onto the context list",
-     test(doc(ol(li(p("x<a>")))),
-          "<ol><li><p>foo</p></li><li><p>bar</p></li></ol>", 3,
-          doc(ol(li(p("<a>foo")), li(p("bar"))))))
+    it("joins open list nodes onto the context list",
+       test(doc(ol(li(p("x<a>")))),
+            "<ol><li><p>foo</p></li><li><p>bar</p></li></ol>", 3,
+            doc(ol(li(p("<a>foo")), li(p("bar"))))))
+  })
 })
