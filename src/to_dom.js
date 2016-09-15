@@ -14,20 +14,90 @@
 // The number zero (pronounced “hole”) is used to indicate the place
 // where a ProseMirror node's content should be inserted.
 
-// declare global: window
-
-// Object used to to expose relevant values and methods
-// to DOM serializer functions.
+// ::- A DOM serializer knows how to convert ProseMirror nodes and
+// marks of various types to DOM nodes.
 class DOMSerializer {
-  constructor(options) {
+  // :: (Object<(node: Node) → DOMOutputSpec>, Object<(mark: Mark) → DOMOutputSpec>)
+  // Create a serializer. `nodes` should map node names to functions
+  // that take a node and return a description of the corresponding
+  // DOM. `marks` does the same for mark names.
+  constructor(nodes, marks) {
+    this.nodes = nodes || {}
+    this.marks = marks || {}
+  }
+
+  // :: (Fragment, ?Object) → dom.DocumentFragment
+  // Serialize the content of this fragment to a DOM fragment. When
+  // not in the browser, the `document` option, containing a DOM
+  // document, should be passed so that the serialize can create
+  // nodes.
+  serializeFragment(fragment, options = {}) {
+    return new DOMSerialization(this, options).renderFragment(fragment, null, options.pos || 0)
+  }
+
+  // :: (Node, ?Object) → dom.Node
+  // Serialize this node to a DOM node. This can be useful when you
+  // need to serialize a part of a document, as opposed to the whole
+  // document. To serialize a whole document, use
+  // [`serializeFragment`](#model.DOMSerializer.serializeFragment) on
+  // its [`content`](#model.Node.content).
+  serializeNode(node, options = {}) {
+    let context = new DOMSerialization(this, options), pos = options.pos || 0
+    let dom = context.renderNode(node, pos, options.offset || 0)
+    if (node.isInline) {
+      dom = context.wrapInlineFlat(dom, node.marks)
+      if (context.options.renderInlineFlat)
+        dom = context.options.renderInlineFlat(node, dom, pos, options.offset || 0) || dom
+    }
+    return dom
+  }
+
+  // :: (Schema) → DOMSerializer
+  // Build a serializer using the [`toDOM`](#model.NodeSpec.toDOM)
+  // properties in a schema's node and mark specs.
+  static fromSchema(schema) {
+    return schema.cached.domSerializer ||
+      (schema.cached.domSerializer = new DOMSerializer(this.nodesFromSchema(schema), this.marksFromSchema(schema)))
+  }
+
+  // :: (Schema) → Object<(node: Node) → DOMOutputSpec>
+  // Gather the serializers in a schema's node specs into an object.
+  // This can be useful as a base to build a custom serializer from.
+  static nodesFromSchema(schema) {
+    return gatherToDOM(schema.nodes)
+  }
+
+  // :: (Schema) → Object<(mark: Mark) → DOMOutputSpec>
+  // Gather the serializers in a schema's mark specs into an object.
+  static marksFromSchema(schema) {
+    return gatherToDOM(schema.marks)
+  }
+}
+exports.DOMSerializer = DOMSerializer
+
+function gatherToDOM(obj) {
+  let result = {}
+  for (let name in obj) {
+    let toDOM = obj[name].spec.toDOM
+    if (toDOM) result[name] = toDOM
+  }
+  return result
+}
+
+// Context object used during serialization.
+class DOMSerialization {
+  constructor(serializer, options) {
     // : Object The options passed to the serializer.
     this.options = options || {}
     // : dom.Document The DOM document in which we are working.
+    // declare global: window
     this.doc = this.options.document || window.document
+    this.nodes = serializer.nodes
+    this.marks = serializer.marks
   }
 
   renderNode(node, pos, offset) {
-    let dom = this.renderStructure(node.type.spec.toDOM(node), node.content, pos + 1)
+    let dom = this.renderStructure(this.nodes[node.type.name](node), node.content, pos + 1)
     if (this.options.onRender)
       dom = this.options.onRender(node, dom, pos, offset) || dom
     return dom
@@ -109,7 +179,7 @@ class DOMSerializer {
   }
 
   renderMark(mark) {
-    return this.renderStructure(mark.type.spec.toDOM(mark))
+    return this.renderStructure(this.marks[mark.type.name](mark))
   }
 
   wrapInlineFlat(dom, marks) {
@@ -121,20 +191,3 @@ class DOMSerializer {
     return dom
   }
 }
-
-function fragmentToDOM(fragment, options) {
-  return new DOMSerializer(options).renderFragment(fragment, null, options.pos || 0)
-}
-exports.fragmentToDOM = fragmentToDOM
-
-function nodeToDOM(node, options) {
-  let serializer = new DOMSerializer(options), pos = options.pos || 0
-  let dom = serializer.renderNode(node, pos, options.offset || 0)
-  if (node.isInline) {
-    dom = serializer.wrapInlineFlat(dom, node.marks)
-    if (serializer.options.renderInlineFlat)
-      dom = options.renderInlineFlat(node, dom, pos, options.offset || 0) || dom
-  }
-  return dom
-}
-exports.nodeToDOM = nodeToDOM

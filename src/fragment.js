@@ -1,4 +1,3 @@
-const {fragmentToDOM} = require("./to_dom")
 const {findDiffStart, findDiffEnd} = require("./diff")
 
 // ::- Fragment is the type used to represent a node's collection of
@@ -253,17 +252,6 @@ class Fragment {
       curPos = end
     }
   }
-
-  // :: (?Object) → dom.DocumentFragment
-  // Serialize the content of this fragment to a DOM fragment. When
-  // not in the browser, the `document` option, containing a DOM
-  // document, should be passed so that the serialize can create
-  // nodes.
-  //
-  // To specify rendering behavior for your own [node](#model.NodeType) and
-  // [mark](#model.MarkType) types, define a [`toDOM`](#model.NodeType.toDOM)
-  // method on them.
-  toDOM(options = {}) { return fragmentToDOM(this, options) }
 }
 exports.Fragment = Fragment
 

@@ -143,8 +143,7 @@ class DOMParser {
   // Extract the parse rules listed in a schema's [node
   // specs](#model.NodeSpec.parseDOM).
   static schemaRules(schema) {
-    if (schema.cached.domParseRules) return schema.cached.domParseRules
-    let result = schema.cached.domParseRules = []
+    let result = []
     for (let name in schema.marks) {
       let rules = schema.marks[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
@@ -166,7 +165,8 @@ class DOMParser {
   // Construct a DOM parser using the parsing rules listed in a
   // schema's [node specs](#model.NodeSpec.parseDOM).
   static fromSchema(schema) {
-    return new DOMParser(schema, DOMParser.schemaRules(schema))
+    return schema.cached.domParser ||
+      (schema.cached.domParser = new DOMParser(schema, DOMParser.schemaRules(schema)))
   }
 }
 exports.DOMParser = DOMParser

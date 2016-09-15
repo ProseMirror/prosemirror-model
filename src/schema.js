@@ -289,11 +289,13 @@ exports.MarkType = MarkType
 //   causes some commands to behave differently.
 //
 //   toDOM:: ?(Node) → DOMOutputSpec
-//   Defines the way a node of this type should be serialized to
-//   DOM/HTML. Should return an [array
-//   structure](#model.DOMOutputSpec) that describes the resulting DOM
-//   structure, with an optional number zero (“hole”) in it to
-//   indicate where the node's content should be inserted.
+//   Defines the default way a node of this type should be serialized
+//   to DOM/HTML (as used by
+//   [`DOMSerializer.fromSchema`](#model.DOMSerializer.fromSchema).
+//   Should return an [array structure](#model.DOMOutputSpec) that
+//   describes the resulting DOM structure, with an optional number
+//   zero (“hole”) in it to indicate where the node's content should
+//   be inserted.
 //
 //   parseDOM:: ?[ParseRule]
 //   Associates DOM parser information with this node, which an be
@@ -313,7 +315,8 @@ exports.MarkType = MarkType
 //   at the end of the mark. Defaults to true.
 //
 //   toDOM:: ?(mark: Mark) → DOMOutputSpec
-//   Defines the way marks of this type should be serialized to DOM/HTML.
+//   Defines the default way marks of this type should be serialized
+//   to DOM/HTML.
 //
 //   parseDOM:: ?[ParseRule]
 //   Associates DOM parser information with this mark (see the

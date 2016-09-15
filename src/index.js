@@ -8,3 +8,4 @@ exports.Mark = require("./mark").Mark
 ;({ContentMatch: exports.ContentMatch} = require("./content"))
 
 exports.DOMParser = require("./from_dom").DOMParser
+exports.DOMSerializer =  require("./to_dom").DOMSerializer

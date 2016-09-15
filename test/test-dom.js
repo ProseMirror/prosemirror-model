@@ -1,18 +1,19 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
 const ist = require("ist")
-const {DOMParser} = require("../src")
+const {DOMParser, DOMSerializer} = require("../src")
 
 // declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
 
 const parser = DOMParser.fromSchema(schema)
+const serializer = DOMSerializer.fromSchema(schema)
 
 describe("DOMParser", () => {
   describe("parse", () => {
     function test(doc, dom) {
       return () => {
         let derivedDOM = document.createElement("div")
-        derivedDOM.appendChild(doc.content.toDOM({document}))
+        derivedDOM.appendChild(serializer.serializeFragment(doc.content, {document}))
         let declaredDOM = document.createElement("div")
         declaredDOM.innerHTML = dom
 

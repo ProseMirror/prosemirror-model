@@ -34,3 +34,6 @@ used to define and inspect content documents.
 
 @DOMParser
 @ParseRule
+
+@DOMSerializer
+@DOMOutputSpec
