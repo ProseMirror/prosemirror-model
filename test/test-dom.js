@@ -2,6 +2,7 @@ const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code
 const ist = require("ist")
 const {parseDOMInContext} = require("../src")
 
+// declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
 
 describe("Schema", () => {

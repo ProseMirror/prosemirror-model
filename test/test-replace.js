@@ -1,4 +1,4 @@
-const {Slice, ReplaceError} = require("../src")
+const {Slice} = require("../src")
 const {eq, doc, blockquote, h1, p, ul, li} = require("./build")
 const ist = require("ist")
 

@@ -3,7 +3,7 @@ const ist = require("ist")
 
 describe("Fragment", () => {
   describe("findDiffStart", () => {
-    function start(a, b, pos) {
+    function start(a, b) {
       ist(a.content.findDiffStart(b.content), a.tag.a)
     }
 
@@ -45,7 +45,7 @@ describe("Fragment", () => {
   })
 
   describe("findDiffEnd", () => {
-    function end(a, b, pos) {
+    function end(a, b) {
       let found = a.content.findDiffEnd(b.content)
       ist(found && found.a, a.tag.a)
     }
