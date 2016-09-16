@@ -308,6 +308,7 @@ class Node {
   // is at least one node type that can appear in both nodes (to avoid
   // merging completely incompatible nodes).
   canAppend(other) {
+    if (!other.content) console.log(other)
     if (other.content.size) return this.canReplace(this.childCount, this.childCount, other.content)
     else return this.type.compatibleContent(other.type)
   }
