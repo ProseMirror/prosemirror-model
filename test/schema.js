@@ -73,7 +73,6 @@ exports.schema = new Schema({
     },
 
     text: {
-      text: true,
       group: "inline",
       toDOM(node) { return node.text }
     },

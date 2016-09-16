@@ -67,11 +67,11 @@ class NodeType {
 
     // :: bool
     // True if this is a block type
-    this.isBlock = !(spec.inline || spec.text)
+    this.isBlock = !(spec.inline || name == "text")
 
     // :: bool
     // True if this is the text node type.
-    this.isText = !!spec.text
+    this.isText = name == "text"
   }
 
   // :: bool
@@ -262,10 +262,8 @@ exports.MarkType = MarkType
 //   referred to in the content expressions for the schema.
 //
 //   inline:: ?bool
-//   Should be set to a truthy value for inline nodes.
-//
-//   text:: ?bool
-//   Should be set to a truthy value for text nodes (implies `inline`).
+//   Should be set to a truthy value for inline nodes. (Implied for
+//   text nodes.)
 //
 //   attrs:: ?Object<AttributeSpec>
 //   The attributes that nodes of this type get.
