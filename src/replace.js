@@ -1,7 +1,7 @@
 const {Fragment} = require("./fragment")
 
-// ::- Error type raised by `Node.replace` when given an invalid
-// replacement.
+// ::- Error type raised by [`Node.replace`](#model.Node.replace) when
+// given an invalid replacement.
 class ReplaceError extends Error {}
 exports.ReplaceError = ReplaceError
 
@@ -9,7 +9,7 @@ exports.ReplaceError = ReplaceError
 // stores not only a fragment, but also the depth up to which nodes on
 // both side are 'open' / cut through.
 class Slice {
-  // :: (Fragment, number, number, ?Node)
+  // :: (Fragment, number, number)
   constructor(content, openLeft, openRight, possibleParent) {
     // :: Fragment The slice's content nodes.
     this.content = content

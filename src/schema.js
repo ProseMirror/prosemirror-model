@@ -42,12 +42,10 @@ function initAttrs(attrs) {
   return result
 }
 
-// ::- Node types are objects allocated once per `Schema`
-// and used to tag `Node` instances with a type. They are
-// instances of sub-types of this class, and contain information about
-// the node type (its name, its allowed attributes, methods for
-// serializing it to various formats, information to guide
-// deserialization, and so on).
+// ::- Node types are objects allocated once per `Schema` and used to
+// tag `Node` instances with a type. They contain information about
+// the node type, such as its name and what kind of node it
+// represents.
 class NodeType {
   constructor(name, schema, spec) {
     // :: string
@@ -274,7 +272,8 @@ exports.MarkType = MarkType
 //
 //   selectable:: ?bool
 //   Controls whether nodes of this type can be selected (as a [node
-//   selection](#state.NodeSelection)).
+//   selection](#state.NodeSelection)). Defaults to true for non-text
+//   nodes.
 //
 //   draggable:: ?bool
 //   Determines whether nodes of this type can be dragged. Enabling it
@@ -282,7 +281,7 @@ exports.MarkType = MarkType
 //   representation, and to put its HTML serialization into the drag
 //   event's [data
 //   transfer](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
-//   when dragged.
+//   when dragged. Defaults to false.
 //
 //   code:: ?bool
 //   Can be used to indicate that this node contains code, which
@@ -291,7 +290,7 @@ exports.MarkType = MarkType
 //   toDOM:: ?(Node) → DOMOutputSpec
 //   Defines the default way a node of this type should be serialized
 //   to DOM/HTML (as used by
-//   [`DOMSerializer.fromSchema`](#model.DOMSerializer.fromSchema).
+//   [`DOMSerializer.fromSchema`](#model.DOMSerializer^fromSchema).
 //   Should return an [array structure](#model.DOMOutputSpec) that
 //   describes the resulting DOM structure, with an optional number
 //   zero (“hole”) in it to indicate where the node's content should
@@ -299,7 +298,7 @@ exports.MarkType = MarkType
 //
 //   parseDOM:: ?[ParseRule]
 //   Associates DOM parser information with this node, which an be
-//   used by [`DOMParser.fromSchema`](#model.DOMParser.fromSchema) to
+//   used by [`DOMParser.fromSchema`](#model.DOMParser^fromSchema) to
 //   automatically derive a parser. The `node` field in the rules is
 //   implied (the name of this node will be filled in automatically).
 //   If you supply your own parser, you do not need to also specify
@@ -338,22 +337,15 @@ exports.MarkType = MarkType
 //   compute:: ?() → any
 //   A function that computes a default value for the attribute.
 
-// ::- Each document is based on a single schema, which provides the
-// node and mark types that it is made up of (which, in turn,
-// determine the structure it is allowed to have).
+// ::- A document schema.
 class Schema {
-  // :: (SchemaSpec, ?any)
+  // :: (SchemaSpec)
   // Construct a schema from a specification.
-  constructor(spec, data) {
+  constructor(spec) {
     // :: OrderedMap<NodeSpec> The node specs that the schema is based on.
     this.nodeSpec = OrderedMap.from(spec.nodes)
     // :: OrderedMap<constructor<MarkType>> The mark spec that the schema is based on.
     this.markSpec = OrderedMap.from(spec.marks)
-
-    // :: any A generic field that you can use (by passing a value to
-    // the constructor) to store arbitrary data or references in your
-    // schema object, for use by your own code.
-    this.data = data
 
     // :: Object<NodeType>
     // An object mapping the schema's node names to node type objects.
@@ -377,8 +369,6 @@ class Schema {
     this.cached = Object.create(null)
     this.cached.wrappings = Object.create(null)
 
-    this.node = this.node.bind(this)
-    this.text = this.text.bind(this)
     this.nodeFromJSON = this.nodeFromJSON.bind(this)
     this.markFromJSON = this.markFromJSON.bind(this)
   }
@@ -388,13 +378,6 @@ class Schema {
   // `NodeType` instance. Attributes will be extended
   // with defaults, `content` may be a `Fragment`,
   // `null`, a `Node`, or an array of nodes.
-  //
-  // When creating a text node, `content` should be a string and is
-  // interpreted as the node's text.
-  //
-  // This method is bound to the Schema, meaning you don't have to
-  // call it as a method, but can pass it to higher-order functions
-  // and such.
   node(type, attrs, content, marks) {
     if (typeof type == "string")
       type = this.nodeType(type)
@@ -407,19 +390,18 @@ class Schema {
   }
 
   // :: (string, ?[Mark]) → Node
-  // Create a text node in the schema. This method is bound to the
-  // Schema. Empty text nodes are not allowed.
+  // Create a text node in the schema. Empty text nodes are not
+  // allowed.
   text(text, marks) {
     let type = this.nodes.text
     return new TextNode(type, type.defaultAttrs, text, Mark.setFrom(marks))
   }
 
-  // :: (string, ?Object) → Mark
-  // Create a mark with the named type
-  mark(name, attrs) {
-    let spec = this.marks[name]
-    if (!spec) throw new RangeError("No mark named " + name)
-    return spec.create(attrs)
+  // :: (union<string, MarkType>, ?Object) → Mark
+  // Create a mark with the given type and attributes.
+  mark(type, attrs) {
+    if (typeof type == "string") type = this.marks[type]
+    return type.create(attrs)
   }
 
   // :: (Object) → Node
@@ -436,9 +418,6 @@ class Schema {
     return Mark.fromJSON(this, json)
   }
 
-  // :: (string) → NodeType
-  // Get the `NodeType` associated with the given name in
-  // this schema, or raise an error if it does not exist.
   nodeType(name) {
     let found = this.nodes[name]
     if (!found) throw new RangeError("Unknown node type: " + name)

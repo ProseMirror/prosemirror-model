@@ -44,9 +44,11 @@ class Node {
   // For text nodes, this contains the node's text content.
 
   // :: number
-  // The size of this node. For text nodes, this is the amount of
-  // characters. For leaf nodes, it is one. And for non-leaf nodes, it
-  // is the size of the content plus two (the start and end token).
+  // The size of this node, as defined by the integer-based [indexing
+  // scheme](guide/doc.html#indexing). For text nodes, this is the
+  // amount of characters. For other leaf nodes, it is one. And for
+  // non-leaf nodes, it is the size of the content plus two (the start
+  // and end token).
   get nodeSize() { return this.isLeaf ? 1 : 2 + this.content.size }
 
   // :: number
@@ -66,6 +68,20 @@ class Node {
   // Call `f` for every child node, passing the node, its offset
   // into this parent node, and its index.
   forEach(f) { this.content.forEach(f) }
+
+  // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number))
+  // Iterate over all nodes between the given two positions, calling
+  // the callback with the node, its position, its parent
+  // node, and its index in that node.
+  nodesBetween(from, to, f, pos = 0) {
+    this.content.nodesBetween(from, to, f, pos, this)
+  }
+
+  // :: ((node: Node, pos: number, parent: Node))
+  // Call the given callback for every descendant node.
+  descendants(f) {
+    this.nodesBetween(0, this.content.size, f)
+  }
 
   // :: string
   // Concatenates all the text nodes found in this fragment and its
@@ -154,8 +170,8 @@ class Node {
   // the given slice. The slice must 'fit', meaning its open sides
   // must be able to connect to the surrounding content, and its
   // content nodes must be valid children for the node they are placed
-  // into. If any of this is violated, an error of type `ReplaceError`
-  // is thrown.
+  // into. If any of this is violated, an error of type
+  // [`ReplaceError`](#model.ReplaceError) is thrown.
   replace(from, to, slice) {
     return replace(this.resolve(from), this.resolve(to), slice)
   }
@@ -191,20 +207,6 @@ class Node {
     if (offset < pos) return {node: this.content.child(index), index, offset}
     let node = this.content.child(index - 1)
     return {node, index: index - 1, offset: offset - node.nodeSize}
-  }
-
-  // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number))
-  // Iterate over all nodes between the given two positions, calling
-  // the callback with the node, its position, its parent
-  // node, and its index in that node.
-  nodesBetween(from, to, f, pos = 0) {
-    this.content.nodesBetween(from, to, f, pos, this)
-  }
-
-  // :: ((node: Node, pos: number, parent: Node))
-  // Call the given callback for every descendant node.
-  descendants(f) {
-    this.nodesBetween(0, this.content.size, f)
   }
 
   // :: (number) → ResolvedPos

@@ -1,9 +1,7 @@
-// ::- The usual way to represent positions in a document is with a
-// plain integer. Since those tell you very little about the context
-// of that position, you'll often have to 'resolve' a position to get
-// the context you need. Objects of this class represent such a
-// resolved position, providing various pieces of context information
-// and helper methods.
+// ::- You'll often have to '[resolve](#model.Node.resolve)' a
+// position to get the context you need. Objects of this class
+// represent such a resolved position, providing various pieces of
+// context information and helper methods.
 //
 // Throughout this interface, methods that take an optional `depth`
 // parameter will interpret undefined as `this.depth` and negative

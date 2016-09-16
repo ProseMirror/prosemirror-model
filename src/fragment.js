@@ -14,12 +14,6 @@ class Fragment {
       this.size += content[i].nodeSize
   }
 
-  // :: () → string
-  // Return a debugging string that describes this fragment.
-  toString() { return "<" + this.toStringInner() + ">" }
-
-  toStringInner() { return this.content.join(", ") }
-
   nodesBetween(from, to, f, nodeStart, parent) {
     for (let i = 0, pos = 0; pos < to; i++) {
       let child = this.content[i], end = pos + child.nodeSize
@@ -51,6 +45,21 @@ class Fragment {
     return text
   }
 
+  // :: (Fragment) → Fragment
+  // Create a new fragment containing the content of this fragment and
+  // `other`.
+  append(other) {
+    if (!other.size) return this
+    if (!this.size) return other
+    let last = this.lastChild, first = other.firstChild, content = this.content.slice(), i = 0
+    if (last.isText && last.sameMarkup(first)) {
+      content[content.length - 1] = last.withText(last.text + first.text)
+      i = 1
+    }
+    for (; i < other.content.length; i++) content.push(other.content[i])
+    return new Fragment(content, this.size + other.size)
+  }
+
   // :: (number, ?number) → Fragment
   // Cut out the sub-fragment between the two given positions.
   cut(from, to) {
@@ -80,21 +89,6 @@ class Fragment {
     return new Fragment(this.content.slice(from, to))
   }
 
-  // :: (Fragment) → Fragment
-  // Create a new fragment containing the content of this fragment and
-  // `other`.
-  append(other) {
-    if (!other.size) return this
-    if (!this.size) return other
-    let last = this.lastChild, first = other.firstChild, content = this.content.slice(), i = 0
-    if (last.isText && last.sameMarkup(first)) {
-      content[content.length - 1] = last.withText(last.text + first.text)
-      i = 1
-    }
-    for (; i < other.content.length; i++) content.push(other.content[i])
-    return new Fragment(content, this.size + other.size)
-  }
-
   // :: (number, Node) → Fragment
   // Create a new fragment in which the node at the given index is
   // replaced by the given node.
@@ -121,37 +115,6 @@ class Fragment {
     return new Fragment(this.content.concat(node), this.size + node.nodeSize)
   }
 
-  // :: () → ?Object
-  // Create a JSON-serializeable representation of this fragment.
-  toJSON() {
-    return this.content.length ? this.content.map(n => n.toJSON()) : null
-  }
-
-  // :: (Schema, ?Object) → Fragment
-  // Deserialize a fragment from its JSON representation.
-  static fromJSON(schema, value) {
-    return value ? new Fragment(value.map(schema.nodeFromJSON)) : Fragment.empty
-  }
-
-  // :: ([Node]) → Fragment
-  // Build a fragment from an array of nodes. Ensures that adjacent
-  // text nodes with the same style are joined together.
-  static fromArray(array) {
-    if (!array.length) return Fragment.empty
-    let joined, size = 0
-    for (let i = 0; i < array.length; i++) {
-      let node = array[i]
-      size += node.nodeSize
-      if (i && node.isText && array[i - 1].sameMarkup(node)) {
-        if (!joined) joined = array.slice(0, i)
-        joined[joined.length - 1] = node.withText(joined[joined.length - 1].text + node.text)
-      } else if (joined) {
-        joined.push(node)
-      }
-    }
-    return new Fragment(joined || array, size)
-  }
-
   // :: (Fragment) → bool
   // Compare this fragment to another one.
   eq(other) {
@@ -159,18 +122,6 @@ class Fragment {
     for (let i = 0; i < this.content.length; i++)
       if (!this.content[i].eq(other.content[i])) return false
     return true
-  }
-
-  // :: (?union<Fragment, Node, [Node]>) → Fragment
-  // Create a fragment from something that can be interpreted as a set
-  // of nodes. For `null`, it returns the empty fragment. For a
-  // fragment, the fragment itself. For a node or array of nodes, a
-  // fragment containing those nodes.
-  static from(nodes) {
-    if (!nodes) return Fragment.empty
-    if (nodes instanceof Fragment) return nodes
-    if (Array.isArray(nodes)) return this.fromArray(nodes)
-    return new Fragment([nodes], nodes.nodeSize)
   }
 
   // :: ?Node
@@ -251,6 +202,55 @@ class Fragment {
       }
       curPos = end
     }
+  }
+
+  // :: () → string
+  // Return a debugging string that describes this fragment.
+  toString() { return "<" + this.toStringInner() + ">" }
+
+  toStringInner() { return this.content.join(", ") }
+
+  // :: () → ?Object
+  // Create a JSON-serializeable representation of this fragment.
+  toJSON() {
+    return this.content.length ? this.content.map(n => n.toJSON()) : null
+  }
+
+  // :: (Schema, ?Object) → Fragment
+  // Deserialize a fragment from its JSON representation.
+  static fromJSON(schema, value) {
+    return value ? new Fragment(value.map(schema.nodeFromJSON)) : Fragment.empty
+  }
+
+  // :: ([Node]) → Fragment
+  // Build a fragment from an array of nodes. Ensures that adjacent
+  // text nodes with the same style are joined together.
+  static fromArray(array) {
+    if (!array.length) return Fragment.empty
+    let joined, size = 0
+    for (let i = 0; i < array.length; i++) {
+      let node = array[i]
+      size += node.nodeSize
+      if (i && node.isText && array[i - 1].sameMarkup(node)) {
+        if (!joined) joined = array.slice(0, i)
+        joined[joined.length - 1] = node.withText(joined[joined.length - 1].text + node.text)
+      } else if (joined) {
+        joined.push(node)
+      }
+    }
+    return new Fragment(joined || array, size)
+  }
+
+  // :: (?union<Fragment, Node, [Node]>) → Fragment
+  // Create a fragment from something that can be interpreted as a set
+  // of nodes. For `null`, it returns the empty fragment. For a
+  // fragment, the fragment itself. For a node or array of nodes, a
+  // fragment containing those nodes.
+  static from(nodes) {
+    if (!nodes) return Fragment.empty
+    if (nodes instanceof Fragment) return nodes
+    if (Array.isArray(nodes)) return this.fromArray(nodes)
+    return new Fragment([nodes], nodes.nodeSize)
   }
 }
 exports.Fragment = Fragment
