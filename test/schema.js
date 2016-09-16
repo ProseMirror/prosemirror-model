@@ -101,7 +101,6 @@ exports.schema = new Schema({
       inline: true,
       group: "inline",
       selectable: false,
-      isBR: true,
       parseDOM: [{tag: "br"}],
       toDOM() { return ["br"] }
     }
