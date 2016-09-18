@@ -1,4 +1,4 @@
-const {Mark} = require("../src")
+const {Mark} = require("../dist")
 const {schema, doc, p, em, a} = require("./build")
 const ist = require("ist")
 

@@ -1,4 +1,4 @@
-const {Schema} = require("../src")
+const {Schema} = require("../dist")
 
 exports.schema = new Schema({
   nodes: {

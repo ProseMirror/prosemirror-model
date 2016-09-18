@@ -1,4 +1,4 @@
-const {ContentExpr} = require("../src/content")
+const {ContentExpr} = require("../dist/content")
 const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
 const ist = require("ist")
 

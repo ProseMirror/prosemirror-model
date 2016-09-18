@@ -1,5 +1,5 @@
 const ist = require("ist")
-const {Fragment} = require("../src/")
+const {Fragment} = require("../dist/")
 const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
 
 describe("Node", () => {

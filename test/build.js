@@ -1,5 +1,5 @@
 const {schema} = require("./schema")
-const {Node} = require("../src")
+const {Node} = require("../dist")
 
 exports.schema = schema
 

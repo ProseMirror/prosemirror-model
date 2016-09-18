@@ -1,6 +1,6 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
 const ist = require("ist")
-const {DOMParser, DOMSerializer} = require("../src")
+const {DOMParser, DOMSerializer} = require("../dist")
 
 // declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document

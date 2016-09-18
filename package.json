@@ -2,7 +2,7 @@
   "name": "prosemirror-model",
   "version": "0.11.0",
   "description": "ProseMirror's document model",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "license": "MIT",
   "maintainers": [
     {
@@ -16,6 +16,7 @@
     "url": "git://github.com/prosemirror/prosemirror-model.git"
   },
   "devDependencies": {
+    "buble": "~0.14.0",
     "mocha": "^3.0.2",
     "ist": "1.0.0",
     "jsdom": "^8.0.4",
@@ -23,6 +24,8 @@
   },
   "scripts": {
     "test": "mocha test/test-*.js",
-    "x-prepublish": "rimraf dist && babel -d dist src"
+    "build": "rimraf dist && buble -i src -o dist",
+    "link-src": "rimraf dist && ln -s src dist",
+    "prepublish": "npm run build"
   }
 }
