@@ -2,7 +2,12 @@ const {Fragment} = require("./fragment")
 
 // ::- Error type raised by [`Node.replace`](#model.Node.replace) when
 // given an invalid replacement.
-class ReplaceError extends Error {}
+class ReplaceError extends Error {
+  constructor(message) {
+    super(message)
+    this.message = message
+  }
+}
 exports.ReplaceError = ReplaceError
 
 // ::- A slice represents a piece cut out of a larger document. It
