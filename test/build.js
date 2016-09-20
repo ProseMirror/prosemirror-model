@@ -15,7 +15,7 @@ exports.schema = schema
 
 const noTag = Node.prototype.tag = Object.create(null)
 
-function flatten(children, f) {
+function flatten(schema, children, f) {
   let result = [], pos = 0, tag = noTag
 
   for (let i = 0; i < children.length; i++) {
@@ -59,44 +59,46 @@ function id(x) { return x }
 // Create a builder function for nodes with content.
 function block(type, attrs) {
   return function() {
-    let {nodes, tag} = flatten(arguments, id)
-    let node = schema.nodes[type].create(attrs, nodes)
+    let {nodes, tag} = flatten(type.schema, arguments, id)
+    let node = type.create(attrs, nodes)
     if (tag != noTag) node.tag = tag
     return node
   }
 }
+exports.block = block
 
 // Create a builder function for marks.
 function mark(type, attrs) {
   let mark = schema.mark(type, attrs)
   return function() {
-    let {nodes, tag} = flatten(arguments, n => mark.type.isInSet(n.marks) ? n : n.mark(mark.addToSet(n.marks)))
+    let {nodes, tag} = flatten(type.schema, arguments, n => mark.type.isInSet(n.marks) ? n : n.mark(mark.addToSet(n.marks)))
     return {flat: nodes, tag}
   }
 }
+exports.mark = mark
 
 exports.eq = function eq(a, b) { return a.eq(b) }
 
 const dataImage = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 exports.dataImage = dataImage
 
-const doc = block("doc")
+const doc = block(schema.nodes.doc)
 exports.doc = doc
-const p = block("paragraph")
+const p = block(schema.nodes.paragraph)
 exports.p = p
-const blockquote = block("blockquote")
+const blockquote = block(schema.nodes.blockquote)
 exports.blockquote = blockquote
-const pre = block("code_block")
+const pre = block(schema.nodes.code_block)
 exports.pre = pre
-const h1 = block("heading", {level: 1})
+const h1 = block(schema.nodes.heading, {level: 1})
 exports.h1 = h1
-const h2 = block("heading", {level: 2})
+const h2 = block(schema.nodes.heading, {level: 2})
 exports.h2 = h2
-const li = block("list_item")
+const li = block(schema.nodes.list_item)
 exports.li = li
-const ul = block("bullet_list")
+const ul = block(schema.nodes.bullet_list)
 exports.ul = ul
-const ol = block("ordered_list")
+const ol = block(schema.nodes.ordered_list)
 exports.ol = ol
 
 const br = schema.node("hard_break")
@@ -108,13 +110,13 @@ exports.img2 = img2
 const hr = schema.node("horizontal_rule")
 exports.hr = hr
 
-const em = mark("em")
+const em = mark(schema.marks.em)
 exports.em = em
-const strong = mark("strong")
+const strong = mark(schema.marks.strong)
 exports.strong = strong
-const code = mark("code")
+const code = mark(schema.marks.code)
 exports.code = code
-const a = mark("link", {href: "http://foo"})
+const a = mark(schema.marks.link, {href: "http://foo"})
 exports.a = a
-const a2 = mark("link", {href: "http://bar"})
+const a2 = mark(schema.marks.link, {href: "http://bar"})
 exports.a2 = a2
