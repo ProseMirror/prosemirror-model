@@ -216,17 +216,18 @@ class Node {
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
-  // :: (number) → [Mark]
+  // :: (number, ?bool) → [Mark]
   // Get the marks at the given position factoring in the surrounding
   // marks' inclusiveRight property. If the position is at the start
-  // of a non-empty node, the marks of the node after it are returned.
-  marksAt(pos) {
+  // of a non-empty node, or `useAfter` is true, the marks of the node
+  // after it are returned.
+  marksAt(pos, useAfter) {
     let $pos = this.resolve(pos), parent = $pos.parent, index = $pos.index()
 
     // In an empty parent, return the empty array
     if (parent.content.size == 0) return Mark.none
     // When inside a text node or at the start of the parent node, return the node's marks
-    if (index == 0 || !$pos.atNodeBoundary) return parent.child(index).marks
+    if (useAfter || index == 0 || !$pos.atNodeBoundary) return parent.child(index).marks
 
     let marks = parent.child(index - 1).marks
     for (var i = 0; i < marks.length; i++) if (marks[i].type.inclusiveRight === false)
