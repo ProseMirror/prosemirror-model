@@ -69,7 +69,7 @@ class Mark {
   // Convert this mark to a JSON-serializeable representation.
   toJSON() {
     let obj = {type: this.type.name}
-    for (let attr in this.attrs) {
+    for (let _ in this.attrs) {
       obj.attrs = this.attrs
       break
     }
