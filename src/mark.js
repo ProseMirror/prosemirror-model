@@ -68,20 +68,17 @@ class Mark {
   // :: () → Object
   // Convert this mark to a JSON-serializeable representation.
   toJSON() {
-    let obj = {_: this.type.name}
-    for (let attr in this.attrs) obj[attr] = this.attrs[attr]
+    let obj = {type: this.type.name}
+    for (let attr in this.attrs) {
+      obj.attrs = this.attrs
+      break
+    }
     return obj
   }
 
   // :: (Schema, Object) → Mark
   static fromJSON(schema, json) {
-    let type = schema.marks[json._]
-    let attrs = null
-    for (let prop in json) if (prop != "_") {
-      if (!attrs) attrs = Object.create(null)
-      attrs[prop] = json[prop]
-    }
-    return attrs ? type.create(attrs) : type.instance
+    return schema.marks[json.type].create(json.attrs)
   }
 
   // :: ([Mark], [Mark]) → bool
