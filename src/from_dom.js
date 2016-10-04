@@ -377,9 +377,14 @@ class DOMParseState {
         this.findInside(dom)
       }
     } else if (dom.nodeType == 1 && !dom.hasAttribute("pm-ignore")) {
-      let style = dom.getAttribute("style")
-      if (style) this.addElementWithStyles(parseStyles(style), dom)
-      else this.addElement(dom)
+      if (dom.hasAttribute("pm-decoration")) {
+        for (let child = dom.firstChild; child; child = child.nextSibling)
+          this.addDOM(child)
+      } else {
+        let style = dom.getAttribute("style")
+        if (style) this.addElementWithStyles(parseStyles(style), dom)
+        else this.addElement(dom)
+      }
     }
   }
 
