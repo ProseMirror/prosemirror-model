@@ -91,7 +91,7 @@ class DOMSerializer {
       start = 2
       for (let name in attrs) {
         if (name == "style") dom.style.cssText = attrs[name]
-        else if (attrs[name]) dom.setAttribute(name, attrs[name])
+        else if (attrs[name] != null) dom.setAttribute(name, attrs[name])
       }
     }
     for (let i = start; i < structure.length; i++) {
