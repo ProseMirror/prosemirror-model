@@ -428,7 +428,7 @@ class DOMParseState {
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
   parseNodeType(dom) {
-    let rule = this.parser.matchTag(dom)
+    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom)
     if (!rule) return false
     if (rule.ignore) return true
 
