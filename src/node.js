@@ -230,7 +230,7 @@ class Node {
     if (useAfter || index == 0 || !$pos.atNodeBoundary) return parent.child(index).marks
 
     let marks = parent.child(index - 1).marks
-    for (var i = 0; i < marks.length; i++) if (marks[i].type.inclusiveRight === false)
+    for (var i = 0; i < marks.length; i++) if (marks[i].type.spec.inclusiveRight === false)
       marks = marks[i--].removeFromSet(marks)
     return marks
   }
