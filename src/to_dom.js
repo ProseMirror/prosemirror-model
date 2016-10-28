@@ -22,7 +22,9 @@ class DOMSerializer {
   // that take a node and return a description of the corresponding
   // DOM. `marks` does the same for mark names.
   constructor(nodes, marks) {
+    // :: Object<(node: Node) → DOMOutputSpec>
     this.nodes = nodes || {}
+    // :: Object<(mark: Mark) → DOMOutputSpec>
     this.marks = marks || {}
   }
 
