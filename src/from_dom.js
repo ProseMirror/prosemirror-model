@@ -79,36 +79,9 @@ class DOMParser {
   // window environment, where we simply use the global document),
   // pass it as the `document` property of `options`.
   parse(dom, options = {}) {
-    let topNode = options.topNode
-    let top = new NodeBuilder(topNode ? topNode.type : this.schema.nodes.doc,
-                              topNode ? topNode.attrs : null, true, null, null, options.preserveWhitespace)
-    let state = new DOMParseState(this, options, top)
-    state.addAll(dom, null, options.from, options.to)
-    return top.finish()
-  }
-
-  // : (ResolvedPos, dom.Node, ?Object) → Slice
-  // Parse a DOM fragment into a `Slice`, starting with the context at
-  // `$context`. If the DOM nodes are known to be 'open' (as in
-  // `Slice`), pass their left open depth as the `openLeft` option.
-  parseInContext($context, dom, options = {}) {
-    let {builder, top} = builderFromContext($context, options.preserveWhitespace)
-    let openLeft = options.openLeft, startPos = $context.depth
-
-    new class extends DOMParseState {
-      enter(type, attrs, preserveWhitespace) {
-        if (openLeft == null) openLeft = type.isTextblock ? 1 : 0
-        if (openLeft > 0 && this.top.match.matchType(type, attrs)) openLeft = 0
-        if (openLeft == 0) return super.enter(type, attrs, preserveWhitespace)
-
-        openLeft--
-        return null
-      }
-    }(this, options, builder).addAll(dom)
-
-    let openTo = top.openDepth, doc = top.finish(openTo), $startPos = doc.resolve(startPos)
-    for (let d = $startPos.depth; d >= 0 && startPos == $startPos.end(d); d--) ++startPos
-    return doc.slice(startPos, doc.content.size - openTo)
+    let context = new ParseContext(this, options)
+    context.addAll(dom, null, options.from, options.to)
+    return context.finish()
   }
 
   matchTag(dom) {
@@ -171,150 +144,6 @@ class DOMParser {
 }
 exports.DOMParser = DOMParser
 
-function builderFromContext($context, preserveWhitespace) {
-  let top, builder
-  for (let i = 0; i <= $context.depth; i++) {
-    let node = $context.node(i), match = node.contentMatchAt($context.index(i))
-    if (i == 0)
-      builder = top = new NodeBuilder(node.type, node.attrs, true, null, match, preserveWhitespace)
-    else
-      builder = builder.start(node.type, node.attrs, false, match, preserveWhitespace)
-  }
-  return {builder, top}
-}
-
-class NodeBuilder {
-  constructor(type, attrs, solid, prev, match, preserveWhitespace) {
-    // : NodeType
-    // The type of the node being built
-    this.type = type
-    // : ContentMatch
-    // The content match at this point, used to determine whether
-    // other nodes may be added here.
-    this.match = match || type.contentExpr.start(attrs)
-    // : bool
-    // True when the node is found in the source, and thus should be
-    // preserved until its end. False when it was made up to provide a
-    // wrapper for another node.
-    this.solid = solid
-    // : [Node]
-    // The nodes that have been added so far.
-    this.content = []
-    // : ?NodeBuilder
-    // The builder for the parent node, if any.
-    this.prev = prev
-    // : ?NodeBuilder
-    // The builder for the last child, if that is still open (see
-    // `NodeBuilder.start`)
-    this.openChild = null
-    // : bool
-    this.preserveWhitespace = preserveWhitespace
-  }
-
-  // : (Node) → ?Node
-  // Try to add a node. Strip it of marks if necessary. Returns null
-  // when the node doesn't fit here.
-  add(node) {
-    let matched = this.match.matchNode(node)
-    if (!matched && node.marks.length) {
-      node = node.mark(node.marks.filter(mark => this.match.allowsMark(mark.type)))
-      matched = this.match.matchNode(node)
-    }
-    if (!matched) return null
-    this.closeChild()
-    this.content.push(node)
-    this.match = matched
-    return node
-  }
-
-  // : (NodeType, ?Object, bool, ?ContentMatch) → ?NodeBuilder
-  // Try to start a new node at this point.
-  start(type, attrs, solid, match, preserveWhitespace) {
-    let matched = this.match.matchType(type, attrs)
-    if (!matched) return null
-    this.closeChild()
-    this.match = matched
-    return this.openChild = new NodeBuilder(type, attrs, solid, this, match, preserveWhitespace)
-  }
-
-  closeChild(openRight) {
-    if (this.openChild) {
-      this.content.push(this.openChild.finish(openRight && openRight - 1))
-      this.openChild = null
-    }
-  }
-
-  // : ()
-  // Strip any trailing space text from the builder's content.
-  stripTrailingSpace() {
-    if (this.openChild) return
-    let last = this.content[this.content.length - 1], m
-    if (last && last.isText && (m = /\s+$/.exec(last.text))) {
-      if (last.text.length == m[0].length) this.content.pop()
-      else this.content[this.content.length - 1] = last.withText(last.text.slice(0, last.text.length - m[0].length))
-    }
-  }
-
-  // : (?number) → Node
-  // Finish this node. If `openRight` is > 0, the node (and `openRight
-  // - 1` last children) is partial, and we don't need to 'close' it
-  // by filling in required content.
-  finish(openRight) {
-    if (!openRight && !this.preserveWhitespace) this.stripTrailingSpace()
-    this.closeChild(openRight)
-    let content = Fragment.from(this.content)
-    if (!openRight) content = content.append(this.match.fillBefore(Fragment.empty, true))
-    return this.type.create(this.match.attrs, content)
-  }
-
-  // : (NodeType, ?Object, ?Node) → ?NodeBuilder
-  // Try to find a valid place to add a node with the given type and
-  // attributes. When successful, if `node` was given, add it in its
-  // entirety and return the builder to which it was added. If not,
-  // start a node of the given type and return the builder for it.
-  findPlace(type, attrs, node, preserveWhitespace) {
-    let route, builder
-    for (let top = this;; top = top.prev) {
-      let found = top.match.findWrapping(type, attrs)
-      if (found && (!route || route.length > found.length)) {
-        route = found
-        builder = top
-        if (!found.length) break
-      }
-      if (top.solid) break
-    }
-
-    if (!route) return null
-    for (let i = 0; i < route.length; i++)
-      builder = builder.start(route[i].type, route[i].attrs, false)
-    return node ? builder.add(node) && builder : builder.start(type, attrs, true, null, preserveWhitespace)
-  }
-
-  get depth() {
-    let d = 0
-    for (let b = this.prev; b; b = b.prev) d++
-    return d
-  }
-
-  get openDepth() {
-    let d = 0
-    for (let c = this.openChild; c; c = c.openChild) d++
-    return d
-  }
-
-  get posBeforeLastChild() {
-    let pos = this.prev ? this.prev.posBeforeLastChild + 1 : 0
-    for (let i = 0; i < this.content.length; i++)
-      pos += this.content[i].nodeSize
-    return pos
-  }
-
-  get currentPos() {
-    this.closeChild()
-    return this.posBeforeLastChild
-  }
-}
-
 // : Object<bool> The block-level tags in HTML5
 const blockTags = {
   address: true, article: true, aside: true, blockquote: true, canvas: true,
@@ -332,18 +161,49 @@ const ignoreTags = {
 // : Object<bool> List tags.
 const listTags = {ol: true, ul: true}
 
-// A state object used to track context during a parse.
-class DOMParseState {
-  // : (DOMParser, Object, NodeBuilder)
-  constructor(parser, options, top) {
-    // : Object The options passed to this parse.
-    this.options = options || {}
+class NodeContext {
+  constructor(type, attrs, solid, match, preserveWS) {
+    this.type = type
+    this.attrs = attrs
+    this.solid = solid
+    this.match = match || type.contentExpr.start(attrs)
+    this.preserveWS = preserveWS
+    this.content = []
+  }
+
+  finish(openRight) {
+    if (!this.preserveWS) { // Strip trailing whitespace
+      let last = this.content[this.content.length - 1], m
+      if (last && last.isText && (m = /\s+$/.exec(last.text))) {
+        if (last.text.length == m[0].length) this.content.pop()
+        else this.content[this.content.length - 1] = last.withText(last.text.slice(0, last.text.length - m[0].length))
+      }
+    }
+    let content = Fragment.from(this.content)
+    if (!openRight) content = content.append(this.match.fillBefore(Fragment.empty, true))
+    return this.type.create(this.match.attrs, content)
+  }
+}
+
+class ParseContext {
+  // : (DOMParser, Object)
+  constructor(parser, options) {
     // : DOMParser The parser we are using.
     this.parser = parser
-    this.top = top
+    // : Object The options passed to this parse.
+    this.options = options
+    let topNode = options.topNode
+    this.nodes = [new NodeContext(topNode ? topNode.type : parser.schema.nodes.doc,
+                                  topNode ? topNode.atts : null,
+                                  true, null, options.preserveWhitespace)]
     // : [Mark] The current set of marks
     this.marks = Mark.none
+    this.open = 0
     this.find = options.findPositions
+  }
+
+  get top() {
+    return this.nodes[this.open]
   }
 
   // : (Mark) → [Mark]
@@ -360,31 +220,38 @@ class DOMParseState {
   // `style` attribute, `addElementWithStyles`.
   addDOM(dom) {
     if (dom.nodeType == 3) {
-      let value = dom.nodeValue
-      let top = this.top
-      if (/\S/.test(value) || top.type.isTextblock) {
-        if (!this.top.preserveWhitespace) {
-          value = value.replace(/\s+/g, " ")
-          // If this starts with whitespace, and there is either no node
-          // before it or a node that ends with whitespace, strip the
-          // leading space.
-          if (/^\s/.test(value)) top.stripTrailingSpace()
+      this.addTextNode(dom)
+    } else if (dom.nodeType != 1 || dom.hasAttribute("pm-ignore")) {
+      // Ignore
+    } else if (dom.hasAttribute("pm-decoration")) {
+      for (let child = dom.firstChild; child; child = child.nextSibling)
+        this.addDOM(child)
+    } else {
+      let style = dom.getAttribute("style")
+      if (style) this.addElementWithStyles(parseStyles(style), dom)
+      else this.addElement(dom)
+    }
+  }
+
+  addTextNode(dom) {
+    let value = dom.nodeValue
+    let top = this.top
+    if (top.type.isTextblock || /\S/.test(value)) {
+      if (!top.preserveWS) {
+        value = value.replace(/\s+/g, " ")
+        // If this starts with whitespace, and there is either no node
+        // before it or a node that ends with whitespace, strip the
+        // leading space.
+        if (/^\s/.test(value)) {
+          let nodeBefore = top.content[top.content.length - 1]
+          if (!nodeBefore || nodeBefore.isText && /\s$/.test(nodeBefore.text))
+            value = value.slice(1)
         }
-        if (value)
-          this.insertNode(this.parser.schema.text(value, this.marks))
-        this.findInText(dom)
-      } else {
-        this.findInside(dom)
       }
-    } else if (dom.nodeType == 1 && !dom.hasAttribute("pm-ignore")) {
-      if (dom.hasAttribute("pm-decoration")) {
-        for (let child = dom.firstChild; child; child = child.nextSibling)
-          this.addDOM(child)
-      } else {
-        let style = dom.getAttribute("style")
-        if (style) this.addElementWithStyles(parseStyles(style), dom)
-        else this.addElement(dom)
-      }
+      if (value) this.insertNode(this.parser.schema.text(value, this.marks))
+      this.findInText(dom)
+    } else {
+      this.findInside(dom)
     }
   }
 
@@ -393,7 +260,7 @@ class DOMParseState {
   // none is found, the element's content nodes are added directly.
   addElement(dom) {
     let name = dom.nodeName.toLowerCase()
-    if (listTags.hasOwnProperty(name)) this.normalizeList(dom)
+    if (listTags.hasOwnProperty(name)) normalizeList(dom)
     // Ignore trailing BR nodes, which browsers create during editing
     if (this.options.editableContent && name == "br" && !dom.nextSibling) return
     if (!this.parseNodeType(dom, name)) {
@@ -411,15 +278,14 @@ class DOMParseState {
   // that, if no style parser suppressed the node's content, pass it
   // through to `addElement`.
   addElementWithStyles(styles, dom) {
-    let oldMarks = this.marks, marks = this.marks
+    let oldMarks = this.marks, ignore = false
     for (let i = 0; i < styles.length; i += 2) {
       let rule = this.parser.matchStyle(styles[i], styles[i + 1])
       if (!rule) continue
-      if (rule.ignore) return
-      marks = this.parser.schema.marks[rule.mark].create(rule.attrs).addToSet(marks)
+      if (rule.ignore) { ignore = true; break }
+      this.addMark(this.parser.schema.marks[rule.mark].create(rule.attrs))
     }
-    this.marks = marks
-    this.addElement(dom)
+    if (!ignore) this.addElement(dom)
     this.marks = oldMarks
   }
 
@@ -433,21 +299,20 @@ class DOMParseState {
     if (rule.ignore) return true
 
     let sync, before, nodeType, markType
-    let contentDOM = (rule.contentElement && dom.querySelector(rule.contentElement)) || dom
-
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
       if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs))
-      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
+      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace) && this.top
     } else {
       markType = this.parser.schema.marks[rule.mark]
       before = this.addMark(markType.create(rule.attrs))
     }
 
-    if (markType || !nodeType.isLeaf) {
+    if (rule.mark || !nodeType.isLeaf) {
+      let contentDOM = (rule.contentElement && dom.querySelector(rule.contentElement)) || dom
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, sync)
-      if (sync) this.sync(sync.prev)
+      if (sync) { this.sync(sync); this.open-- }
       else if (before) this.marks = before
       this.findAround(dom, contentDOM, true)
     } else {
@@ -473,71 +338,109 @@ class DOMParseState {
     this.findAtPoint(parent, index)
   }
 
+  // Try to find a way to fit the given node type into the current
+  // context. May add intermediate wrappers and/or leave non-solid
+  // nodes that we're in.
+  findPlace(type, attrs) {
+    let route, sync
+    for (let depth = this.open; depth >= 0; depth--) {
+      let node = this.nodes[depth], found = node.match.findWrapping(type, attrs)
+      if (found && (!route || route.length > found.length)) {
+        route = found
+        sync = node
+        if (!found.length) break
+      }
+      if (node.solid) break
+    }
+    if (!route) return false
+    this.sync(sync)
+    for (let i = 0; i < route.length; i++)
+      this.enterInner(route[i].type, route[i].attrs, false)
+    return true
+  }
+
   // : (Node) → ?Node
   // Try to insert the given node, adjusting the context when needed.
   insertNode(node) {
-    let ok = this.top.findPlace(node.type, node.attrs, node)
-    if (ok) {
-      this.sync(ok)
-      return true
+    if (this.findPlace(node.type, node.attrs)) {
+      this.closeExtra()
+      let top = this.top
+      let match = top.match.matchNode(node)
+      if (!match) {
+        node = node.mark(node.marks.filter(mark => top.match.allowsMark(mark.type)))
+        match = top.match.matchNode(node)
+      }
+      top.match = match
+      top.content.push(node)
     }
   }
 
-  // : (NodeType, ?Object) → ?NodeBuilder
+  // : (NodeType, ?Object) → bool
   // Try to start a node of the given type, adjusting the context when
   // necessary.
-  enter(type, attrs, preserveWhitespace) {
-    let ok = this.top.findPlace(type, attrs, null, preserveWhitespace)
-    if (ok) {
-      this.sync(ok)
-      return ok
+  enter(type, attrs, preserveWS) {
+    let ok = this.findPlace(type, attrs)
+    if (ok) this.enterInner(type, attrs, true, preserveWS)
+    return ok
+  }
+
+  // Open a node of the given type
+  enterInner(type, attrs, solid, preserveWS) {
+    this.closeExtra()
+    let top = this.top
+    top.match = top.match.matchType(type, attrs)
+    this.nodes.push(new NodeContext(type, attrs, solid, null,
+                                    preserveWS == null ? top.preserveWS : preserveWS))
+    this.open++
+  }
+
+  // Make sure all nodes above this.open are finished and added to
+  // their parents
+  closeExtra() {
+    let i = this.nodes.length - 1
+    if (i > this.open) {
+      this.marks = Mark.none
+      for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish())
+      this.nodes.length = this.open + 1
     }
   }
 
-  // : ()
-  // Leave the node currently at the top.
-  leave() {
-    this.top = this.top.prev
+  finish() {
+    this.open = 0
+    this.closeExtra()
+    return this.nodes[0].finish()
   }
 
   sync(to) {
-    for (;;) {
-      for (let cur = to; cur; cur = cur.prev) if (cur == this.top) {
-        this.top = to
-        return
-      }
-      this.leave()
+    for (let i = this.open; i >= 0; i--) if (this.nodes[i] == to) {
+      this.open = i
+      return
     }
   }
 
-  // Kludge to work around directly nested list nodes produced by some
-  // tools and allowed by browsers to mean that the nested list is
-  // actually part of the list item above it.
-  normalizeList(dom) {
-    for (let child = dom.firstChild, prevItem = null; child; child = child.nextSibling) {
-      let name = child.nodeType == 1 ? child.nodeName.toLowerCase() : null
-      if (name && listTags.hasOwnProperty(name) && prevItem) {
-        prevItem.appendChild(child)
-        child = prevItem
-      } else if (name == "li") {
-        prevItem = child
-      } else if (name) {
-        prevItem = null
-      }
+  get currentPos() {
+    this.closeExtra()
+    let pos = 0
+    for (let i = this.open; i >= 0; i--) {
+      let content = this.nodes[i].content
+      for (let j = content.length - 1; j >= 0; j--)
+        pos += content[j].nodeSize
+      if (i) pos++
     }
+    return pos
   }
 
   findAtPoint(parent, offset) {
     if (this.find) for (let i = 0; i < this.find.length; i++) {
       if (this.find[i].node == parent && this.find[i].offset == offset)
-        this.find[i].pos = this.top.currentPos
+        this.find[i].pos = this.currentPos
     }
   }
 
   findInside(parent) {
     if (this.find) for (let i = 0; i < this.find.length; i++) {
       if (this.find[i].pos == null && parent.contains(this.find[i].node))
-        this.find[i].pos = this.top.currentPos
+        this.find[i].pos = this.currentPos
     }
   }
 
@@ -546,7 +449,7 @@ class DOMParseState {
       if (this.find[i].pos == null && parent.contains(this.find[i].node)) {
         let pos = content.compareDocumentPosition(this.find[i].node)
         if (pos & (before ? 2 : 4))
-          this.find[i].pos = this.top.currentPos
+          this.find[i].pos = this.currentPos
       }
     }
   }
@@ -554,7 +457,24 @@ class DOMParseState {
   findInText(textNode) {
     if (this.find) for (let i = 0; i < this.find.length; i++) {
       if (this.find[i].node == textNode)
-        this.find[i].pos = this.top.currentPos - (textNode.nodeValue.length - this.find[i].offset)
+        this.find[i].pos = this.currentPos - (textNode.nodeValue.length - this.find[i].offset)
+    }
+  }
+}
+
+// Kludge to work around directly nested list nodes produced by some
+// tools and allowed by browsers to mean that the nested list is
+// actually part of the list item above it.
+function normalizeList(dom) {
+  for (let child = dom.firstChild, prevItem = null; child; child = child.nextSibling) {
+    let name = child.nodeType == 1 ? child.nodeName.toLowerCase() : null
+    if (name && listTags.hasOwnProperty(name) && prevItem) {
+      prevItem.appendChild(child)
+      child = prevItem
+    } else if (name == "li") {
+      prevItem = child
+    } else if (name) {
+      prevItem = null
     }
   }
 }
