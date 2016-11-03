@@ -12,8 +12,20 @@ class ContentExpr {
     return this.elements.length == 0
   }
 
+  // : (?Object) → ContentMatch
+  // The content match at the start of this expression.
   start(attrs) {
     return new ContentMatch(this, attrs, 0, 0)
+  }
+
+  // : (NodeType, ?Object, ?Object) → ?ContentMatch
+  // Try to find a match that matches the given node, anywhere in the
+  // expression. (Useful when synthesizing a match for a node that's
+  // open to the left.)
+  atType(parentAttrs, type, attrs, marks = Mark.none) {
+    for (let i = 0; i < this.elements.length; i++)
+      if (this.elements[i].matchesType(type, attrs, marks, parentAttrs, this))
+        return new ContentMatch(this, parentAttrs, i, 0)
   }
 
   matches(attrs, fragment, from, to) {

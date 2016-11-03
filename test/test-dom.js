@@ -1,6 +1,6 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
 const ist = require("ist")
-const {DOMParser, DOMSerializer} = require("../dist")
+const {DOMParser, DOMSerializer, Slice, Fragment} = require("../dist")
 
 // declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
@@ -82,6 +82,10 @@ describe("DOMParser", () => {
        recover("<ol><p>Oh no</p></ol>",
                doc(ol(li(p("Oh no"))))))
 
+    it("wraps a list item in a list",
+       recover("<li>hey</li>",
+               doc(ol(li(p("hey"))))))
+
     it("can turn divs into paragraphs",
        recover("<div>hi</div><div>bye</div>",
                doc(p("hi"), p("bye"))))
@@ -149,6 +153,55 @@ describe("DOMParser", () => {
     it("ignores unknown inline tags",
        recover("<p><u>a</u>bc</p>",
                doc(p("abc"))))
+
+    function parse(html, options, doc) {
+      return () => {
+        let dom = document.createElement("div")
+        dom.innerHTML = html
+        let result = parser.parse(dom, options)
+        ist(result, doc, eq)
+      }
+    }
+
+    it("accepts the topNode option",
+       parse("<li>wow</li><li>such</li>", {topNode: schema.nodes.bullet_list.createAndFill()},
+             ul(li(p("wow")), li(p("such")))))
+
+    it("accepts the topStart option",
+       parse("<ul><li>x</li></ul>", {topNode: schema.nodes.list_item.createAndFill(), topStart: 1},
+             li(ul(li(p("x"))))))
+
+    it("accepts from and to options",
+       parse("<hr><p>foo</p><p>bar</p><img>", {from: 1, to: 3},
+             doc(p("foo"), p("bar"))))
+
+    it("accepts the preserveWhitespace option",
+       parse("foo   bar", {preserveWhitespace: true},
+             doc(p("foo   bar"))))
+
+    function open(html, nodes, openLeft, openRight) {
+      return () => {
+        let dom = document.createElement("div")
+        dom.innerHTML = html
+        let result = parser.parseOpen(dom)
+        ist(result, new Slice(Fragment.from(nodes.map(n => typeof n == "string" ? schema.text(n) : n)), openLeft, openRight), eq)
+      }
+    }
+
+    it("can parse an open slice",
+       open("foo", ["foo"], 0, 0))
+
+    it("will accept weird siblings",
+       open("foo<p>bar</p>", ["foo", p("bar")], 0, 1))
+
+    it("will open all the way to the inner nodes",
+       open("<ul><li>foo</li><li>bar<br></li></ul>", [ul(li(p("foo")), li(p("bar", br)))], 3, 3))
+
+    it("accepts content open to the left",
+       open("<li><ul><li>a</li></ul></li>", [li(ul(li(p("a"))))], 4, 4))
+
+    it("accepts content open to the right",
+       open("<li>foo</li><li></li>", [li(p("foo")), li()], 2, 1))
 
     function find(html, doc) {
       return () => {

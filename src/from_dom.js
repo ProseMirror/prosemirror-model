@@ -1,4 +1,5 @@
 const {Fragment} = require("./fragment")
+const {Slice} = require("./replace")
 const {Mark} = require("./mark")
 
 // ParseRule:: interface
@@ -105,9 +106,26 @@ class DOMParser {
   //     the topnode. When given, should be a valid index into
   //     `topNode`.
   parse(dom, options = {}) {
-    let context = new ParseContext(this, options)
+    let context = new ParseContext(this, options, false)
     context.addAll(dom, null, options.from, options.to)
     return context.finish()
+  }
+
+  // :: (dom.Node, ?Object) → Slice
+  // Parses the content of the given DOM node, like
+  // [`parse`](#model.DOMParser.parse), and takes the same set of
+  // options. But unlike that method, which produces a whole node,
+  // this one returns a slice that is open at the sides, meaning that
+  // the schema constraints aren't applied to the start of nodes to
+  // the left of the input and the end of nodes at the end.
+  parseOpen(dom, options = {}) {
+    let context = new ParseContext(this, options, true)
+    context.addAll(dom, null, options.from, options.to)
+    let content = context.finish()
+    let openLeft = 0, openRight = 0
+    for (let n = content.firstChild; n && !n.isLeaf; n = n.firstChild) openLeft++
+    for (let n = content.lastChild; n && !n.isLeaf; n = n.lastChild) openRight++
+    return new Slice(content, openLeft, openRight)
   }
 
   matchTag(dom) {
@@ -187,18 +205,38 @@ const ignoreTags = {
 // : Object<bool> List tags.
 const listTags = {ol: true, ul: true}
 
+// Using a bitfield for node context options
+const OPT_PRESERVE_WS = 1, OPT_OPEN_LEFT = 2
+
 class NodeContext {
-  constructor(type, attrs, solid, match, preserveWS) {
+  constructor(type, attrs, solid, match, options) {
     this.type = type
     this.attrs = attrs
     this.solid = solid
-    this.match = match || type.contentExpr.start(attrs)
-    this.preserveWS = preserveWS
+    this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentExpr.start(attrs))
+    this.options = options
     this.content = []
   }
 
+  findWrapping(type, attrs) {
+    if (!this.match) {
+      if (!this.type) return []
+      let found = this.type.contentExpr.atType(this.attrs, type, attrs)
+      if (!found) {
+        let start = this.type.contentExpr.start(this.attrs), wrap
+        if (wrap = start.findWrapping(type, attrs)) {
+          this.match = start
+          return wrap
+        }
+      }
+      if (found) this.match = found
+      else return null
+    }
+    return this.match.findWrapping(type, attrs)
+  }
+
   finish(openRight) {
-    if (!this.preserveWS) { // Strip trailing whitespace
+    if (!(this.options & OPT_PRESERVE_WS)) { // Strip trailing whitespace
       let last = this.content[this.content.length - 1], m
       if (last && last.isText && (m = /\s+$/.exec(last.text))) {
         if (last.text.length == m[0].length) this.content.pop()
@@ -206,24 +244,29 @@ class NodeContext {
       }
     }
     let content = Fragment.from(this.content)
-    if (!openRight) content = content.append(this.match.fillBefore(Fragment.empty, true))
-    return this.type.create(this.match.attrs, content)
+    if (!openRight && this.match)
+      content = content.append(this.match.fillBefore(Fragment.empty, true))
+    return this.type ? this.type.create(this.attrs, content) : content
   }
 }
 
 class ParseContext {
   // : (DOMParser, Object)
-  constructor(parser, options) {
+  constructor(parser, options, open) {
     // : DOMParser The parser we are using.
     this.parser = parser
     // : Object The options passed to this parse.
     this.options = options
+    this.isOpen = open
     let topNode = options.topNode, topContext
+    let topOptions = (options.preserveWhitespace ? OPT_PRESERVE_WS : 0) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
       topContext = new NodeContext(topNode.type, topNode.attrs, true,
-                                   topNode.contentMatchAt(options.topStart || 0), options.preserveWhitespace)
+                                   topNode.contentMatchAt(options.topStart || 0), topOptions)
+    else if (open)
+      topContext = new NodeContext(null, null, true, null, topOptions)
     else
-      topContext = new NodeContext(parser.schema.nodes.doc, null, true, null, options.preserveWhitespace)
+      topContext = new NodeContext(parser.schema.nodes.doc, null, true, null, topOptions)
     this.nodes = [topContext]
     // : [Mark] The current set of marks
     this.marks = Mark.none
@@ -265,8 +308,8 @@ class ParseContext {
   addTextNode(dom) {
     let value = dom.nodeValue
     let top = this.top
-    if (top.type.isTextblock || /\S/.test(value)) {
-      if (!top.preserveWS) {
+    if (!top.type || top.type.isTextblock || /\S/.test(value)) {
+      if (!(top.options & OPT_PRESERVE_WS)) {
         value = value.replace(/\s+/g, " ")
         // If this starts with whitespace, and there is either no node
         // before it or a node that ends with whitespace, strip the
@@ -373,7 +416,8 @@ class ParseContext {
   findPlace(type, attrs) {
     let route, sync
     for (let depth = this.open; depth >= 0; depth--) {
-      let node = this.nodes[depth], found = node.match.findWrapping(type, attrs)
+      let node = this.nodes[depth]
+      let found = node.findWrapping(type, attrs)
       if (found && (!route || route.length > found.length)) {
         route = found
         sync = node
@@ -394,12 +438,14 @@ class ParseContext {
     if (this.findPlace(node.type, node.attrs)) {
       this.closeExtra()
       let top = this.top
-      let match = top.match.matchNode(node)
-      if (!match) {
-        node = node.mark(node.marks.filter(mark => top.match.allowsMark(mark.type)))
-        match = top.match.matchNode(node)
+      if (top.match) {
+        let match = top.match.matchNode(node)
+        if (!match) {
+          node = node.mark(node.marks.filter(mark => top.match.allowsMark(mark.type)))
+          match = top.match.matchNode(node)
+        }
+        top.match = match
       }
-      top.match = match
       top.content.push(node)
     }
   }
@@ -417,27 +463,28 @@ class ParseContext {
   enterInner(type, attrs, solid, preserveWS) {
     this.closeExtra()
     let top = this.top
-    top.match = top.match.matchType(type, attrs)
-    this.nodes.push(new NodeContext(type, attrs, solid, null,
-                                    preserveWS == null ? top.preserveWS : preserveWS))
+    top.match = top.match && top.match.matchType(type, attrs)
+    let options = preserveWS == null ? top.options & OPT_PRESERVE_WS : preserveWS ? OPT_PRESERVE_WS : 0
+    if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
+    this.nodes.push(new NodeContext(type, attrs, solid, null, options))
     this.open++
   }
 
   // Make sure all nodes above this.open are finished and added to
   // their parents
-  closeExtra() {
+  closeExtra(openRight) {
     let i = this.nodes.length - 1
     if (i > this.open) {
       this.marks = Mark.none
-      for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish())
+      for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish(openRight))
       this.nodes.length = this.open + 1
     }
   }
 
   finish() {
     this.open = 0
-    this.closeExtra()
-    return this.nodes[0].finish()
+    this.closeExtra(this.isOpen)
+    return this.nodes[0].finish(this.isOpen || this.options.topOpen)
   }
 
   sync(to) {
