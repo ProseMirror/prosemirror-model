@@ -321,17 +321,17 @@ class ContentMatch {
     return this.element.allowsMark(markType)
   }
 
-  // :: (NodeType, ?Object) → ?[{type: NodeType, attrs: Object}]
+  // :: (NodeType, ?Object, ?[Mark]) → ?[{type: NodeType, attrs: Object}]
   // Find a set of wrapping node types that would allow a node of type
   // `target` with attributes `targetAttrs` to appear at this
   // position. The result may be empty (when it fits directly) and
   // will be null when no such wrapping exists.
-  findWrapping(target, targetAttrs) {
+  findWrapping(target, targetAttrs, targetMarks) {
     // FIXME find out how expensive this is. Try to reintroduce caching?
     let seen = Object.create(null), first = {match: this, via: null}, active = [first]
     while (active.length) {
       let current = active.shift(), match = current.match
-      if (match.matchType(target, targetAttrs)) {
+      if (match.matchType(target, targetAttrs, targetMarks)) {
         let result = []
         for (let obj = current; obj != first; obj = obj.via)
           result.push({type: obj.match.expr.nodeType, attrs: obj.match.attrs})
@@ -347,6 +347,13 @@ class ContentMatch {
         }
       }
     }
+  }
+
+  // :: (Node) → ?[{type: NodeType, attrs: Object}]
+  // Call [`findWrapping`](#model.ContentMatch.findWrapping) with the
+  // properties of the given node.
+  findWrappingFor(node) {
+    return this.findWrapping(node.type, node.attrs, node.marks)
   }
 }
 exports.ContentMatch = ContentMatch
