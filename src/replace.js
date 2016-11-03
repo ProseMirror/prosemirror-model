@@ -82,6 +82,16 @@ class Slice {
     if (!json) return Slice.empty
     return new Slice(Fragment.fromJSON(schema, json.content), json.openLeft, json.openRight)
   }
+
+  // :: (Fragment) → Slice
+  // Create a slice from a fragment by taking the maximum possible
+  // open value on both side of the fragment.
+  static maxOpen(fragment) {
+    let openLeft = 0, openRight = 0
+    for (let n = fragment.firstChild; n && !n.isLeaf; n = n.firstChild) openLeft++
+    for (let n = fragment.lastChild; n && !n.isLeaf; n = n.lastChild) openRight++
+    return new Slice(fragment, openLeft, openRight)
+  }
 }
 exports.Slice = Slice
 

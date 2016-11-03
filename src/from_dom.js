@@ -121,11 +121,7 @@ class DOMParser {
   parseOpen(dom, options = {}) {
     let context = new ParseContext(this, options, true)
     context.addAll(dom, null, options.from, options.to)
-    let content = context.finish()
-    let openLeft = 0, openRight = 0
-    for (let n = content.firstChild; n && !n.isLeaf; n = n.firstChild) openLeft++
-    for (let n = content.lastChild; n && !n.isLeaf; n = n.lastChild) openRight++
-    return new Slice(content, openLeft, openRight)
+    return Slice.maxOpen(context.finish())
   }
 
   matchTag(dom) {
