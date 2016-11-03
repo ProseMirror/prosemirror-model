@@ -160,7 +160,7 @@ class Node {
     if (from == to) return Slice.empty
 
     let $from = this.resolve(from), $to = this.resolve(to)
-    let depth = $from.sameDepth($to), start = $from.start(depth), node = $from.node(depth)
+    let depth = $from.sharedDepth(to), start = $from.start(depth), node = $from.node(depth)
     let content = node.content.cut($from.pos - start, $to.pos - start)
     return new Slice(content, $from.depth - depth, $to.depth - depth, node)
   }

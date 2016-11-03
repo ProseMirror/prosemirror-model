@@ -114,13 +114,13 @@ class ResolvedPos {
     return index == 0 ? null : this.parent.child(index - 1)
   }
 
-  // :: (ResolvedPos) → number
-  // The depth up to which this position and the other share the same
-  // parent nodes.
-  sameDepth(other) {
-    let depth = 0, max = Math.min(this.depth, other.depth)
-    while (depth < max && this.index(depth) == other.index(depth)) ++depth
-    return depth
+  // :: (number) → number
+  // The depth up to which this position and the given (non-resolved)
+  // position share the same parent nodes.
+  sharedDepth(pos) {
+    for (let depth = this.depth; depth > 0; depth--)
+      if (this.start(depth) <= pos && this.end(depth) >= pos) return depth
+    return 0
   }
 
   // :: (?ResolvedPos, ?(Node) → bool) → ?NodeRange
