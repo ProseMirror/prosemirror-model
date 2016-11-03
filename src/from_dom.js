@@ -74,10 +74,36 @@ class DOMParser {
   }
 
   // :: (dom.Node, ?Object) → Node
-  // Parse a document from the content of a DOM node. To provide an
-  // explicit parent document (for example, when not in a browser
-  // window environment, where we simply use the global document),
-  // pass it as the `document` property of `options`.
+  // Parse a document from the content of a DOM node.
+  //
+  //   options::- Configuration options.
+  //
+  //     preserveWhitespace:: ?bool
+  //     By default, whitespace is collapsed as per HTML's rules. Pass
+  //     true here to prevent the parser from doing that.
+  //
+  //     findPositions:: ?[{node: dom.Node, offset: number}]
+  //     When given, the parser will, beside parsing the content,
+  //     record the document positions of the given DOM positions. It
+  //     will do so by writing to the objects, adding a `pos` property
+  //     that holds the document position. DOM positions that are not
+  //     in the parsed content will not be written to.
+  //
+  //     from:: ?number
+  //     The child node index to start parsing from.
+  //
+  //     to:: ?number
+  //     The child node index to stop parsing at.
+  //
+  //     topNode:: ?Node
+  //     By default, the content is parsed into a `doc` node. You can
+  //     pass this option to use the type and attributes from a
+  //     different node as the top container.
+  //
+  //     topStart:: ?number
+  //     Can be used to influence the content match at the start of
+  //     the topnode. When given, should be a valid index into
+  //     `topNode`.
   parse(dom, options = {}) {
     let context = new ParseContext(this, options)
     context.addAll(dom, null, options.from, options.to)
@@ -192,10 +218,13 @@ class ParseContext {
     this.parser = parser
     // : Object The options passed to this parse.
     this.options = options
-    let topNode = options.topNode
-    this.nodes = [new NodeContext(topNode ? topNode.type : parser.schema.nodes.doc,
-                                  topNode ? topNode.atts : null,
-                                  true, null, options.preserveWhitespace)]
+    let topNode = options.topNode, topContext
+    if (topNode)
+      topContext = new NodeContext(topNode.type, topNode.attrs, true,
+                                   topNode.contentMatchAt(options.topStart || 0), options.preserveWhitespace)
+    else
+      topContext = new NodeContext(parser.schema.nodes.doc, null, true, null, options.preserveWhitespace)
+    this.nodes = [topContext]
     // : [Mark] The current set of marks
     this.marks = Mark.none
     this.open = 0
