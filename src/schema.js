@@ -285,6 +285,16 @@ exports.MarkType = MarkType
 //   Can be used to indicate that this node contains code, which
 //   causes some commands to behave differently.
 //
+//   defining:: ?bool
+//   Determines whether this node is considered an important parent
+//   node during replace operations (such as paste). Non-defining (the
+//   default) nodes get dropped when their entire content is replaced,
+//   whereas defining nodes persist and wrap the inserted content.
+//   Likewise, the the _inserted_ content, when not inserting into a
+//   textblock, the defining parents of the content are preserved.
+//   Typically, non-default-paragraph textblock types, and possible
+//   list items, are marked as defining.
+//
 //   toDOM:: ?(Node) → DOMOutputSpec
 //   Defines the default way a node of this type should be serialized
 //   to DOM/HTML (as used by

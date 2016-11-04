@@ -16,6 +16,7 @@ exports.schema = new Schema({
     blockquote: {
       content: "block+",
       group: "block",
+      defining: true,
       parseDOM: [{tag: "blockquote"}],
       toDOM() { return ["blockquote", 0] }
     },
@@ -30,6 +31,7 @@ exports.schema = new Schema({
       attrs: {level: {default: 1}},
       content: "inline<_>*",
       group: "block",
+      defining: true,
       parseDOM: [{tag: "h1", attrs: {level: 1}},
                  {tag: "h2", attrs: {level: 2}},
                  {tag: "h3", attrs: {level: 3}},
@@ -43,6 +45,7 @@ exports.schema = new Schema({
       content: "text*",
       group: "block",
       code: true,
+      defining: true,
       parseDOM: [{tag: "pre", preserveWhitespace: true}],
       toDOM() { return ["pre", ["code", 0]] }
     },
@@ -68,6 +71,7 @@ exports.schema = new Schema({
 
     list_item: {
       content: "paragraph block*",
+      defining: true,
       parseDOM: [{tag: "li"}],
       toDOM() { return ["li", 0] }
     },
