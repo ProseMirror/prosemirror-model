@@ -31,30 +31,11 @@ class Slice {
   }
 
   insertAt(pos, fragment) {
-    function insertInto(content, dist, insert, parent) {
-      let {index, offset} = content.findIndex(dist), child = content.maybeChild(index)
-      if (offset == dist || child.isText) {
-        if (parent && !parent.canReplace(index, index, insert)) return null
-        return content.cut(0, dist).append(insert).append(content.cut(dist))
-      }
-      let inner = insertInto(child.content, dist - offset - 1, insert)
-      return inner && content.replaceChild(index, child.copy(inner))
-    }
     let content = insertInto(this.content, pos + this.openLeft, fragment, null)
     return content && new Slice(content, this.openLeft, this.openRight)
   }
 
   removeBetween(from, to) {
-    function removeRange(content, from, to) {
-      let {index, offset} = content.findIndex(from), child = content.maybeChild(index)
-      let {index: indexTo, offset: offsetTo} = content.findIndex(to)
-      if (offset == from || child.isText) {
-        if (offsetTo != to && !content.child(indexTo).isText) throw new RangeError("Removing non-flat range")
-        return content.cut(0, from).append(content.cut(to))
-      }
-      if (index != indexTo) throw new RangeError("Removing non-flat range")
-      return content.replaceChild(index, child.copy(removeRange(child.content, from - offset - 1, to - offset - 1)))
-    }
     return new Slice(removeRange(this.content, from + this.openLeft, to + this.openLeft), this.openLeft, this.openRight)
   }
 
@@ -93,6 +74,27 @@ class Slice {
   }
 }
 exports.Slice = Slice
+
+function removeRange(content, from, to) {
+  let {index, offset} = content.findIndex(from), child = content.maybeChild(index)
+  let {index: indexTo, offset: offsetTo} = content.findIndex(to)
+  if (offset == from || child.isText) {
+    if (offsetTo != to && !content.child(indexTo).isText) throw new RangeError("Removing non-flat range")
+    return content.cut(0, from).append(content.cut(to))
+  }
+  if (index != indexTo) throw new RangeError("Removing non-flat range")
+  return content.replaceChild(index, child.copy(removeRange(child.content, from - offset - 1, to - offset - 1)))
+}
+
+function insertInto(content, dist, insert, parent) {
+  let {index, offset} = content.findIndex(dist), child = content.maybeChild(index)
+  if (offset == dist || child.isText) {
+    if (parent && !parent.canReplace(index, index, insert)) return null
+    return content.cut(0, dist).append(insert).append(content.cut(dist))
+  }
+  let inner = insertInto(child.content, dist - offset - 1, insert)
+  return inner && content.replaceChild(index, child.copy(inner))
+}
 
 // :: Slice
 // The empty slice.
