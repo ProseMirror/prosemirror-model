@@ -118,7 +118,7 @@ class DOMParser {
   // this one returns a slice that is open at the sides, meaning that
   // the schema constraints aren't applied to the start of nodes to
   // the left of the input and the end of nodes at the end.
-  parseOpen(dom, options = {}) {
+  parseSlice(dom, options = {}) {
     let context = new ParseContext(this, options, true)
     context.addAll(dom, null, options.from, options.to)
     return Slice.maxOpen(context.finish())

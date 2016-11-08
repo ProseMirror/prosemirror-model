@@ -183,7 +183,7 @@ describe("DOMParser", () => {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
-        let result = parser.parseOpen(dom)
+        let result = parser.parseSlice(dom)
         ist(result, new Slice(Fragment.from(nodes.map(n => typeof n == "string" ? schema.text(n) : n)), openLeft, openRight), eq)
       }
     }
