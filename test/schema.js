@@ -24,7 +24,7 @@ exports.schema = new Schema({
     horizontal_rule: {
       group: "block",
       parseDOM: [{tag: "hr"}],
-      toDOM() { return ["div", ["hr"]] }
+      toDOM() { return ["hr"] }
     },
 
     heading: {
