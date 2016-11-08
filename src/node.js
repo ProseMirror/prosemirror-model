@@ -156,13 +156,14 @@ class Node {
   // :: (number, ?number) → Slice
   // Cut out the part of the document between the given positions, and
   // return it as a `Slice` object.
-  slice(from, to = this.content.size) {
+  slice(from, to = this.content.size, includeParents = false) {
     if (from == to) return Slice.empty
 
     let $from = this.resolve(from), $to = this.resolve(to)
-    let depth = $from.sharedDepth(to), start = $from.start(depth), node = $from.node(depth)
+    let depth = includeParents ? 0 : $from.sharedDepth(to)
+    let start = $from.start(depth), node = $from.node(depth)
     let content = node.content.cut($from.pos - start, $to.pos - start)
-    return new Slice(content, $from.depth - depth, $to.depth - depth, node)
+    return new Slice(content, $from.depth - depth, $to.depth - depth)
   }
 
   // :: (number, number, Slice) → Node

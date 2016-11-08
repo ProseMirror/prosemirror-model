@@ -73,5 +73,11 @@ describe("Node", () => {
     it("can cut between deeply nested nodes", () =>
        t(doc(blockquote(p("foo<a>bar"), ul(li(p("a")), li(p("b"), "<b>", p("c"))), p("d"))),
          blockquote(p("bar"), ul(li(p("a")), li(p("b")))), 1, 2))
+
+    it("can include parents", () => {
+      let d = doc(blockquote(p("fo<a>o"), p("bar<b>")))
+      let slice = d.slice(d.tag.a, d.tag.b, true)
+      ist(slice.toString(), '<blockquote(paragraph("o"), paragraph("bar"))>(2,2)')
+    })
   })
 })
