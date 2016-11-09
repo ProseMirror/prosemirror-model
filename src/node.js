@@ -70,9 +70,11 @@ class Node {
   forEach(f) { this.content.forEach(f) }
 
   // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number))
-  // Iterate over all nodes between the given two positions, calling
-  // the callback with the node, its position, its parent
-  // node, and its index in that node.
+  // Invoke a callback for all descendant nodes recursively between
+  // the given two positions that are relative to the parent node.
+  // The callback is invoked with the node, its parent-relative position, 
+  // its parent node, and its child index. If the callback returns false, 
+  // the current node's children will not be recursed over.
   nodesBetween(from, to, f, pos = 0) {
     this.content.nodesBetween(from, to, f, pos, this)
   }
