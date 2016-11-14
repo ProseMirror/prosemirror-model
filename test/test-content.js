@@ -61,16 +61,16 @@ describe("ContentExpr", () => {
              {types: ["heading"], attrs: {level: ".level"}, min: 0, max: Infinity}))
 
     it("accepts undescore syntax for marks", () =>
-       parse("text<_>", {types: ["text"], marks: true}))
+       parse("hard_break<_>", {types: ["hard_break"], marks: true}))
 
     it("accepts syntax for specific marks", () =>
-       parse("text<strong em>", {types: ["text"], marks: ["strong", "em"]}))
+       parse("hard_break<strong em>", {types: ["hard_break"], marks: ["strong", "em"]}))
 
     it("recognizes the pipe operator", () =>
-       parse("(text | image | hard_break)", {types: ["text", "image", "hard_break"]}))
+       parse("(hard_break | text | image)", {types: ["text", "image", "hard_break"]}))
 
     it("can apply a plus sign to a group", () =>
-       parse("(text | image | hard_break)+",
+       parse("(hard_break | text | image)+",
              {types: ["text", "image", "hard_break"], max: Infinity}))
 
     it("understands groups", () =>
@@ -125,8 +125,8 @@ describe("ContentExpr", () => {
     it("matches multiple elements to an asterisk", () => valid("image*", p(img, img, img, img, img)))
     it("only matches appropriate elements to an asterisk", () => invalid("image*", p(img, "text")))
 
-    it("matches group members to a group", () => valid("inline", p(img)))
-    it("doesn't match non-members to a group", () => invalid("inline", doc(p())))
+    it("matches group members to a group", () => valid("inline*", p(img)))
+    it("doesn't match non-members to a group", () => invalid("inline*", doc(p())))
     it("matches multiple group members to an asterisk", () => valid("inline*", p(img, "text")))
     it("matches an element to a pipe expression", () => valid("(paragraph | heading)", doc(p())))
     it("doesn't match unmentioned elements to a pipe expr", () => invalid("(paragraph | heading)", p(img)))

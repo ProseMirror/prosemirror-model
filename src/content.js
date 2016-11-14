@@ -104,7 +104,7 @@ class ContentExpr {
       let attrSet = !attrs ? null : parseAttrs(nodeType, attrs[1])
       let markSet = !marks ? false : marks[1] ? true : checkMarks(nodeType.schema, marks[2].split(/\s+/))
       let {min, max} = parseRepeat(nodeType, repeat)
-      if (min != 0 && nodeTypes[0].hasRequiredAttrs(attrSet))
+      if (min != 0 && (nodeTypes[0].hasRequiredAttrs(attrSet) || nodeTypes[0].isText))
         throw new SyntaxError("Node type " + types[0] + " in type " + nodeType.name +
                               " is required, but has non-optional attributes")
       let newElt = new ContentElement(nodeTypes, attrSet, markSet, min, max)
@@ -169,7 +169,8 @@ class ContentElement {
   }
 
   defaultType() {
-    return this.nodeTypes[0].defaultAttrs && this.nodeTypes[0]
+    let first = this.nodeTypes[0]
+    if (!(first.hasRequiredAttrs() || first.isText)) return first
   }
 
   overlaps(other) {
@@ -307,7 +308,7 @@ class ContentMatch {
       let elt = this.expr.elements[i], attrs = elt.constrainedAttrs(this.attrs, this.expr)
       if (count < this.resolveValue(elt.max)) for (let j = 0; j < elt.nodeTypes.length; j++) {
         let type = elt.nodeTypes[j]
-        if (!type.hasRequiredAttrs(attrs)) found.push({type, attrs})
+        if (!type.hasRequiredAttrs(attrs) && !type.isText) found.push({type, attrs})
       }
       if (this.resolveValue(elt.min) > count) break
     }
