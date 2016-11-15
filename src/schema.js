@@ -305,7 +305,7 @@ exports.MarkType = MarkType
 //   be inserted.
 //
 //   parseDOM:: ?[ParseRule]
-//   Associates DOM parser information with this node, which an be
+//   Associates DOM parser information with this node, which can be
 //   used by [`DOMParser.fromSchema`](#model.DOMParser^fromSchema) to
 //   automatically derive a parser. The `node` field in the rules is
 //   implied (the name of this node will be filled in automatically).
