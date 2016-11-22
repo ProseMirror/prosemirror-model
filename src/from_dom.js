@@ -28,6 +28,10 @@ const {Mark} = require("./mark")
 //   ignore:: ?bool
 //   When true, ignore content that matches this rule.
 //
+//   skip:: ?bool
+//   When true, ignore the node that matches this rule, but do parse
+//   its content.
+//
 //   attrs:: ?Object
 //   Attributes for the node or mark created by this rule. When
 //   `getAttrs` is provided, it takes precedence.
@@ -48,6 +52,11 @@ const {Mark} = require("./mark")
 //   or node. If the child nodes are in a descendent node, this may be
 //   a CSS selector string that the parser must use to find the actual
 //   content element.
+//
+//   getContent:: ?(dom.Node) → Fragment
+//   Can be used to override the content of a matched node. Will be
+//   called, and its result used, instead of parsing the node's child
+//   node.
 //
 //   preserveWhitespace:: ?bool
 //   Controls whether whitespace should be preserved when parsing the
@@ -289,12 +298,7 @@ class ParseContext {
   addDOM(dom) {
     if (dom.nodeType == 3) {
       this.addTextNode(dom)
-    } else if (dom.nodeType != 1 || dom.hasAttribute("pm-ignore")) {
-      // Ignore
-    } else if (dom.hasAttribute("pm-decoration")) {
-      for (let child = dom.firstChild; child; child = child.nextSibling)
-        this.addDOM(child)
-    } else {
+    } else if (dom.nodeType == 1) {
       let style = dom.getAttribute("style")
       if (style) this.addElementWithStyles(parseStyles(style), dom)
       else this.addElement(dom)
@@ -323,22 +327,22 @@ class ParseContext {
     }
   }
 
-  // : (dom.Node)
+  // : (dom.Element)
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
   addElement(dom) {
     let name = dom.nodeName.toLowerCase()
     if (listTags.hasOwnProperty(name)) normalizeList(dom)
-    // Ignore trailing BR nodes, which browsers create during editing
-    if (this.options.editableContent && name == "br" && !dom.nextSibling) return
-    if (!this.parseNodeType(dom, name)) {
-      if (ignoreTags.hasOwnProperty(name)) {
-        this.findInside(dom)
-      } else {
-        let sync = blockTags.hasOwnProperty(name) && this.top
-        this.addAll(dom)
-        if (sync) this.sync(sync)
-      }
+    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom)
+    if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
+      this.findInside(dom)
+    } else if (!rule || rule.skip) {
+      if (rule && rule.skip.nodeType) dom = rule.skip
+      let sync = blockTags.hasOwnProperty(name) && this.top
+      this.addAll(dom)
+      if (sync) this.sync(sync)
+    } else {
+      this.addElementByRule(dom, rule)
     }
   }
 
@@ -357,34 +361,35 @@ class ParseContext {
     this.marks = oldMarks
   }
 
-  // (dom.Node, string) → bool
+  // : (dom.Element, ParseRule) → bool
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
-  parseNodeType(dom) {
-    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom)
-    if (!rule) return false
-    if (rule.ignore) return true
-
-    let sync, before, nodeType, markType
+  addElementByRule(dom, rule) {
+    let sync, before, nodeType, markType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
-      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs))
+      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs, null, this.marks))
       else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace) && this.top
     } else {
       markType = this.parser.schema.marks[rule.mark]
-      before = this.addMark(markType.create(rule.attrs))
+      before = this.addMark(mark = markType.create(rule.attrs))
     }
 
-    if (rule.mark || !nodeType.isLeaf) {
-      let contentDOM = (rule.contentElement && dom.querySelector(rule.contentElement)) || dom
+    if (nodeType && nodeType.isLeaf) {
+      this.findInside(dom)
+    } else if (rule.getContent) {
+      this.findInside(dom)
+      rule.getContent(dom).forEach(node => this.insertNode(mark ? node.mark(mark.addToSet(node.marks)) : node))
+    } else {
+      let contentDOM = rule.contentElement
+      if (typeof contentDOM == "string") contentDOM = dom.querySelector(contentDOM)
+      if (!contentDOM) contentDOM = dom
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, sync)
       if (sync) { this.sync(sync); this.open-- }
       else if (before) this.marks = before
       this.findAround(dom, contentDOM, true)
-    } else {
-      this.findInside(dom)
     }
     return true
   }

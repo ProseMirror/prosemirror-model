@@ -70,6 +70,10 @@ describe("DOMParser", () => {
        test(doc(blockquote(pre("some code")), p("and")),
             "<blockquote><pre><code>some code</code></pre></blockquote><p>and</p>"))
 
+    it("supports leaf nodes in marks",
+       test(doc(p(em("hi", br, "x"))),
+            "<p><em>hi<br>x</em></p>"))
+
     function recover(html, doc) {
       return () => {
         let dom = document.createElement("div")
