@@ -83,12 +83,15 @@ class DOMSerializer {
     return this.renderStructure(this.marks[mark.type.name](mark), null, options)
   }
 
-  renderStructure(structure, node, options) {
+  // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}
+  // Render an [output spec](##model.DOMOutputSpec).
+  static renderSpec(doc, structure) {
     if (typeof structure == "string")
-      return doc(options).createTextNode(structure)
+      return {dom: doc.createTextNode(structure)}
     if (structure.nodeType != null)
-      return structure
-    let dom = doc(options).createElement(structure[0]), attrs = structure[1], start = 1
+      return {dom: structure}
+    let dom = doc.createElement(structure[0]), contentDOM = null
+    let attrs = structure[1], start = 1
     if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
       start = 2
       for (let name in attrs) {
@@ -99,17 +102,31 @@ class DOMSerializer {
     for (let i = start; i < structure.length; i++) {
       let child = structure[i]
       if (child === 0) {
-        if (!node || node.isLeaf)
-          throw new RangeError("Content hole not allowed in a mark or leaf node spec (must produce a single node)")
         if (i < structure.length - 1 || i > start)
           throw new RangeError("Content hole must be the only child of its parent node")
-        if (options.onContent)
-          options.onContent(node, dom, options)
-        else
-          this.serializeFragment(node.content, options, dom)
+        return {dom, contentDOM: dom}
       } else {
-        dom.appendChild(this.renderStructure(child, node, options))
+        let {dom: inner, contentDOM: innerContent} = DOMSerializer.renderSpec(doc, child)
+        dom.appendChild(inner)
+        if (innerContent) {
+          if (contentDOM) throw new RangeError("Multiple content holes")
+          contentDOM = innerContent
+        }
       }
+    }
+    return {dom, contentDOM}
+  }
+
+  renderStructure(structure, node, options) {
+    let {dom, contentDOM} = DOMSerializer.renderSpec(doc(options), structure)
+    if (node && !node.isLeaf) {
+      if (!contentDOM) throw new RangeError("No content hole in template for non-leaf node")
+      if (options.onContent)
+        options.onContent(node, contentDOM, options)
+      else
+        this.serializeFragment(node.content, options, contentDOM)
+    } else if (contentDOM) {
+      throw new RangeError("Content hole not allowed in a mark or leaf node spec")
     }
     return dom
   }
