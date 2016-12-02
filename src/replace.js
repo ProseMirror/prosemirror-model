@@ -114,11 +114,14 @@ function replaceOuter($from, $to, slice, depth) {
   if (index == $to.index(depth) && depth < $from.depth - slice.openLeft) {
     let inner = replaceOuter($from, $to, slice, depth + 1)
     return node.copy(node.content.replaceChild(index, inner))
-  } else if (slice.content.size) {
+  } else if (!slice.content.size) {
+    return close(node, replaceTwoWay($from, $to, depth))
+  } else if (!slice.openLeft && !slice.openRight && $from.depth == depth && $to.depth == depth) { // Simple, flat case
+    let parent = $from.parent, content = parent.content
+    return close(parent, content.cut(0, $from.parentOffset).append(slice.content).append(content.cut($to.parentOffset)))
+  } else {
     let {start, end} = prepareSliceForReplace(slice, $from)
     return close(node, replaceThreeWay($from, start, end, $to, depth))
-  } else {
-    return close(node, replaceTwoWay($from, $to, depth))
   }
 }
 
