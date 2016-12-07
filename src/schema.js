@@ -352,7 +352,7 @@ class Schema {
   constructor(spec) {
     // :: OrderedMap<NodeSpec> The node specs that the schema is based on.
     this.nodeSpec = OrderedMap.from(spec.nodes)
-    // :: OrderedMap<constructor<MarkType>> The mark spec that the schema is based on.
+    // :: OrderedMap<MarkSpec> The mark spec that the schema is based on.
     this.markSpec = OrderedMap.from(spec.marks)
 
     // :: Object<NodeType>
