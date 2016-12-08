@@ -27,7 +27,7 @@ class Fragment {
     }
   }
 
-  // : (number, number, ?string, ?string) → string
+  // :: (number, number, ?string, ?string) → string
   textBetween(from, to, blockSeparator, leafText) {
     let text = "", separated = true
     this.nodesBetween(from, to, (node, pos) => {
@@ -101,14 +101,14 @@ class Fragment {
     return new Fragment(copy, size)
   }
 
-  // (Node) → Fragment
+  // :: (Node) → Fragment
   // Create a new fragment by prepending the given node to this
   // fragment.
   addToStart(node) {
     return new Fragment([node].concat(this.content), this.size + node.nodeSize)
   }
 
-  // (Node) → Fragment
+  // :: (Node) → Fragment
   // Create a new fragment by appending the given node to this
   // fragment.
   addToEnd(node) {
@@ -186,7 +186,7 @@ class Fragment {
     return findDiffEnd(this, other, pos, otherPos)
   }
 
-  // : (number, ?number) → {index: number, offset: number}
+  // :: (number, ?number) → {index: number, offset: number}
   // Find the index and inner offset corresponding to a given relative
   // position in this fragment. The result object will be reused
   // (overwritten) the next time the function is called. (Not public.)
