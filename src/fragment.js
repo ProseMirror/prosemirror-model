@@ -101,14 +101,14 @@ class Fragment {
     return new Fragment(copy, size)
   }
 
-  // (Node) → Fragment
+  // : (Node) → Fragment
   // Create a new fragment by prepending the given node to this
   // fragment.
   addToStart(node) {
     return new Fragment([node].concat(this.content), this.size + node.nodeSize)
   }
 
-  // (Node) → Fragment
+  // : (Node) → Fragment
   // Create a new fragment by appending the given node to this
   // fragment.
   addToEnd(node) {
