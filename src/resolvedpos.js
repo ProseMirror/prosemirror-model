@@ -1,3 +1,5 @@
+let warnedAboutBoundary = false
+
 // ::- You'll often have to '[resolve](#model.Node.resolve)' a
 // position to get the context you need. Objects of this class
 // represent such a resolved position, providing various pieces of
@@ -48,7 +50,7 @@ class ResolvedPos {
   // given level.
   indexAfter(depth) {
     depth = this.resolveDepth(depth)
-    return this.index(depth) + (depth == this.depth && this.atNodeBoundary ? 0 : 1)
+    return this.index(depth) + (depth == this.depth && !this.textOffset ? 0 : 1)
   }
 
   // :: (?number) → number
@@ -87,10 +89,19 @@ class ResolvedPos {
     return depth == this.depth + 1 ? this.pos : this.path[depth * 3 - 1] + this.path[depth * 3].nodeSize
   }
 
-  // :: bool
-  // True if this position points at a node boundary, false if it
-  // points into a text node.
-  get atNodeBoundary() { return this.path[this.path.length - 1] == this.pos }
+  get atNodeBoundary() {
+    if (!warnedAboutBoundary && typeof console != "undefined") {
+      warnedAboutBoundary = true
+      console.warn("ResolvedPos.atNodeBoundary is deprecated. Use textOffset > 0 instead")
+    }
+    return !this.textOffset
+  }
+
+  // :: number
+  // When this position points into a text node, this returns the
+  // distance between the position and the start of the text node.
+  // Will be zero for positions that point between nodes.
+  get textOffset() { return this.pos - this.path[this.path.length - 1] }
 
   // :: ?Node
   // Get the node directly after the position, if any. If the position

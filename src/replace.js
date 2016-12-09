@@ -151,13 +151,13 @@ function addRange($start, $end, depth, target) {
     startIndex = $start.index(depth)
     if ($start.depth > depth) {
       startIndex++
-    } else if (!$start.atNodeBoundary) {
+    } else if ($start.textOffset) {
       addNode($start.nodeAfter, target)
       startIndex++
     }
   }
   for (let i = startIndex; i < endIndex; i++) addNode(node.child(i), target)
-  if ($end && $end.depth == depth && !$end.atNodeBoundary)
+  if ($end && $end.depth == depth && $end.textOffset)
     addNode($end.nodeBefore, target)
 }
 
