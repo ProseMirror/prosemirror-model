@@ -25,6 +25,13 @@ const {Mark} = require("./mark")
 //   mark:: ?string
 //   The name of the mark type to wrap the matched content in.
 //
+//   priority:: ?number
+//   Can be used to change the order in which the parse rules in a
+//   schema are tried. Those with higher priority come first. Rules
+//   without a priority are counted as having priority 50. This
+//   property is only meaningful in a schema—when directly
+//   constructing a parser, the order of the rule array is used.
+//
 //   ignore:: ?bool
 //   When true, ignore content that matches this rule.
 //
@@ -166,17 +173,26 @@ class DOMParser {
   // specs](#model.NodeSpec.parseDOM).
   static schemaRules(schema) {
     let result = []
+    function insert(rule) {
+      let priority = rule.priority == null ? 50 : rule.priority, i = 0
+      for (; i < result.length; i++) {
+        let next = result[i], nextPriority = next.priority == null ? 50 : next.priority
+        if (nextPriority < priority) break
+      }
+      result.splice(i, 0, rule)
+    }
+
     for (let name in schema.marks) {
       let rules = schema.marks[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
-        result.push(rule = copy(rule))
+        insert(rule = copy(rule))
         rule.mark = name
       })
     }
     for (let name in schema.nodes) {
       let rules = schema.nodes[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
-        result.push(rule = copy(rule))
+        insert(rule = copy(rule))
         rule.node = name
       })
     }

@@ -1,6 +1,6 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
 const ist = require("ist")
-const {DOMParser, DOMSerializer, Slice, Fragment} = require("../dist")
+const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("../dist")
 
 // declare global: window
 let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
@@ -255,5 +255,29 @@ describe("DOMParser", () => {
     it("can find a position at the end of the document",
        find("<p>hi</p><var></var>",
             doc(p("hi"), "<a>")))
+  })
+
+  describe("schemaRules", () => {
+    it("defaults to schema order", () => {
+      let schema = new Schema({
+        marks: {em: {parseDOM: [{tag: "i"}, {tag: "em"}]}},
+        nodes: {doc: {content: "inline*"},
+                text: {group: "inline"},
+                foo: {group: "inline", inline: true, parseDOM: [{tag: "foo"}]},
+                bar: {group: "inline", inline: true, parseDOM: [{tag: "bar"}]}}
+      })
+      ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "i em foo bar")
+    })
+
+    it("understands priority", () => {
+      let schema = new Schema({
+        marks: {em: {parseDOM: [{tag: "i", priority: 40}, {tag: "em", priority: 70}]}},
+        nodes: {doc: {content: "inline*"},
+                text: {group: "inline"},
+                foo: {group: "inline", inline: true, parseDOM: [{tag: "foo"}]},
+                bar: {group: "inline", inline: true, parseDOM: [{tag: "bar", priority: 60}]}}
+      })
+      ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
+    })
   })
 })
