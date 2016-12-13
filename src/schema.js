@@ -397,12 +397,12 @@ class Schema {
     return type.createChecked(attrs, content, marks)
   }
 
-  // :: (string, ?[Mark]) → Node
+  // :: (text: string, ?[Mark]) → Node
   // Create a text node in the schema. Empty text nodes are not
   // allowed.
-  text(text, marks) {
+  text(content, marks) {
     let type = this.nodes.text
-    return new TextNode(type, type.defaultAttrs, text, Mark.setFrom(marks))
+    return new TextNode(type, type.defaultAttrs, content, Mark.setFrom(marks))
   }
 
   // :: (union<string, MarkType>, ?Object) → Mark
