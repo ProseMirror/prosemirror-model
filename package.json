@@ -16,7 +16,7 @@
     "url": "git://github.com/prosemirror/prosemirror-model.git"
   },
   "devDependencies": {
-    "buble": "~0.14.0",
+    "buble": "^0.15.1",
     "mocha": "^3.0.2",
     "ist": "1.0.0",
     "jsdom": "^8.0.4",
@@ -24,7 +24,7 @@
   },
   "scripts": {
     "test": "mocha test/test-*.js",
-    "build": "rimraf dist && buble -i src -o dist",
+    "build": "rimraf dist && buble -i src -o dist --no-named-function-expr",
     "prepublish": "npm run build"
   }
 }
