@@ -1,5 +1,3 @@
-let warnedAboutBoundary = false
-
 // ::- You'll often have to '[resolve](#model.Node.resolve)' a
 // position to get the context you need. Objects of this class
 // represent such a resolved position, providing various pieces of
@@ -87,14 +85,6 @@ class ResolvedPos {
     depth = this.resolveDepth(depth)
     if (!depth) throw new RangeError("There is no position after the top-level node")
     return depth == this.depth + 1 ? this.pos : this.path[depth * 3 - 1] + this.path[depth * 3].nodeSize
-  }
-
-  get atNodeBoundary() {
-    if (!warnedAboutBoundary && typeof console != "undefined") {
-      warnedAboutBoundary = true
-      console.warn("ResolvedPos.atNodeBoundary is deprecated. Use textOffset > 0 instead")
-    }
-    return !this.textOffset
   }
 
   // :: number
