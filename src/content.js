@@ -222,8 +222,7 @@ class ContentMatch {
   // Match a node type and marks, returning an match after that node
   // if successful.
   matchType(type, attrs, marks = Mark.none) {
-    // FIXME `var` to work around Babel bug T7293
-    for (var {index, count} = this; index < this.expr.elements.length; index++, count = 0) {
+    for (let {index, count} = this; index < this.expr.elements.length; index++, count = 0) {
       let elt = this.expr.elements[index], max = this.resolveValue(elt.max)
       if (count < max && elt.matchesType(type, attrs, marks, this.attrs, this.expr)) {
         count++
@@ -328,7 +327,6 @@ class ContentMatch {
   // position. The result may be empty (when it fits directly) and
   // will be null when no such wrapping exists.
   findWrapping(target, targetAttrs, targetMarks) {
-    // FIXME find out how expensive this is. Try to reintroduce caching?
     let seen = Object.create(null), first = {match: this, via: null}, active = [first]
     while (active.length) {
       let current = active.shift(), match = current.match
