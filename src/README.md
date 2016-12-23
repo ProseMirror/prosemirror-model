@@ -41,8 +41,6 @@ appear.
 
 @ContentMatch
 
-@OrderedMap
-
 ### DOM Representation
 
 Because representing a document as a tree of DOM nodes is central to

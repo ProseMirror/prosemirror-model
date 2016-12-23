@@ -1,8 +1,9 @@
+const OrderedMap = require("orderedmap")
+
 const {Node, TextNode} = require("./node")
 const {Fragment} = require("./fragment")
 const {Mark} = require("./mark")
 const {ContentExpr} = require("./content")
-const {OrderedMap} = require("./orderedmap")
 
 // For node types where all attrs have a default value (or which don't
 // have any attributes), build up a single reusable default attribute
