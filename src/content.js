@@ -243,7 +243,7 @@ class ContentMatch {
     for (var {index, count} = this; index < end; index++, count = 0) {
       let elt = this.expr.elements[index], max = this.resolveValue(elt.max)
 
-      while (count < max) {
+      while (count < max && fragPos < to) {
         if (elt.matches(fragment.child(fragPos), this.attrs, this.expr)) {
           count++
           if (++fragPos == to) return this.move(index, count)
