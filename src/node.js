@@ -230,7 +230,8 @@ class Node {
     // In an empty parent, return the empty array
     if (parent.content.size == 0) return Mark.none
     // When inside a text node or at the start of the parent node, return the node's marks
-    if (useAfter || index == 0 || $pos.textOffset) return parent.child(index).marks
+    if ((useAfter && index < parent.childCount) || index == 0 || $pos.textOffset)
+      return parent.child(index).marks
 
     let marks = parent.child(index - 1).marks
     for (var i = 0; i < marks.length; i++) if (marks[i].type.spec.inclusiveRight === false)
