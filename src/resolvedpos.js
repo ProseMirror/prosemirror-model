@@ -1,3 +1,5 @@
+const {Mark} = require("./mark")
+
 // ::- You'll often have to '[resolve](#model.Node.resolve)' a
 // position to get the context you need. Objects of this class
 // represent such a resolved position, providing various pieces of
@@ -113,6 +115,26 @@ class ResolvedPos {
     let dOff = this.pos - this.path[this.path.length - 1]
     if (dOff) return this.parent.child(index).cut(0, dOff)
     return index == 0 ? null : this.parent.child(index - 1)
+  }
+
+  // :: (?bool) → [Mark]
+  // Get the marks at this position, factoring in the surrounding
+  // marks' inclusiveRight property. If the position is at the start
+  // of a non-empty node, or `after` is true, the marks of the node
+  // after it (if any) are returned.
+  marks(after) {
+    let parent = this.parent, index = this.index()
+
+    // In an empty parent, return the empty array
+    if (parent.content.size == 0) return Mark.none
+    // When inside a text node or at the start of the parent node, return the node's marks
+    if ((after && index < parent.childCount) || index == 0 || this.textOffset)
+      return parent.child(index).marks
+
+    let marks = parent.child(index - 1).marks
+    for (var i = 0; i < marks.length; i++) if (marks[i].type.spec.inclusiveRight === false)
+      marks = marks[i--].removeFromSet(marks)
+    return marks
   }
 
   // :: (number) → number

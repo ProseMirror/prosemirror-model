@@ -85,9 +85,9 @@ describe("Mark", () => {
                            [link("http://foo")])))
   })
 
-  describe("marksAt", () => {
+  describe("ResolvedPos.marks", () => {
     function isAt(doc, mark, result) {
-      ist(mark.isInSet(doc.marksAt(doc.tag.a)), result)
+      ist(mark.isInSet(doc.resolve(doc.tag.a).marks()), result)
     }
 
     it("recognizes a mark exists inside marked text", () =>

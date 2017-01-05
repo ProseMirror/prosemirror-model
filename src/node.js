@@ -6,6 +6,8 @@ const {compareDeep} = require("./comparedeep")
 
 const emptyAttrs = Object.create(null)
 
+let warnedAboutMarksAt = false
+
 // ::- This class represents a node in the tree that makes up a
 // ProseMirror document. So a document is an instance of `Node`, with
 // children that are also instances of `Node`.
@@ -219,24 +221,12 @@ class Node {
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
-  // :: (number, ?bool) → [Mark]
-  // Get the marks at the given position factoring in the surrounding
-  // marks' inclusiveRight property. If the position is at the start
-  // of a non-empty node, or `useAfter` is true, the marks of the node
-  // after it are returned.
   marksAt(pos, useAfter) {
-    let $pos = this.resolve(pos), parent = $pos.parent, index = $pos.index()
-
-    // In an empty parent, return the empty array
-    if (parent.content.size == 0) return Mark.none
-    // When inside a text node or at the start of the parent node, return the node's marks
-    if ((useAfter && index < parent.childCount) || index == 0 || $pos.textOffset)
-      return parent.child(index).marks
-
-    let marks = parent.child(index - 1).marks
-    for (var i = 0; i < marks.length; i++) if (marks[i].type.spec.inclusiveRight === false)
-      marks = marks[i--].removeFromSet(marks)
-    return marks
+    if (!warnedAboutMarksAt && typeof console != "undefined" && console.warn) {
+      warnedAboutMarksAt = true
+      console.warn("Node.marksAt is deprecated. Use ResolvedPos.marks instead.")
+    }
+    return this.resolve(pos).marks(useAfter)
   }
 
   // :: (?number, ?number, MarkType) → bool
