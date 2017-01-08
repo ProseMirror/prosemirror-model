@@ -160,6 +160,7 @@ class NodeType {
 
     if (!result.doc) throw new RangeError("Every schema needs a 'doc' type")
     if (!result.text) throw new RangeError("Every schema needs a 'text' type")
+    for (let _ in result.text.attrs) throw new RangeError("The text node type should not have attributes")
 
     return result
   }
