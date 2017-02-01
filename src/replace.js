@@ -7,6 +7,7 @@ class ReplaceError extends Error {
     super(message)
     this.message = message
   }
+  get name() { return "ReplaceError" }
 }
 exports.ReplaceError = ReplaceError
 
