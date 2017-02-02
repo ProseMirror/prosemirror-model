@@ -78,7 +78,9 @@ class Mark {
 
   // :: (Schema, Object) → Mark
   static fromJSON(schema, json) {
-    return schema.marks[json.type].create(json.attrs)
+    let type = schema.marks[json.type]
+    if (!type) throw new RangeError(`There is no mark type ${json.type} in this schema`)
+    return type.create(json.attrs)
   }
 
   // :: ([Mark], [Mark]) → bool

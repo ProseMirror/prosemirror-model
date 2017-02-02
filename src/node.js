@@ -332,7 +332,9 @@ class Node {
   static fromJSON(schema, json) {
     let marks = json.marks && json.marks.map(schema.markFromJSON)
     if (json.type == "text") return schema.text(json.text, marks)
-    return schema.nodeType(json.type).create(json.attrs, Fragment.fromJSON(schema, json.content), marks)
+    let type = schema.nodeType(json.type)
+    if (!type) throw new RangeError(`There is no node type ${json.type} in this schema`)
+    return type.create(json.attrs, Fragment.fromJSON(schema, json.content), marks)
   }
 }
 exports.Node = Node
