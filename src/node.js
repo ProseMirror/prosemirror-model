@@ -312,6 +312,15 @@ class Node {
     return elt && elt.defaultType()
   }
 
+  // :: ()
+  // Check whether this node and its descendants conform to the
+  // schema, and raise error when they do not.
+  check() {
+    if (!this.type.validContent(this.content, this.attrs))
+      throw new RangeError(`Invalid content for node ${this.type.name}: ${this.content.toString().slice(0, 50)}`)
+    this.content.forEach(node => node.check())
+  }
+
   // :: () → Object
   // Return a JSON-serializeable representation of this node.
   toJSON() {
