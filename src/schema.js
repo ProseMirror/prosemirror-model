@@ -207,6 +207,7 @@ class MarkType {
     this.attrs = initAttrs(spec.attrs)
 
     this.rank = rank
+    this.exclusiveWith = spec.exclusiveWith || [name]
     let defaults = defaultAttrs(this.attrs)
     this.instance = defaults && new Mark(this, defaults)
   }

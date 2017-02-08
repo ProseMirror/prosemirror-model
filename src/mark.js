@@ -23,25 +23,36 @@ class Mark {
   // attributes is already in the set, a set in which it is replaced
   // by this one is returned.
   addToSet(set) {
-    for (var i = 0; i < set.length; i++) {
-      var other = set[i]
-      if (other.type == this.type) {
-        if (this.eq(other)) return set
-        let copy = set.slice()
-        copy[i] = this
-        return copy
+    let copy, placed = false
+    for (let i = 0; i < set.length; i++) {
+      let other = set[i]
+      if (this.eq(other)) return set
+      if (this.exclusiveWith(other)) {
+        if (!copy) copy = set.slice(0, i)
+      } else {
+        if (!placed && other.type.rank > this.type.rank) {
+          if (!copy) copy = set.slice(0, i)
+          copy.push(this)
+          placed = true
+        }
+        if (copy) copy.push(other)
       }
-      if (other.type.rank > this.type.rank)
-        return set.slice(0, i).concat(this).concat(set.slice(i))
     }
-    return set.concat(this)
+    if (!copy) copy = set.slice()
+    if (!placed) copy.push(this)
+    return copy
+  }
+
+  // : Mark → bool
+  exclusiveWith(mark) {
+    return mark.type == this.type
   }
 
   // :: ([Mark]) → [Mark]
   // Remove this mark from the given set, returning a new set. If this
   // mark is not in the set, the set itself is returned.
   removeFromSet(set) {
-    for (var i = 0; i < set.length; i++)
+    for (let i = 0; i < set.length; i++)
       if (this.eq(set[i]))
         return set.slice(0, i).concat(set.slice(i + 1))
     return set
@@ -59,10 +70,8 @@ class Mark {
   // Test whether this mark has the same type and attributes as
   // another mark.
   eq(other) {
-    if (this == other) return true
-    if (this.type != other.type) return false
-    if (!compareDeep(other.attrs, this.attrs)) return false
-    return true
+    return this == other ||
+      (this.type == other.type && compareDeep(this.attrs, other.attrs))
   }
 
   // :: () → Object
@@ -99,7 +108,7 @@ class Mark {
   static setFrom(marks) {
     if (!marks || marks.length == 0) return Mark.none
     if (marks instanceof Mark) return [marks]
-    var copy = marks.slice()
+    let copy = marks.slice()
     copy.sort((a, b) => a.type.rank - b.type.rank)
     return copy
   }
