@@ -6,8 +6,6 @@ const {compareDeep} = require("./comparedeep")
 
 const emptyAttrs = Object.create(null)
 
-let warnedAboutMarksAt = false
-
 // ::- This class represents a node in the tree that makes up a
 // ProseMirror document. So a document is an instance of `Node`, with
 // children that are also instances of `Node`.
@@ -220,14 +218,6 @@ class Node {
   resolve(pos) { return ResolvedPos.resolveCached(this, pos) }
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
-
-  marksAt(pos, useAfter) {
-    if (!warnedAboutMarksAt && typeof console != "undefined" && console.warn) {
-      warnedAboutMarksAt = true
-      console.warn("Node.marksAt is deprecated. Use ResolvedPos.marks instead.")
-    }
-    return this.resolve(pos).marks(useAfter)
-  }
 
   // :: (?number, ?number, MarkType) → bool
   // Test whether a mark of the given type occurs in this document
