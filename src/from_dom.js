@@ -330,7 +330,7 @@ class ParseContext {
         // If this starts with whitespace, and there is either no node
         // before it or a node that ends with whitespace, strip the
         // leading space.
-        if (/^\s/.test(value)) {
+        if (/^\s/.test(value) && this.open == this.nodes.length - 1) {
           let nodeBefore = top.content[top.content.length - 1]
           if (!nodeBefore || nodeBefore.isText && /\s$/.test(nodeBefore.text))
             value = value.slice(1)
