@@ -253,6 +253,14 @@ class Node {
   // True when this is a leaf node.
   get isLeaf() { return this.type.isLeaf }
 
+  // :: bool
+  // True when this is an atom, i.e. when it does not have directly
+  // editable content. This is usually the same as `isLeaf`, but can
+  // be configured with the [`leaf` property](#model.NodeSpec.leaf) on
+  // a node's spec (typically when the node is displayed as an
+  // uneditable [node view](#view.NodeView)).
+  get isAtom() { return this.type.isAtom }
+
   // :: () → string
   // Return a string representation of this node for debugging
   // purposes.

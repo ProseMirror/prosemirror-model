@@ -88,6 +88,11 @@ class NodeType {
   // True for node types that allow no content.
   get isLeaf() { return this.contentExpr.isLeaf }
 
+  // :: bool
+  // True when this node is an atom, i.e. when it does not have
+  // directly editable content.
+  get isAtom() { return this.isLeaf || this.spec.atom }
+
   hasRequiredAttrs(ignore) {
     for (let n in this.attrs)
       if (this.attrs[n].isRequired && (!ignore || !(n in ignore))) return true
@@ -266,6 +271,11 @@ exports.MarkType = MarkType
 //   inline:: ?bool
 //   Should be set to a truthy value for inline nodes. (Implied for
 //   text nodes.)
+//
+//   atom:: ?bool
+//   Can be set to true to indicate that, though this isn't a [leaf
+//   node](#model.NodeType.isLeaf), it doesn't have directly editable
+//   content and should be treated as a single unit in the view.
 //
 //   attrs:: ?Object<AttributeSpec>
 //   The attributes that nodes of this type get.
