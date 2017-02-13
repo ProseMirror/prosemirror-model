@@ -207,7 +207,7 @@ class MarkType {
     this.attrs = initAttrs(spec.attrs)
 
     this.rank = rank
-    this.exclusiveWith = spec.exclusiveWith || [name]
+    this.excluded = spec.excludes || [name]
     let defaults = defaultAttrs(this.attrs)
     this.instance = defaults && new Mark(this, defaults)
   }
@@ -242,6 +242,16 @@ class MarkType {
   isInSet(set) {
     for (let i = 0; i < set.length; i++)
       if (set[i].type == this) return set[i]
+  }
+
+  // :: MarkType → bool
+  excludes(other) {
+    let name = other.name, group = other.spec.group
+    for (let i = 0; i < this.excluded.length; i++) {
+      let exclude = this.excluded[i]
+      if (exclude == "_" || exclude == name || exclude == group) return true
+    }
+    return false
   }
 }
 exports.MarkType = MarkType
@@ -333,6 +343,21 @@ exports.MarkType = MarkType
 //   inclusiveRight:: ?bool
 //   Whether this mark should be active when the cursor is positioned
 //   at the end of the mark. Defaults to true.
+//
+//   excludes:: ?[string]
+//   Determines which other marks this mark can coexist with. Should
+//   be an array of strings naming other marks or groups of marks.
+//   When a mark is [added](#model.mark.addToSet) to a set, all marks
+//   that it excludes are removed in the process. If the set contains
+//   any mark that excludes the new mark but is not, itself, excluded
+//   by the new mark, the mark can not be added an the set. You can
+//   use the value `["_"]` to indicate that the mark excludes all
+//   marks in the schema.
+//
+//   Defaults to only being exclusive with marks of the same type. You
+//   can set it to an empty array (or any array not containing the
+//   mark's own name) to allow multiple marks of a given type to
+//   coexist (as long as they have different attributes).
 //
 //   toDOM:: ?(mark: Mark) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized

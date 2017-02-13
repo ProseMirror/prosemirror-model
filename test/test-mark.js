@@ -1,4 +1,4 @@
-const {Mark} = require("../dist")
+const {Mark, Schema} = require("../dist")
 const {schema, doc, p, em, a} = require("./build")
 const ist = require("ist")
 
@@ -40,31 +40,65 @@ describe("Mark", () => {
 
   describe("addToSet", () => {
     it("can add to the empty set", () =>
-       ist(Mark.sameSet(em_.addToSet([]), [em_])))
+       ist(em_.addToSet([]), [em_], Mark.sameSet))
 
     it("is a no-op when the added thing is in set", () =>
-       ist(Mark.sameSet(em_.addToSet([em_]), [em_])))
+       ist(em_.addToSet([em_]), [em_], Mark.sameSet))
 
     it("adds marks with lower rank before others", () =>
-       ist(Mark.sameSet(em_.addToSet([strong]), [em_, strong])))
+       ist(em_.addToSet([strong]), [em_, strong], Mark.sameSet))
 
     it("adds marks with higher rank after others", () =>
-       ist(Mark.sameSet(strong.addToSet([em_]), [em_, strong])))
+       ist(strong.addToSet([em_]), [em_, strong], Mark.sameSet))
 
     it("replaces different marks with new attributes", () =>
-       ist(Mark.sameSet(link("http://bar").addToSet([em_, link("http://foo")]),
-                        [em_, link("http://bar")])))
+       ist(link("http://bar").addToSet([em_, link("http://foo")]),
+           [em_, link("http://bar")], Mark.sameSet))
 
     it("does nothing when adding an existing link", () =>
-       ist(Mark.sameSet(link("http://foo").addToSet([em_, link("http://foo")]),
-                        [em_, link("http://foo")])))
+       ist(link("http://foo").addToSet([em_, link("http://foo")]),
+           [em_, link("http://foo")], Mark.sameSet))
 
     it("puts code marks at the end", () =>
-       ist(Mark.sameSet(code.addToSet([em_, strong, link("http://foo")]),
-                        [em_, strong, link("http://foo"), code])))
+       ist(code.addToSet([em_, strong, link("http://foo")]),
+           [em_, strong, link("http://foo"), code], Mark.sameSet))
 
     it("puts marks with middle rank in the middle", () =>
-       ist(Mark.sameSet(strong.addToSet([em_, code]), [em_, strong, code])))
+       ist(strong.addToSet([em_, code]), [em_, strong, code], Mark.sameSet))
+
+    let custom = new Schema({
+      nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text<_>*"}, text: {}},
+      marks: {
+        remark: {attrs: {id: {}}, excludes: []},
+        user: {attrs: {id: {}}, excludes: ["_"]},
+        strong: {excludes: ["em"]},
+        em: {}
+      }
+    }).marks
+    let remark1 = custom.remark.create({id: 1}), remark2 = custom.remark.create({id: 2}),
+        user1 = custom.user.create({id: 1}), user2 = custom.user.create({id: 2}),
+        customEm = custom.em.create(), customStrong = custom.strong.create()
+
+    it("allows nonexclusive instances of marks with the same type", () =>
+       ist(remark2.addToSet([remark1]), [remark1, remark2], Mark.sameSet))
+
+    it("doesn't duplicate identical instances of nonexclusive marks", () =>
+       ist(remark1.addToSet([remark1]), [remark1], Mark.sameSet))
+
+    it("clears all others when adding a globally-excluding mark", () =>
+       ist(user1.addToSet([remark1, customEm]), [user1], Mark.sameSet))
+
+    it("does not allow adding another mark to a globally-excluding mark", () =>
+       ist(customEm.addToSet([user1]), [user1], Mark.sameSet))
+
+    it("does overwrite a globally-excluding mark when adding another instance", () =>
+       ist(user2.addToSet([user1]), [user2], Mark.sameSet))
+
+    it("doesn't add anything when another mark excludes the added mark", () =>
+       ist(customEm.addToSet([remark1, customStrong]), [remark1, customStrong], Mark.sameSet))
+
+    it("remove excluded marks when adding a mark", () =>
+       ist(customStrong.addToSet([remark1, customEm]), [remark1, customStrong], Mark.sameSet))
   })
 
   describe("removeFromSet", () => {

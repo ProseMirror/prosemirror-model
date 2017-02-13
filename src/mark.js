@@ -27,8 +27,10 @@ class Mark {
     for (let i = 0; i < set.length; i++) {
       let other = set[i]
       if (this.eq(other)) return set
-      if (this.exclusiveWith(other)) {
+      if (this.type.excludes(other.type)) {
         if (!copy) copy = set.slice(0, i)
+      } else if (other.type.excludes(this.type)) {
+        return set
       } else {
         if (!placed && other.type.rank > this.type.rank) {
           if (!copy) copy = set.slice(0, i)
@@ -41,11 +43,6 @@ class Mark {
     if (!copy) copy = set.slice()
     if (!placed) copy.push(this)
     return copy
-  }
-
-  // : Mark → bool
-  exclusiveWith(mark) {
-    return mark.type == this.type
   }
 
   // :: ([Mark]) → [Mark]
