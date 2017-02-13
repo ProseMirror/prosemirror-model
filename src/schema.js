@@ -207,7 +207,7 @@ class MarkType {
     this.attrs = initAttrs(spec.attrs)
 
     this.rank = rank
-    this.excluded = spec.excludes || [name]
+    this.excluded = null
     let defaults = defaultAttrs(this.attrs)
     this.instance = defaults && new Mark(this, defaults)
   }
@@ -246,12 +246,7 @@ class MarkType {
 
   // :: MarkType → bool
   excludes(other) {
-    let name = other.name, group = other.spec.group
-    for (let i = 0; i < this.excluded.length; i++) {
-      let exclude = this.excluded[i]
-      if (exclude == "_" || exclude == name || exclude == group) return true
-    }
-    return false
+    return this.excluded.indexOf(other) > -1
   }
 }
 exports.MarkType = MarkType
@@ -344,20 +339,23 @@ exports.MarkType = MarkType
 //   Whether this mark should be active when the cursor is positioned
 //   at the end of the mark. Defaults to true.
 //
-//   excludes:: ?[string]
+//   excludes:: ?string
 //   Determines which other marks this mark can coexist with. Should
-//   be an array of strings naming other marks or groups of marks.
+//   be a space-separated strings naming other marks or groups of marks.
 //   When a mark is [added](#model.mark.addToSet) to a set, all marks
 //   that it excludes are removed in the process. If the set contains
 //   any mark that excludes the new mark but is not, itself, excluded
 //   by the new mark, the mark can not be added an the set. You can
-//   use the value `["_"]` to indicate that the mark excludes all
+//   use the value `"_"` to indicate that the mark excludes all
 //   marks in the schema.
 //
 //   Defaults to only being exclusive with marks of the same type. You
-//   can set it to an empty array (or any array not containing the
+//   can set it to an empty string (or any string not containing the
 //   mark's own name) to allow multiple marks of a given type to
 //   coexist (as long as they have different attributes).
+//
+//   group:: ?string
+//   The group or space-separated groups to which this node belongs.
 //
 //   toDOM:: ?(mark: Mark) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized
@@ -406,6 +404,10 @@ class Schema {
         throw new RangeError(prop + " can not be both a node and a mark")
       let type = this.nodes[prop]
       type.contentExpr = ContentExpr.parse(type, this.nodeSpec.get(prop).content || "", this.nodeSpec)
+    }
+    for (let prop in this.marks) {
+      let type = this.marks[prop], excl = type.spec.excludes
+      type.excluded = excl == null ? [type] : excl == "" ? [] : ContentExpr.gatherMarks(this, excl.split(" "))
     }
 
     // :: Object

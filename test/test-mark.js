@@ -69,10 +69,10 @@ describe("Mark", () => {
     let custom = new Schema({
       nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text<_>*"}, text: {}},
       marks: {
-        remark: {attrs: {id: {}}, excludes: []},
-        user: {attrs: {id: {}}, excludes: ["_"]},
-        strong: {excludes: ["em"]},
-        em: {}
+        remark: {attrs: {id: {}}, excludes: ""},
+        user: {attrs: {id: {}}, excludes: "_"},
+        strong: {excludes: "em-group"},
+        em: {group: "em-group"}
       }
     }).marks
     let remark1 = custom.remark.create({id: 1}), remark2 = custom.remark.create({id: 2}),

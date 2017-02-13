@@ -102,7 +102,7 @@ class ContentExpr {
         else if (inline != nodeTypes[i].isInline) throw new SyntaxError("Mixing inline and block content in a single node")
       }
       let attrSet = !attrs ? null : parseAttrs(nodeType, attrs[1])
-      let markSet = !marks ? false : marks[1] ? true : checkMarks(nodeType.schema, marks[2].split(/\s+/))
+      let markSet = !marks ? false : marks[1] ? true : this.gatherMarks(nodeType.schema, marks[2].split(/\s+/))
       let {min, max} = parseRepeat(nodeType, repeat)
       if (min != 0 && (nodeTypes[0].hasRequiredAttrs(attrSet) || nodeTypes[0].isText))
         throw new SyntaxError("Node type " + types[0] + " in type " + nodeType.name +
@@ -118,6 +118,24 @@ class ContentExpr {
     }
 
     return new ContentExpr(nodeType, elements, !!inline)
+  }
+
+  static gatherMarks(schema, marks) {
+    let found = []
+    for (let i = 0; i < marks.length; i++) {
+      let name = marks[i], mark = schema.marks[name], ok = mark
+      if (mark) {
+        found.push(mark)
+      } else {
+        for (let prop in schema.marks) {
+          let mark = schema.marks[prop]
+          if (name == "_" || (mark.spec.group && mark.spec.group.split(" ").indexOf(name) > -1))
+            found.push(ok = mark)
+        }
+      }
+      if (!ok) throw new SyntaxError("Unknown mark type: '" + marks[i] + "'")
+    }
+    return found
   }
 }
 exports.ContentExpr = ContentExpr
@@ -369,16 +387,6 @@ function parseValue(nodeType, value) {
   } else {
     return JSON.parse(value)
   }
-}
-
-function checkMarks(schema, marks) {
-  let found = []
-  for (let i = 0; i < marks.length; i++) {
-    let mark = schema.marks[marks[i]]
-    if (mark) found.push(mark)
-    else throw new SyntaxError("Unknown mark type: '" + marks[i] + "'")
-  }
-  return found
 }
 
 function resolveValue(value, attrs, expr) {
