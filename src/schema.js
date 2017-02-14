@@ -386,24 +386,30 @@ class Schema {
   // :: (SchemaSpec)
   // Construct a schema from a specification.
   constructor(spec) {
-    // :: OrderedMap<NodeSpec> The node specs that the schema is based on.
-    this.nodeSpec = OrderedMap.from(spec.nodes)
-    // :: OrderedMap<MarkSpec> The mark spec that the schema is based on.
-    this.markSpec = OrderedMap.from(spec.marks)
+    // :: SchemaSpec
+    // The [spec](#model.SchemaSpec) on which the schema is based,
+    // with the added guarantee that its `nodes` and `marks`
+    // properties are
+    // [`OrderedMap`](https://github.com/marijnh/orderedmap) instances
+    // (not raw objects or null).
+    this.spec = {}
+    for (let prop in spec) this.spec[prop] = spec[prop]
+    this.spec.nodes = OrderedMap.from(spec.nodes)
+    this.spec.marks = OrderedMap.from(spec.marks)
 
     // :: Object<NodeType>
     // An object mapping the schema's node names to node type objects.
-    this.nodes = NodeType.compile(this.nodeSpec, this)
+    this.nodes = NodeType.compile(this.spec.nodes, this)
 
     // :: Object<MarkType>
     // A map from mark names to mark type objects.
-    this.marks = MarkType.compile(this.markSpec, this)
+    this.marks = MarkType.compile(this.spec.marks, this)
 
     for (let prop in this.nodes) {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
       let type = this.nodes[prop]
-      type.contentExpr = ContentExpr.parse(type, this.nodeSpec.get(prop).content || "", this.nodeSpec)
+      type.contentExpr = ContentExpr.parse(type, this.spec.nodes.get(prop).content || "", this.spec.nodes)
     }
     for (let prop in this.marks) {
       let type = this.marks[prop], excl = type.spec.excludes
@@ -419,6 +425,16 @@ class Schema {
 
     this.nodeFromJSON = this.nodeFromJSON.bind(this)
     this.markFromJSON = this.markFromJSON.bind(this)
+  }
+
+  get nodeSpec() {
+    warnAboutSpec()
+    return this.spec.nodes
+  }
+  
+  get markSpec() {
+    warnAboutSpec()
+    return this.spec.marks
   }
 
   // :: (union<string, NodeType>, ?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → Node
@@ -473,3 +489,11 @@ class Schema {
   }
 }
 exports.Schema = Schema
+
+let warnedAboutSpec = false
+function warnAboutSpec() {
+  if (!warnedAboutSpec && typeof console != "undefined" && console.warn) {
+    warnedAboutSpec = true
+    console.warn("The Schema properties .nodeSpec and .markSpec are deprecated. Use .spec.nodes and .spec.marks instead")
+  }
+}
