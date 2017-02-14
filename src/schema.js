@@ -163,7 +163,8 @@ class NodeType {
     let result = Object.create(null)
     nodes.forEach((name, spec) => result[name] = new NodeType(name, schema, spec))
 
-    if (!result.doc) throw new RangeError("Every schema needs a 'doc' type")
+    let topType = schema.spec.topNode || "doc"
+    if (!result[topType]) throw new RangeError("Schema is missing its top node type ('" + topType + "')")
     if (!result.text) throw new RangeError("Every schema needs a 'text' type")
     for (let _ in result.text.attrs) throw new RangeError("The text node type should not have attributes")
 
@@ -262,6 +263,10 @@ exports.MarkType = MarkType
 //
 //   marks:: ?union<Object<MarkSpec>, OrderedMap<MarkSpec>>
 //   The mark types that exist in this schema.
+//
+//   topNode:: ?string
+//   The name of the default top-level node for the schema. Defaults
+//   to `"doc"`.
 
 // NodeSpec:: interface
 //
@@ -425,13 +430,18 @@ class Schema {
 
     this.nodeFromJSON = this.nodeFromJSON.bind(this)
     this.markFromJSON = this.markFromJSON.bind(this)
+
+    // :: NodeType
+    // The type of the [default top node](#model.SchemaSpec.topNode)
+    // for this schema.
+    this.topNodeType = this.nodes[this.spec.topNode || "doc"]
   }
 
   get nodeSpec() {
     warnAboutSpec()
     return this.spec.nodes
   }
-  
+
   get markSpec() {
     warnAboutSpec()
     return this.spec.marks

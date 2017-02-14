@@ -18,7 +18,7 @@ describe("DOMParser", () => {
         declaredDOM.innerHTML = dom
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
-        ist(parser.parse(derivedDOM), doc, eq)
+        ist(DOMParser.fromSchema(doc.type.schema).parse(derivedDOM), doc, eq)
       }
     }
 
@@ -255,6 +255,12 @@ describe("DOMParser", () => {
     it("can find a position at the end of the document",
        find("<p>hi</p><var></var>",
             doc(p("hi"), "<a>")))
+
+    let quoteSchema = new Schema({nodes: schema.spec.nodes, marks: schema.spec.marks, topNode: "blockquote"})
+
+    it("uses a custom top node when parsing",
+       test(quoteSchema.node("blockquote", null, quoteSchema.node("paragraph", null, quoteSchema.text("hello"))),
+            "<p>hello</p>"))
   })
 
   describe("schemaRules", () => {

@@ -113,9 +113,10 @@ class DOMParser {
   //     The child node index to stop parsing at.
   //
   //     topNode:: ?Node
-  //     By default, the content is parsed into a `doc` node. You can
-  //     pass this option to use the type and attributes from a
-  //     different node as the top container.
+  //     By default, the content is parsed into the schema's default
+  //     [top node type](#model.Schema.topNodeType). You can pass this
+  //     option to use the type and attributes from a different node
+  //     as the top container.
   //
   //     topStart:: ?number
   //     Can be used to influence the content match at the start of
@@ -287,7 +288,7 @@ class ParseContext {
     else if (open)
       topContext = new NodeContext(null, null, true, null, topOptions)
     else
-      topContext = new NodeContext(parser.schema.nodes.doc, null, true, null, topOptions)
+      topContext = new NodeContext(parser.schema.topNodeType, null, true, null, topOptions)
     this.nodes = [topContext]
     // : [Mark] The current set of marks
     this.marks = Mark.none
