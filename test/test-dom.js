@@ -10,12 +10,17 @@ const serializer = DOMSerializer.fromSchema(schema)
 
 describe("DOMParser", () => {
   describe("parse", () => {
-    function test(doc, dom) {
+    function domFrom(html) {
+      let dom = document.createElement("div")
+      dom.innerHTML = html
+      return dom
+    }
+
+    function test(doc, html) {
       return () => {
         let derivedDOM = document.createElement("div")
         derivedDOM.appendChild(serializer.serializeFragment(doc.content, {document}))
-        let declaredDOM = document.createElement("div")
-        declaredDOM.innerHTML = dom
+        let declaredDOM = domFrom(html)
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
         ist(DOMParser.fromSchema(doc.type.schema).parse(derivedDOM), doc, eq)
@@ -261,6 +266,42 @@ describe("DOMParser", () => {
     it("uses a custom top node when parsing",
        test(quoteSchema.node("blockquote", null, quoteSchema.node("paragraph", null, quoteSchema.text("hello"))),
             "<p>hello</p>"))
+
+    function contextParser(context) {
+      return new DOMParser(schema, [{tag: "foo", node: "horizontal_rule", context}].concat(DOMParser.schemaRules(schema)))
+    }
+
+    it("recognizes context restrictions", () => {
+      ist(contextParser("blockquote/").parse(domFrom("<foo></foo><blockquote><foo></foo><p><foo></foo></p></blockquote>")),
+          doc(blockquote(hr, p())), eq)
+    })
+
+    it("understands nested context restrictions", () => {
+      ist(contextParser("blockquote/ordered_list//")
+          .parse(domFrom("<foo></foo><blockquote><foo></foo><ol><li><p>a</p><foo></foo></li></ol></blockquote>")),
+          doc(blockquote(ol(li(p("a"), hr)))), eq)
+    })
+
+    it("understands double slashes in context restrictions", () => {
+      ist(contextParser("blockquote//list_item/")
+          .parse(domFrom("<foo></foo><blockquote><foo></foo><ol><foo></foo><li><p>a</p><foo></foo></li></ol></blockquote>")),
+          doc(blockquote(ol(li(p("a"), hr)))), eq)
+    })
+
+    it("uses the passed context", () => {
+      let cxDoc = doc(blockquote("<a>", hr))
+      ist(contextParser("doc//blockquote/").parse(domFrom("<blockquote><foo></foo></blockquote>"), {
+        topNode: blockquote(),
+        context: cxDoc.resolve(cxDoc.tag.a)
+      }), blockquote(blockquote(hr)), eq)
+    })
+
+    it("uses the passed context when parsing a slice", () => {
+      let cxDoc = doc(blockquote("<a>", hr))
+      ist(contextParser("doc//blockquote/").parseSlice(domFrom("<foo></foo>"), {
+        context: cxDoc.resolve(cxDoc.tag.a)
+      }), new Slice(blockquote(hr).content, 0, 0), eq)
+    })
   })
 
   describe("schemaRules", () => {

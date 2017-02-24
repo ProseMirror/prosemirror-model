@@ -14,6 +14,17 @@ const {Mark} = require("./mark")
 //   A CSS property name to match. When given, this rule matches
 //   inline styles that list that property.
 //
+//   context:: ?string
+//   When given, restricts this rule to only match when the current
+//   context—the parent nodes into which the content is being
+//   parsed—matches this expression. Should contain one or more node
+//   names followed by single or double slashes. For example
+//   `"paragraph/"` means the rule only matches when the parent node
+//   is a paragraph, `"blockquote/paragraph/"` restricts it to be in a
+//   paragraph that is inside a blockquote, and `"section//"` matches
+//   any position inside a section—a double slash matches any sequence
+//   of ancestor nodes.
+//
 //   node:: ?string
 //   The name of the node type to create when this rule matches. Only
 //   valid for rules with a `tag` property, not for style rules. Each
@@ -122,6 +133,11 @@ class DOMParser {
   //     Can be used to influence the content match at the start of
   //     the topnode. When given, should be a valid index into
   //     `topNode`.
+  //
+  //     context:: ?ResolvedPos
+  //     A set of additional node names to cound as
+  //     [context](#model.ParseRule.context) when parsing, above the
+  //     given [top node](#model.DOMParser.parse^options.topNode).
   parse(dom, options = {}) {
     let context = new ParseContext(this, options, false)
     context.addAll(dom, null, options.from, options.to)
@@ -141,10 +157,10 @@ class DOMParser {
     return Slice.maxOpen(context.finish())
   }
 
-  matchTag(dom) {
+  matchTag(dom, context) {
     for (let i = 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
-      if (matches(dom, rule.tag)) {
+      if (matches(dom, rule.tag) && (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(dom)
           if (result === false) continue
@@ -155,10 +171,10 @@ class DOMParser {
     }
   }
 
-  matchStyle(prop, value) {
+  matchStyle(prop, value, context) {
     for (let i = 0; i < this.styles.length; i++) {
       let rule = this.styles[i]
-      if (rule.style == prop) {
+      if (rule.style == prop && (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(value)
           if (result === false) continue
@@ -350,7 +366,7 @@ class ParseContext {
   addElement(dom) {
     let name = dom.nodeName.toLowerCase()
     if (listTags.hasOwnProperty(name)) normalizeList(dom)
-    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom)
+    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
     } else if (!rule || rule.skip) {
@@ -369,7 +385,7 @@ class ParseContext {
   addElementWithStyles(styles, dom) {
     let oldMarks = this.marks, ignore = false
     for (let i = 0; i < styles.length; i += 2) {
-      let rule = this.parser.matchStyle(styles[i], styles[i + 1])
+      let rule = this.parser.matchStyle(styles[i], styles[i + 1], this)
       if (!rule) continue
       if (rule.ignore) { ignore = true; break }
       this.addMark(this.parser.schema.marks[rule.mark].create(rule.attrs))
@@ -553,6 +569,35 @@ class ParseContext {
       if (this.find[i].node == textNode)
         this.find[i].pos = this.currentPos - (textNode.nodeValue.length - this.find[i].offset)
     }
+  }
+
+  // : (string) → bool
+  // Determines whether the given [context
+  // string](##ParseRule.context) matches this context.
+  matchesContext(context) {
+    let parts = context.split("/")
+    let option = this.options.context
+    let useRoot = !this.isOpen && (!option || option.parent.type == this.nodes[0].type)
+    let minDepth = -(option ? option.depth + 1 : 0) + (useRoot ? 0 : 1)
+    let match = (i, depth) => {
+      for (; i >= 0; i--) {
+        let part = parts[i]
+        if (part == "") {
+          if (i == parts.length - 1 || i == 0) continue
+          for (; depth >= minDepth; depth--)
+            if (match(i - 1, depth)) return true
+          return false
+        } else {
+          let name = depth > 0 || (depth == 0 && useRoot) ? this.nodes[depth].type.name
+              : option && depth >= minDepth ? option.node(depth - minDepth).type.name
+              : null
+          if (name != part) return false
+          depth--
+        }
+      }
+      return true
+    }
+    return match(parts.length - 1, this.open)
   }
 }
 
