@@ -31,7 +31,7 @@ class DOMSerializer {
   // :: (Fragment, ?Object) → dom.DocumentFragment
   // Serialize the content of this fragment to a DOM fragment. When
   // not in the browser, the `document` option, containing a DOM
-  // document, should be passed so that the serialize can create
+  // document, should be passed so that the serializer can create
   // nodes.
   serializeFragment(fragment, options = {}, target) {
     if (!target) target = doc(options).createDocumentFragment()
