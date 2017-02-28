@@ -297,12 +297,8 @@ exports.MarkType = MarkType
 //   nodes.
 //
 //   draggable:: ?bool
-//   Determines whether nodes of this type can be dragged. Enabling it
-//   causes ProseMirror to set a `draggable` attribute on its DOM
-//   representation, and to put its HTML serialization into the drag
-//   event's [data
-//   transfer](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)
-//   when dragged. Defaults to false.
+//   Determines whether nodes of this type can be dragged without
+//   being selected. Defaults to false.
 //
 //   code:: ?bool
 //   Can be used to indicate that this node contains code, which

@@ -74,7 +74,7 @@ const {Mark} = require("./mark")
 //   getContent:: ?(dom.Node) → Fragment
 //   Can be used to override the content of a matched node. Will be
 //   called, and its result used, instead of parsing the node's child
-//   node.
+//   nodes.
 //
 //   preserveWhitespace:: ?bool
 //   Controls whether whitespace should be preserved when parsing the
