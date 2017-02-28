@@ -143,7 +143,9 @@ class DOMSerializer {
   // Gather the serializers in a schema's node specs into an object.
   // This can be useful as a base to build a custom serializer from.
   static nodesFromSchema(schema) {
-    return gatherToDOM(schema.nodes)
+    let result = gatherToDOM(schema.nodes)
+    if (!result.text) result.text = node => node.text
+    return result
   }
 
   // :: (Schema) → Object<(mark: Mark) → DOMOutputSpec>
