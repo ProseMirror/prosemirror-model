@@ -327,6 +327,11 @@ exports.MarkType = MarkType
 //   zero (“hole”) in it to indicate where the node's content should
 //   be inserted.
 //
+//   For text nodes, the default is to create a text DOM node. Though
+//   it is possible to create a serializer where text is rendered
+//   differently, this is not supported inside the editor, so you
+//   shouldn't override that in your text node spec.
+//
 //   parseDOM:: ?[ParseRule]
 //   Associates DOM parser information with this node, which can be
 //   used by [`DOMParser.fromSchema`](#model.DOMParser^fromSchema) to
