@@ -16,7 +16,7 @@ tags the type of content that's there, and holds a
 ### Resolved Positions
 
 Positions in a document can be represented as integer
-[offsets](/docs/guide/doc/#indexing). But you'll often want to use a
+[offsets](/docs/guides/doc/#indexing). But you'll often want to use a
 more convenient representation.
 
 @ResolvedPos
