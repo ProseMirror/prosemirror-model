@@ -17,7 +17,7 @@ const emptyAttrs = Object.create(null)
 // tree shape like this (without back pointers) makes easy.
 //
 // **Never** directly mutate the properties of a `Node` object. See
-// [this guide](guide/doc.html) for more information.
+// [this guide](/docs/guides/doc/) for more information.
 class Node {
   constructor(type, attrs, content, marks) {
     // :: NodeType
@@ -45,7 +45,7 @@ class Node {
 
   // :: number
   // The size of this node, as defined by the integer-based [indexing
-  // scheme](guide/doc.html#indexing). For text nodes, this is the
+  // scheme](/docs/guides/doc/#indexing). For text nodes, this is the
   // amount of characters. For other leaf nodes, it is one. And for
   // non-leaf nodes, it is the size of the content plus two (the start
   // and end token).

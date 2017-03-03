@@ -272,7 +272,7 @@ exports.MarkType = MarkType
 //
 //   content:: ?string
 //   The content expression for this node, as described in the [schema
-//   guide](guide/schema.html). When not given, the node does not allow
+//   guide](/docs/guides/schema/). When not given, the node does not allow
 //   any content.
 //
 //   group:: ?string
