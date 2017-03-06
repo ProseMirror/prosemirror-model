@@ -157,7 +157,7 @@ class ResolvedPos {
   // acceptable.
   blockRange(other = this, pred) {
     if (other.pos < this.pos) return other.blockRange(this)
-    for (let d = this.depth - (this.parent.isTextblock || this.pos == other.pos ? 1 : 0); d >= 0; d--)
+    for (let d = this.depth - (this.parent.inlineContent || this.pos == other.pos ? 1 : 0); d >= 0; d--)
       if (other.pos <= this.end(d) && (!pred || pred(this.node(d))))
         return new NodeRange(this, other, d)
   }

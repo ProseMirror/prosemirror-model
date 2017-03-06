@@ -85,6 +85,10 @@ class NodeType {
   get isTextblock() { return this.isBlock && this.contentExpr.inlineContent }
 
   // :: bool
+  // True if this node type has inline content.
+  get inlineContent() { return this.contentExpr.inlineContent }
+
+  // :: bool
   // True for node types that allow no content.
   get isLeaf() { return this.contentExpr.isLeaf }
 

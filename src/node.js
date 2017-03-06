@@ -241,6 +241,10 @@ class Node {
   get isTextblock() { return this.type.isTextblock }
 
   // :: bool
+  // True when this node has inline content.
+  get inlineContent() { return this.type.inlineContent }
+
+  // :: bool
   // True when this is an inline node (a text node or a node that can
   // appear among text).
   get isInline() { return this.type.isInline }
