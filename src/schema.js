@@ -215,7 +215,7 @@ class MarkType {
 
     if (spec.inclusiveRight === false && spec.inclusive == null) {
       spec.inclusive = false
-      if (!warnedAboutInclusive && typeof console != "undefine" && console.warn) {
+      if (!warnedAboutInclusive && typeof console != "undefined" && console.warn) {
         warnedAboutInclusive = true
         console.warn("MarkSpec.inclusiveRight is now called MarkSpec.inclusive")
       }
