@@ -454,16 +454,6 @@ class Schema {
     this.topNodeType = this.nodes[this.spec.topNode || "doc"]
   }
 
-  get nodeSpec() {
-    warnAboutSpec()
-    return this.spec.nodes
-  }
-
-  get markSpec() {
-    warnAboutSpec()
-    return this.spec.marks
-  }
-
   // :: (union<string, NodeType>, ?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → Node
   // Create a node in this schema. The `type` may be a string or a
   // `NodeType` instance. Attributes will be extended
@@ -516,11 +506,3 @@ class Schema {
   }
 }
 exports.Schema = Schema
-
-let warnedAboutSpec = false
-function warnAboutSpec() {
-  if (!warnedAboutSpec && typeof console != "undefined" && console.warn) {
-    warnedAboutSpec = true
-    console.warn("The Schema properties .nodeSpec and .markSpec are deprecated. Use .spec.nodes and .spec.marks instead")
-  }
-}
