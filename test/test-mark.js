@@ -7,6 +7,19 @@ let strong = schema.mark("strong")
 let link = (href, title) => schema.mark("link", {href, title})
 let code = schema.mark("code")
 
+let customSchema = new Schema({
+  nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text<_>*"}, text: {}},
+  marks: {
+    remark: {attrs: {id: {}}, excludes: "", inclusive: false},
+    user: {attrs: {id: {}}, excludes: "_"},
+    strong: {excludes: "em-group"},
+    em: {group: "em-group"}
+  }
+}), custom = customSchema.marks
+let remark1 = custom.remark.create({id: 1}), remark2 = custom.remark.create({id: 2}),
+    user1 = custom.user.create({id: 1}), user2 = custom.user.create({id: 2}),
+    customEm = custom.em.create(), customStrong = custom.strong.create()
+
 describe("Mark", () => {
   describe("sameSet", () => {
     it("returns true for two empty sets", () => ist(Mark.sameSet([], [])))
@@ -65,19 +78,6 @@ describe("Mark", () => {
 
     it("puts marks with middle rank in the middle", () =>
        ist(strong.addToSet([em_, code]), [em_, strong, code], Mark.sameSet))
-
-    let custom = new Schema({
-      nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text<_>*"}, text: {}},
-      marks: {
-        remark: {attrs: {id: {}}, excludes: ""},
-        user: {attrs: {id: {}}, excludes: "_"},
-        strong: {excludes: "em-group"},
-        em: {group: "em-group"}
-      }
-    }).marks
-    let remark1 = custom.remark.create({id: 1}), remark2 = custom.remark.create({id: 2}),
-        user1 = custom.user.create({id: 1}), user2 = custom.user.create({id: 2}),
-        customEm = custom.em.create(), customStrong = custom.strong.create()
 
     it("allows nonexclusive instances of marks with the same type", () =>
        ist(remark2.addToSet([remark1]), [remark1, remark2], Mark.sameSet))
@@ -141,5 +141,38 @@ describe("Mark", () => {
 
     it("notices that attributes differ", () =>
        isAt(doc(p(a("li<a>nk"))), link("http://baz"), false))
+
+    let customDoc = customSchema.node("doc", null, [
+      customSchema.node("paragraph", null, [ // pos 1
+        customSchema.text("one", [remark1, customStrong]), customSchema.text("two")
+      ]),
+      customSchema.node("paragraph", null, [ // pos 9
+        customSchema.text("one"), customSchema.text("two", [remark1]), customSchema.text("three", [remark1])
+      ]), // pos 22
+      customSchema.node("paragraph", null, [
+        customSchema.text("one", [remark2]), customSchema.text("two", [remark1])
+      ])
+    ])
+
+    it("omits non-inclusive marks at end of mark", () =>
+       ist(Mark.sameSet(customDoc.resolve(4).marks(), [customStrong])))
+
+    it("includes non-inclusive marks inside a text node", () =>
+       ist(Mark.sameSet(customDoc.resolve(3).marks(), [remark1, customStrong])))
+
+    it("omits non-inclusive marks at the end of a line", () =>
+       ist(Mark.sameSet(customDoc.resolve(20).marks(), [])))
+
+    it("omits non-inclusive marks at the start of a text node", () =>
+       ist(Mark.sameSet(customDoc.resolve(12).marks(true), [])))
+
+    it("omits non-inclusive marks at the start of a line", () =>
+       ist(Mark.sameSet(customDoc.resolve(22).marks(true), [])))
+
+    it("includes non-inclusive marks between two marked nodes", () =>
+       ist(Mark.sameSet(customDoc.resolve(15).marks(), [remark1])))
+
+    it("excludes non-inclusive marks at a point where mark attrs change", () =>
+       ist(Mark.sameSet(customDoc.resolve(25).marks(), [])))
   })
 })
