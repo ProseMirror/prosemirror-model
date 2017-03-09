@@ -276,6 +276,11 @@ describe("DOMParser", () => {
           doc(blockquote(hr, p())), eq)
     })
 
+    it("accepts group names in contexts", () => {
+      ist(contextParser("block/").parse(domFrom("<foo></foo><blockquote><foo></foo><p></p></blockquote>")),
+          doc(blockquote(hr, p())), eq)
+    })
+
     it("understands nested context restrictions", () => {
       ist(contextParser("blockquote/ordered_list//")
           .parse(domFrom("<foo></foo><blockquote><foo></foo><ol><li><p>a</p><foo></foo></li></ol></blockquote>")),

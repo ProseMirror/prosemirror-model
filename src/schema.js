@@ -61,6 +61,7 @@ class NodeType {
     // The spec that this type is based on
     this.spec = spec
 
+    this.groups = spec.group ? spec.group.split(" ") : []
     this.attrs = initAttrs(spec.attrs)
 
     this.defaultAttrs = defaultAttrs(this.attrs)
@@ -430,7 +431,7 @@ class Schema {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
       let type = this.nodes[prop]
-      type.contentExpr = ContentExpr.parse(type, this.spec.nodes.get(prop).content || "", this.spec.nodes)
+      type.contentExpr = ContentExpr.parse(type, this.spec.nodes.get(prop).content || "")
     }
     for (let prop in this.marks) {
       let type = this.marks[prop], excl = type.spec.excludes

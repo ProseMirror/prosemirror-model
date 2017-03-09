@@ -18,12 +18,12 @@ const {Mark} = require("./mark")
 //   When given, restricts this rule to only match when the current
 //   context—the parent nodes into which the content is being
 //   parsed—matches this expression. Should contain one or more node
-//   names followed by single or double slashes. For example
-//   `"paragraph/"` means the rule only matches when the parent node
-//   is a paragraph, `"blockquote/paragraph/"` restricts it to be in a
-//   paragraph that is inside a blockquote, and `"section//"` matches
-//   any position inside a section—a double slash matches any sequence
-//   of ancestor nodes.
+//   names or node group names followed by single or double slashes.
+//   For example `"paragraph/"` means the rule only matches when the
+//   parent node is a paragraph, `"blockquote/paragraph/"` restricts
+//   it to be in a paragraph that is inside a blockquote, and
+//   `"section//"` matches any position inside a section—a double
+//   slash matches any sequence of ancestor nodes.
 //
 //   node:: ?string
 //   The name of the node type to create when this rule matches. Only
@@ -588,10 +588,11 @@ class ParseContext {
             if (match(i - 1, depth)) return true
           return false
         } else {
-          let name = depth > 0 || (depth == 0 && useRoot) ? this.nodes[depth].type.name
-              : option && depth >= minDepth ? option.node(depth - minDepth).type.name
+          let next = depth > 0 || (depth == 0 && useRoot) ? this.nodes[depth].type
+              : option && depth >= minDepth ? option.node(depth - minDepth).type
               : null
-          if (name != part) return false
+          if (!next || (next.name != part && next.groups.indexOf(part) == -1))
+            return false
           depth--
         }
       }
