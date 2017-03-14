@@ -420,10 +420,9 @@ class ParseContext {
       if (!contentDOM) contentDOM = dom
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, sync)
-      if (sync) { this.sync(sync); this.open-- }
-      else if (before) this.marks = before
-      this.findAround(dom, contentDOM, true)
     }
+    if (sync) { this.sync(sync); this.open-- }
+    else if (before) this.marks = before
     return true
   }
 
