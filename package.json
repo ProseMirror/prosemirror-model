@@ -1,6 +1,6 @@
 {
   "name": "prosemirror-model",
-  "version": "0.18.0",
+  "version": "0.19.0",
   "description": "ProseMirror's document model",
   "main": "dist/index.js",
   "license": "MIT",
