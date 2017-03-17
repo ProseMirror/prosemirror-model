@@ -119,14 +119,13 @@ class DOMSerializer {
 
   renderStructure(structure, node, options) {
     let {dom, contentDOM} = DOMSerializer.renderSpec(doc(options), structure)
-    if (node && !node.isLeaf) {
-      if (!contentDOM) throw new RangeError("No content hole in template for non-leaf node")
+    if (contentDOM) {
+      if (!node || node.isLeaf)
+        throw new RangeError("Content hole not allowed in a mark or leaf node spec")
       if (options.onContent)
         options.onContent(node, contentDOM, options)
       else
         this.serializeFragment(node.content, options, contentDOM)
-    } else if (contentDOM) {
-      throw new RangeError("Content hole not allowed in a mark or leaf node spec")
     }
     return dom
   }
