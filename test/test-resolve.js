@@ -1,4 +1,4 @@
-const {doc, p, em, blockquote} = require("./build")
+const {doc, p, em, blockquote} = require("prosemirror-test-builder")
 const ist = require("ist")
 
 const testDoc = doc(p("ab"), blockquote(p(em("cd"), "ef")))

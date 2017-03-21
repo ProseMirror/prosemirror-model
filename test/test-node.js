@@ -1,6 +1,6 @@
 const ist = require("ist")
-const {Fragment} = require("../dist/")
-const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("./build")
+const {Fragment} = require("../dist")
+const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("prosemirror-test-builder")
 
 describe("Node", () => {
   describe("toString", () => {

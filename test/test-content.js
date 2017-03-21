@@ -1,5 +1,5 @@
 const {ContentExpr} = require("../dist/content")
-const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("./build")
+const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("prosemirror-test-builder")
 const ist = require("ist")
 
 function get(expr) { return ContentExpr.parse(schema.nodes.heading, expr, schema.spec.nodes) }

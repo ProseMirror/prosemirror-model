@@ -1,5 +1,5 @@
 const {Slice} = require("../dist")
-const {eq, doc, blockquote, h1, p, ul, li} = require("./build")
+const {eq, doc, blockquote, h1, p, ul, li} = require("prosemirror-test-builder")
 const ist = require("ist")
 
 describe("Node", () => {

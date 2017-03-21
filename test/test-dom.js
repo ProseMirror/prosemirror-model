@@ -1,4 +1,4 @@
-const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, a2, br, img, hr} = require("./build")
+const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr} = require("prosemirror-test-builder")
 const ist = require("ist")
 const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("../dist")
 
@@ -36,16 +36,16 @@ describe("DOMParser", () => {
             "<p>hi<br/>there</p>"))
 
     it("can represent an image",
-       test(doc(p("hi", img, "there")),
-            '<p>hi<img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="x"/>there</p>'))
+       test(doc(p("hi", img({alt: "x"}), "there")),
+            '<p>hi<img src="img.png" alt="x"/>there</p>'))
 
     it("joins styles",
        test(doc(p("one", strong("two", em("three")), em("four"), "five")),
             "<p>one<strong>two</strong><em><strong>three</strong>four</em>five</p>"))
 
     it("can represent links",
-       test(doc(p("a ", a("big ", a2("nested"), " link"))),
-            "<p>a <a href=\"http://foo\">big </a><a href=\"http://bar\">nested</a><a href=\"http://foo\"> link</a></p>"))
+       test(doc(p("a ", a({href: "foo"}, "big ", a({href: "bar"}, "nested"), " link"))),
+            "<p>a <a href=\"foo\">big </a><a href=\"bar\">nested</a><a href=\"foo\"> link</a></p>"))
 
     it("can represent and unordered list",
        test(doc(ul(li(p("one")), li(p("two")), li(p("three", strong("!")))), p("after")),

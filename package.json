@@ -21,9 +21,10 @@
   "devDependencies": {
     "buble": "^0.15.1",
     "mocha": "^3.0.2",
-    "ist": "1.0.0",
+    "ist": "^1.0.0",
     "jsdom": "^8.0.4",
-    "rimraf": "^2.5.4"
+    "rimraf": "^2.5.4",
+    "prosemirror-test-builder": "^0.19.0"
   },
   "scripts": {
     "test": "mocha test/test-*.js",
