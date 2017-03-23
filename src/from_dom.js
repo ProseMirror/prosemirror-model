@@ -135,7 +135,7 @@ class DOMParser {
   //     `topNode`.
   //
   //     context:: ?ResolvedPos
-  //     A set of additional node names to cound as
+  //     A set of additional node names to count as
   //     [context](#model.ParseRule.context) when parsing, above the
   //     given [top node](#model.DOMParser.parse^options.topNode).
   parse(dom, options = {}) {
