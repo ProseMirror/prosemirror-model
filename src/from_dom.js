@@ -548,14 +548,14 @@ class ParseContext {
 
   findInside(parent) {
     if (this.find) for (let i = 0; i < this.find.length; i++) {
-      if (this.find[i].pos == null && parent.contains(this.find[i].node))
+      if (this.find[i].pos == null && parent.nodeType == 1 && parent.contains(this.find[i].node))
         this.find[i].pos = this.currentPos
     }
   }
 
   findAround(parent, content, before) {
     if (parent != content && this.find) for (let i = 0; i < this.find.length; i++) {
-      if (this.find[i].pos == null && parent.contains(this.find[i].node)) {
+      if (this.find[i].pos == null && parent.nodeType == 1 && parent.contains(this.find[i].node)) {
         let pos = content.compareDocumentPosition(this.find[i].node)
         if (pos & (before ? 2 : 4))
           this.find[i].pos = this.currentPos
