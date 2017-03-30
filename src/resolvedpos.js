@@ -177,6 +177,18 @@ class ResolvedPos {
     return this.pos - this.parentOffset == other.pos - other.parentOffset
   }
 
+  // :: (ResolvedPos) → ResolvedPos
+  // Return the greater of this and the given position.
+  max(other) {
+    return other.pos > this.pos ? other : this
+  }
+
+  // :: (ResolvedPos) → ResolvedPos
+  // Return the smaller of this and the given position.
+  min(other) {
+    return other.pos < this.pos ? other : this
+  }
+
   toString() {
     let str = ""
     for (let i = 1; i <= this.depth; i++)
