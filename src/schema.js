@@ -194,8 +194,6 @@ class Attribute {
 
 // Marks
 
-let warnedAboutInclusive = false
-
 // ::- Like nodes, marks (which are associated with nodes to signify
 // things like emphasis or being part of a link) are tagged with type
 // objects, which are instantiated once per `Schema`.
@@ -212,14 +210,6 @@ class MarkType {
     // :: MarkSpec
     // The spec on which the type is based.
     this.spec = spec
-
-    if (spec.inclusiveRight === false && spec.inclusive == null) {
-      spec.inclusive = false
-      if (!warnedAboutInclusive && typeof console != "undefined" && console.warn) {
-        warnedAboutInclusive = true
-        console.warn("MarkSpec.inclusiveRight is now called MarkSpec.inclusive")
-      }
-    }
 
     this.attrs = initAttrs(spec.attrs)
 
