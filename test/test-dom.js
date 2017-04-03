@@ -79,11 +79,11 @@ describe("DOMParser", () => {
        test(doc(p(em("hi", br, "x"))),
             "<p><em>hi<br>x</em></p>"))
 
-    function recover(html, doc) {
+    function recover(html, doc, options) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
-        ist(parser.parse(dom), doc, eq)
+        ist(parser.parse(dom, options), doc, eq)
       }
     }
 
@@ -142,6 +142,10 @@ describe("DOMParser", () => {
     it("preserves trailing space in a code block",
        recover("<pre>foo\n</pre>",
                doc(pre("foo\n"))))
+
+    it("normalizes newlines when preserving whitespace",
+       recover("<p>foo  bar\nbaz</p>",
+              doc(p("foo  bar baz")), {preserveWhitespace: true}))
 
     it("ignores <script> tags",
        recover("<p>hello<script>alert('x')</script>!</p>",

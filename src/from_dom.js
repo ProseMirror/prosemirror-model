@@ -76,9 +76,12 @@ const {Mark} = require("./mark")
 //   called, and its result used, instead of parsing the node's child
 //   nodes.
 //
-//   preserveWhitespace:: ?bool
+//   preserveWhitespace:: ?union<bool, "full">
 //   Controls whether whitespace should be preserved when parsing the
-//   content inside the matched element.
+//   content inside the matched element. `false` means whitespace may
+//   be collapsed, `true` means that whitespace should be preserved
+//   but newlines normalized to spaces, and `"full"` means that
+//   newlines should also be preserved.
 
 // ::- A DOM parser represents a strategy for parsing DOM content into
 // a ProseMirror document conforming to a given schema. Its behavior
@@ -106,9 +109,10 @@ class DOMParser {
   //
   //   options::- Configuration options.
   //
-  //     preserveWhitespace:: ?bool
+  //     preserveWhitespace:: ?union<bool, "full">
   //     By default, whitespace is collapsed as per HTML's rules. Pass
-  //     true here to prevent the parser from doing that.
+  //     `true` to preserve whitespace, but normalize newlines to
+  //     spaces, and `"full"` to preserve whitespace entirely.
   //
   //     findPositions:: ?[{node: dom.Node, offset: number}]
   //     When given, the parser will, beside parsing the content,
@@ -244,7 +248,11 @@ const ignoreTags = {
 const listTags = {ol: true, ul: true}
 
 // Using a bitfield for node context options
-const OPT_PRESERVE_WS = 1, OPT_OPEN_LEFT = 2
+const OPT_PRESERVE_WS = 1, OPT_PRESERVE_WS_FULL = 2, OPT_OPEN_LEFT = 4
+
+function wsOptionsFor(preserveWhitespace) {
+  return (preserveWhitespace ? OPT_PRESERVE_WS : 0) | (preserveWhitespace === "full" ? OPT_PRESERVE_WS_FULL : 0)
+}
 
 class NodeContext {
   constructor(type, attrs, solid, match, options) {
@@ -297,7 +305,7 @@ class ParseContext {
     this.options = options
     this.isOpen = open
     let topNode = options.topNode, topContext
-    let topOptions = (options.preserveWhitespace ? OPT_PRESERVE_WS : 0) | (open ? OPT_OPEN_LEFT : 0)
+    let topOptions = wsOptionsFor(options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
       topContext = new NodeContext(topNode.type, topNode.attrs, true,
                                    topNode.contentMatchAt(options.topStart || 0), topOptions)
@@ -352,6 +360,8 @@ class ParseContext {
           if (!nodeBefore || nodeBefore.isText && /\s$/.test(nodeBefore.text))
             value = value.slice(1)
         }
+      } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
+        value = value.replace(/\r?\n|\r/g, " ")
       }
       if (value) this.insertNode(this.parser.schema.text(value, this.marks))
       this.findInText(dom)
@@ -497,7 +507,7 @@ class ParseContext {
     this.closeExtra()
     let top = this.top
     top.match = top.match && top.match.matchType(type, attrs)
-    let options = preserveWS == null ? top.options & OPT_PRESERVE_WS : preserveWS ? OPT_PRESERVE_WS : 0
+    let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
     this.nodes.push(new NodeContext(type, attrs, solid, null, options))
     this.open++
