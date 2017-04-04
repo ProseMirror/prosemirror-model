@@ -84,7 +84,7 @@ class DOMSerializer {
   }
 
   // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}
-  // Render an [output spec](##model.DOMOutputSpec).
+  // Render an [output spec](#model.DOMOutputSpec).
   static renderSpec(doc, structure) {
     if (typeof structure == "string")
       return {dom: doc.createTextNode(structure)}
