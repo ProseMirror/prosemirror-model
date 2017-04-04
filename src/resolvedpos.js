@@ -119,7 +119,7 @@ class ResolvedPos {
 
   // :: (?bool) → [Mark]
   // Get the marks at this position, factoring in the surrounding
-  // marks' [`inclusive`](##model.MarkSpec.inclusive) property. If the
+  // marks' [`inclusive`](#model.MarkSpec.inclusive) property. If the
   // position is at the start of a non-empty node, or `after` is true,
   // the marks of the node after it (if any) are returned.
   marks(after) {

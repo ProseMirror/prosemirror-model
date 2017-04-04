@@ -582,7 +582,7 @@ class ParseContext {
 
   // : (string) → bool
   // Determines whether the given [context
-  // string](##ParseRule.context) matches this context.
+  // string](#ParseRule.context) matches this context.
   matchesContext(context) {
     let parts = context.split("/")
     let option = this.options.context
