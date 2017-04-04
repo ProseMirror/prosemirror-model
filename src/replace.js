@@ -54,16 +54,17 @@ class Slice {
   // Convert a slice to a JSON-serializable representation.
   toJSON() {
     if (!this.content.size) return null
-    return {content: this.content.toJSON(),
-            openLeft: this.openLeft,
-            openRight: this.openRight}
+    let json = {content: this.content.toJSON()}
+    if (this.openLeft > 0) json.openLeft = this.openLeft
+    if (this.openRight > 0) json.openRight = this.openRight
+    return json
   }
 
   // :: (Schema, ?Object) → Slice
   // Deserialize a slice from its JSON representation.
   static fromJSON(schema, json) {
     if (!json) return Slice.empty
-    return new Slice(Fragment.fromJSON(schema, json.content), json.openLeft, json.openRight)
+    return new Slice(Fragment.fromJSON(schema, json.content), json.openLeft || 0, json.openRight || 0)
   }
 
   // :: (Fragment) → Slice
