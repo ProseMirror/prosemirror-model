@@ -69,7 +69,7 @@ class Node {
   // into this parent node, and its index.
   forEach(f) { this.content.forEach(f) }
 
-  // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number))
+  // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number) → ?bool)
   // Invoke a callback for all descendant nodes recursively between
   // the given two positions that are relative to start of this node's content.
   // The callback is invoked with the node, its parent-relative position,
@@ -79,8 +79,9 @@ class Node {
     this.content.nodesBetween(from, to, f, pos, this)
   }
 
-  // :: ((node: Node, pos: number, parent: Node))
-  // Call the given callback for every descendant node.
+  // :: ((node: Node, pos: number, parent: Node) → ?bool)
+  // Call the given callback for every descendant node. If doesn't
+  // descend into a child node when the callback returns `false`.
   descendants(f) {
     this.nodesBetween(0, this.content.size, f)
   }
