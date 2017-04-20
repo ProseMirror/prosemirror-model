@@ -320,7 +320,7 @@ exports.MarkType = MarkType
 //   Typically, non-default-paragraph textblock types, and possible
 //   list items, are marked as defining.
 //
-//   toDOM:: ?(Node) → DOMOutputSpec
+//   toDOM:: ?(node: Node) → DOMOutputSpec
 //   Defines the default way a node of this type should be serialized
 //   to DOM/HTML (as used by
 //   [`DOMSerializer.fromSchema`](#model.DOMSerializer^fromSchema)).
@@ -369,7 +369,7 @@ exports.MarkType = MarkType
 //   group:: ?string
 //   The group or space-separated groups to which this node belongs.
 //
-//   toDOM:: ?(mark: Mark) → DOMOutputSpec
+//   toDOM:: ?(mark: Mark, inline: bool) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized
 //   to DOM/HTML.
 //

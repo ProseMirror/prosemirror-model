@@ -17,10 +17,12 @@
 // ::- A DOM serializer knows how to convert ProseMirror nodes and
 // marks of various types to DOM nodes.
 class DOMSerializer {
-  // :: (Object<(node: Node) → DOMOutputSpec>, Object<(mark: Mark) → DOMOutputSpec>)
+  // :: (Object<(node: Node) → DOMOutputSpec>, Object<(mark: Mark, inline: bool) → DOMOutputSpec>)
   // Create a serializer. `nodes` should map node names to functions
   // that take a node and return a description of the corresponding
-  // DOM. `marks` does the same for mark names.
+  // DOM. `marks` does the same for mark names, but also gets an
+  // argument that tells it whether the mark's content is block or
+  // inline content (for typical use, it'll always be inline).
   constructor(nodes, marks) {
     // :: Object<(node: Node) → DOMOutputSpec>
     this.nodes = nodes || {}
@@ -50,7 +52,7 @@ class DOMSerializer {
         while (active.length < node.marks.length) {
           let add = node.marks[active.length]
           active.push(add)
-          top = top.appendChild(this.serializeMark(add, options))
+          top = top.appendChild(this.serializeMark(add, node.isInline, options))
         }
       }
       top.appendChild(this.serializeNode(node, options))
@@ -72,15 +74,15 @@ class DOMSerializer {
   serializeNodeAndMarks(node, options = {}) {
     let dom = this.serializeNode(node, options)
     for (let i = node.marks.length - 1; i >= 0; i--) {
-      let wrap = this.serializeMark(node.marks[i], options)
+      let wrap = this.serializeMark(node.marks[i], node.isInline, options)
       wrap.appendChild(dom)
       dom = wrap
     }
     return dom
   }
 
-  serializeMark(mark, options = {}) {
-    return this.renderStructure(this.marks[mark.type.name](mark), null, options)
+  serializeMark(mark, inline, options = {}) {
+    return this.renderStructure(this.marks[mark.type.name](mark, inline), null, options)
   }
 
   // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}
