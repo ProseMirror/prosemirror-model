@@ -17,12 +17,14 @@
 // ::- A DOM serializer knows how to convert ProseMirror nodes and
 // marks of various types to DOM nodes.
 class DOMSerializer {
-  // :: (Object<(node: Node) → DOMOutputSpec>, Object<(mark: Mark, inline: bool) → DOMOutputSpec>)
+  // :: (Object<(node: Node) → DOMOutputSpec>, Object<?(mark: Mark, inline: bool) → DOMOutputSpec>)
   // Create a serializer. `nodes` should map node names to functions
   // that take a node and return a description of the corresponding
   // DOM. `marks` does the same for mark names, but also gets an
   // argument that tells it whether the mark's content is block or
-  // inline content (for typical use, it'll always be inline).
+  // inline content (for typical use, it'll always be inline). A mark
+  // serializer may be `null` to indicate that marks of that type
+  // should not be serialized.
   constructor(nodes, marks) {
     // :: Object<(node: Node) → DOMOutputSpec>
     this.nodes = nodes || {}
@@ -46,13 +48,14 @@ class DOMSerializer {
         for (; keep < Math.min(active.length, node.marks.length); ++keep)
           if (!node.marks[keep].eq(active[keep])) break
         while (keep < active.length) {
-          active.pop()
-          top = top.parentNode
+          let removed = active.pop()
+          if (this.marks[removed.type.name]) top = top.parentNode
         }
         while (active.length < node.marks.length) {
           let add = node.marks[active.length]
           active.push(add)
-          top = top.appendChild(this.serializeMark(add, node.isInline, options))
+          let markDOM = this.serializeMark(add, node.isInline, options)
+          if (markDOM) top = top.appendChild(markDOM)
         }
       }
       top.appendChild(this.serializeNode(node, options))
@@ -75,14 +78,17 @@ class DOMSerializer {
     let dom = this.serializeNode(node, options)
     for (let i = node.marks.length - 1; i >= 0; i--) {
       let wrap = this.serializeMark(node.marks[i], node.isInline, options)
-      wrap.appendChild(dom)
-      dom = wrap
+      if (wrap) {
+        wrap.appendChild(dom)
+        dom = wrap
+      }
     }
     return dom
   }
 
   serializeMark(mark, inline, options = {}) {
-    return this.renderStructure(this.marks[mark.type.name](mark, inline), null, options)
+    let toDOM = this.marks[mark.type.name]
+    return toDOM && this.renderStructure(toDOM(mark, inline), null, options)
   }
 
   // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}

@@ -337,3 +337,11 @@ describe("DOMParser", () => {
     })
   })
 })
+
+describe("DOMSerializer", () => {
+  it("can omit a mark", () => {
+    let s = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {em: null}))
+    ist(s.serializeNode(p("foo", em("bar"), strong("baz")), {document}).innerHTML,
+        "foobar<strong>baz</strong>")
+  })
+})
