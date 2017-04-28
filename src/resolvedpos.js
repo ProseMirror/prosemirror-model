@@ -71,7 +71,7 @@ class ResolvedPos {
 
   // :: (?number) → number
   // The (absolute) position directly before the node at the given
-  // level, or, when `level` is `this.level + 1`, the original
+  // level, or, when `level` is `this.depth + 1`, the original
   // position.
   before(depth) {
     depth = this.resolveDepth(depth)
@@ -81,7 +81,7 @@ class ResolvedPos {
 
   // :: (?number) → number
   // The (absolute) position directly after the node at the given
-  // level, or, when `level` is `this.level + 1`, the original
+  // level, or, when `level` is `this.depth + 1`, the original
   // position.
   after(depth) {
     depth = this.resolveDepth(depth)
