@@ -320,6 +320,12 @@ exports.MarkType = MarkType
 //   Typically, non-default-paragraph textblock types, and possible
 //   list items, are marked as defining.
 //
+//   isolating:: ?bool
+//   When enabled (default is false), the sides of nodes of this type
+//   count as boundaries that regular editing operations, like
+//   backspacing or lifting, won't cross. An example of a node that
+//   should probably have this set is a table cell.
+//
 //   toDOM:: ?(node: Node) → DOMOutputSpec
 //   Defines the default way a node of this type should be serialized
 //   to DOM/HTML (as used by
