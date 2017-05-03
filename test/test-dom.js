@@ -192,12 +192,12 @@ describe("DOMParser", () => {
        parse("foo   bar", {preserveWhitespace: true},
              doc(p("foo   bar"))))
 
-    function open(html, nodes, openLeft, openRight) {
+    function open(html, nodes, openStart, openEnd) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
         let result = parser.parseSlice(dom)
-        ist(result, new Slice(Fragment.from(nodes.map(n => typeof n == "string" ? schema.text(n) : n)), openLeft, openRight), eq)
+        ist(result, new Slice(Fragment.from(nodes.map(n => typeof n == "string" ? schema.text(n) : n)), openStart, openEnd), eq)
       }
     }
 

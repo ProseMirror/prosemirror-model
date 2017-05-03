@@ -11,43 +11,54 @@ class ReplaceError extends Error {
 }
 exports.ReplaceError = ReplaceError
 
+let warnedAboutOpen = false
+function warnAboutOpen() {
+  if (!warnedAboutOpen && typeof console != "undefined" && console.warn) {
+    warnedAboutOpen = true
+    console.warn("Slice.openLeft has been renamed to openStart, and Slice.openRight to openEnd")
+  }
+}
+
 // ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
 // both side are 'open' / cut through.
 class Slice {
   // :: (Fragment, number, number)
-  constructor(content, openLeft, openRight) {
+  constructor(content, openStart, openEnd) {
     // :: Fragment The slice's content nodes.
     this.content = content
     // :: number The open depth at the start.
-    this.openLeft = openLeft
+    this.openStart = openStart
     // :: number The open depth at the end.
-    this.openRight = openRight
+    this.openEnd = openEnd
   }
+
+  get openLeft() { warnAboutOpen(); return this.openStart }
+  get openRight() { warnAboutOpen(); return this.openEnd }
 
   // :: number
   // The size this slice would add when inserted into a document.
   get size() {
-    return this.content.size - this.openLeft - this.openRight
+    return this.content.size - this.openStart - this.openEnd
   }
 
   insertAt(pos, fragment) {
-    let content = insertInto(this.content, pos + this.openLeft, fragment, null)
-    return content && new Slice(content, this.openLeft, this.openRight)
+    let content = insertInto(this.content, pos + this.openStart, fragment, null)
+    return content && new Slice(content, this.openStart, this.openEnd)
   }
 
   removeBetween(from, to) {
-    return new Slice(removeRange(this.content, from + this.openLeft, to + this.openLeft), this.openLeft, this.openRight)
+    return new Slice(removeRange(this.content, from + this.openStart, to + this.openStart), this.openStart, this.openEnd)
   }
 
   // :: (Slice) → bool
   // Tests whether this slice is equal to another slice.
   eq(other) {
-    return this.content.eq(other.content) && this.openLeft == other.openLeft && this.openRight == other.openRight
+    return this.content.eq(other.content) && this.openStart == other.openStart && this.openEnd == other.openEnd
   }
 
   toString() {
-    return this.content + "(" + this.openLeft + "," + this.openRight + ")"
+    return this.content + "(" + this.openStart + "," + this.openEnd + ")"
   }
 
   // :: () → ?Object
@@ -55,8 +66,8 @@ class Slice {
   toJSON() {
     if (!this.content.size) return null
     let json = {content: this.content.toJSON()}
-    if (this.openLeft > 0) json.openLeft = this.openLeft
-    if (this.openRight > 0) json.openRight = this.openRight
+    if (this.openStart > 0) json.openStart = this.openStart
+    if (this.openEnd > 0) json.openEnd = this.openEnd
     return json
   }
 
@@ -64,17 +75,17 @@ class Slice {
   // Deserialize a slice from its JSON representation.
   static fromJSON(schema, json) {
     if (!json) return Slice.empty
-    return new Slice(Fragment.fromJSON(schema, json.content), json.openLeft || 0, json.openRight || 0)
+    return new Slice(Fragment.fromJSON(schema, json.content), json.openStart || 0, json.openEnd || 0)
   }
 
   // :: (Fragment) → Slice
   // Create a slice from a fragment by taking the maximum possible
   // open value on both side of the fragment.
   static maxOpen(fragment) {
-    let openLeft = 0, openRight = 0
-    for (let n = fragment.firstChild; n && !n.isLeaf; n = n.firstChild) openLeft++
-    for (let n = fragment.lastChild; n && !n.isLeaf; n = n.lastChild) openRight++
-    return new Slice(fragment, openLeft, openRight)
+    let openStart = 0, openEnd = 0
+    for (let n = fragment.firstChild; n && !n.isLeaf; n = n.firstChild) openStart++
+    for (let n = fragment.lastChild; n && !n.isLeaf; n = n.lastChild) openEnd++
+    return new Slice(fragment, openStart, openEnd)
   }
 }
 exports.Slice = Slice
@@ -105,9 +116,9 @@ function insertInto(content, dist, insert, parent) {
 Slice.empty = new Slice(Fragment.empty, 0, 0)
 
 function replace($from, $to, slice) {
-  if (slice.openLeft > $from.depth)
+  if (slice.openStart > $from.depth)
     throw new ReplaceError("Inserted content deeper than insertion position")
-  if ($from.depth - slice.openLeft != $to.depth - slice.openRight)
+  if ($from.depth - slice.openStart != $to.depth - slice.openEnd)
     throw new ReplaceError("Inconsistent open depths")
   return replaceOuter($from, $to, slice, 0)
 }
@@ -115,12 +126,12 @@ exports.replace = replace
 
 function replaceOuter($from, $to, slice, depth) {
   let index = $from.index(depth), node = $from.node(depth)
-  if (index == $to.index(depth) && depth < $from.depth - slice.openLeft) {
+  if (index == $to.index(depth) && depth < $from.depth - slice.openStart) {
     let inner = replaceOuter($from, $to, slice, depth + 1)
     return node.copy(node.content.replaceChild(index, inner))
   } else if (!slice.content.size) {
     return close(node, replaceTwoWay($from, $to, depth))
-  } else if (!slice.openLeft && !slice.openRight && $from.depth == depth && $to.depth == depth) { // Simple, flat case
+  } else if (!slice.openStart && !slice.openEnd && $from.depth == depth && $to.depth == depth) { // Simple, flat case
     let parent = $from.parent, content = parent.content
     return close(parent, content.cut(0, $from.parentOffset).append(slice.content).append(content.cut($to.parentOffset)))
   } else {
@@ -172,20 +183,20 @@ function close(node, content) {
 }
 
 function replaceThreeWay($from, $start, $end, $to, depth) {
-  let openLeft = $from.depth > depth && joinable($from, $start, depth + 1)
-  let openRight = $to.depth > depth && joinable($end, $to, depth + 1)
+  let openStart = $from.depth > depth && joinable($from, $start, depth + 1)
+  let openEnd = $to.depth > depth && joinable($end, $to, depth + 1)
 
   let content = []
   addRange(null, $from, depth, content)
-  if (openLeft && openRight && $start.index(depth) == $end.index(depth)) {
-    checkJoin(openLeft, openRight)
-    addNode(close(openLeft, replaceThreeWay($from, $start, $end, $to, depth + 1)), content)
+  if (openStart && openEnd && $start.index(depth) == $end.index(depth)) {
+    checkJoin(openStart, openEnd)
+    addNode(close(openStart, replaceThreeWay($from, $start, $end, $to, depth + 1)), content)
   } else {
-    if (openLeft)
-      addNode(close(openLeft, replaceTwoWay($from, $start, depth + 1)), content)
+    if (openStart)
+      addNode(close(openStart, replaceTwoWay($from, $start, depth + 1)), content)
     addRange($start, $end, depth, content)
-    if (openRight)
-      addNode(close(openRight, replaceTwoWay($end, $to, depth + 1)), content)
+    if (openEnd)
+      addNode(close(openEnd, replaceTwoWay($end, $to, depth + 1)), content)
   }
   addRange($to, null, depth, content)
   return new Fragment(content)
@@ -203,10 +214,10 @@ function replaceTwoWay($from, $to, depth) {
 }
 
 function prepareSliceForReplace(slice, $along) {
-  let extra = $along.depth - slice.openLeft, parent = $along.node(extra)
+  let extra = $along.depth - slice.openStart, parent = $along.node(extra)
   let node = parent.copy(slice.content)
   for (let i = extra - 1; i >= 0; i--)
     node = $along.node(i).copy(Fragment.from(node))
-  return {start: node.resolveNoCache(slice.openLeft + extra),
-          end: node.resolveNoCache(node.content.size - slice.openRight - extra)}
+  return {start: node.resolveNoCache(slice.openStart + extra),
+          end: node.resolveNoCache(node.content.size - slice.openEnd - extra)}
 }

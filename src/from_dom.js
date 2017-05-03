@@ -281,7 +281,7 @@ class NodeContext {
     return this.match.findWrapping(type, attrs)
   }
 
-  finish(openRight) {
+  finish(openEnd) {
     if (!(this.options & OPT_PRESERVE_WS)) { // Strip trailing whitespace
       let last = this.content[this.content.length - 1], m
       if (last && last.isText && (m = /\s+$/.exec(last.text))) {
@@ -290,7 +290,7 @@ class NodeContext {
       }
     }
     let content = Fragment.from(this.content)
-    if (!openRight && this.match)
+    if (!openEnd && this.match)
       content = content.append(this.match.fillBefore(Fragment.empty, true))
     return this.type ? this.type.create(this.attrs, content) : content
   }
@@ -515,11 +515,11 @@ class ParseContext {
 
   // Make sure all nodes above this.open are finished and added to
   // their parents
-  closeExtra(openRight) {
+  closeExtra(openEnd) {
     let i = this.nodes.length - 1
     if (i > this.open) {
       this.marks = Mark.none
-      for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish(openRight))
+      for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish(openEnd))
       this.nodes.length = this.open + 1
     }
   }
