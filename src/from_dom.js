@@ -318,6 +318,7 @@ class ParseContext {
     this.marks = Mark.none
     this.open = 0
     this.find = options.findPositions
+    this.needsBlock = false
   }
 
   get top() {
@@ -381,9 +382,14 @@ class ParseContext {
       this.findInside(dom)
     } else if (!rule || rule.skip) {
       if (rule && rule.skip.nodeType) dom = rule.skip
-      let sync = blockTags.hasOwnProperty(name) && this.top
+      let sync, oldNeedsBlock = this.needsBlock
+      if (blockTags.hasOwnProperty(name)) {
+        sync = this.top
+        if (!sync.type) this.needsBlock = true
+      }
       this.addAll(dom)
       if (sync) this.sync(sync)
+      this.needsBlock = oldNeedsBlock
     } else {
       this.addElementByRule(dom, rule)
     }
@@ -478,6 +484,10 @@ class ParseContext {
   // : (Node) → ?Node
   // Try to insert the given node, adjusting the context when needed.
   insertNode(node) {
+    if (node.isInline && this.needsBlock && !this.top.type) {
+      let block = this.textblockFromContext()
+      if (block) this.enter(block)
+    }
     if (this.findPlace(node.type, node.attrs)) {
       this.closeExtra()
       let top = this.top
@@ -608,6 +618,18 @@ class ParseContext {
       return true
     }
     return match(parts.length - 1, this.open)
+  }
+
+  textblockFromContext() {
+    let $context = this.options.context
+    if ($context) for (let d = $context.depth; d >= 0; d--) {
+      let deflt = $context.node(d).defaultContentType($context.indexAfter(d))
+      if (deflt && deflt.isTextblock && deflt.defaultAttrs) return deflt
+    }
+    for (let name in this.parser.schema.nodes) {
+      let type = this.parser.schema.nodes[name]
+      if (type.isTextblock && type.defaultAttrs) return type
+    }
   }
 }
 

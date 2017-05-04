@@ -216,6 +216,9 @@ describe("DOMParser", () => {
     it("accepts content open to the right",
        open("<li>foo</li><li></li>", [li(p("foo")), li()], 2, 1))
 
+    it("will create textblocks for block nodes",
+       open("<div><div>foo</div><div>bar</div></div>", [p("foo"), p("bar")], 1, 1))
+
     function find(html, doc) {
       return () => {
         let dom = document.createElement("div")
