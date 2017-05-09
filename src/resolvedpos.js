@@ -34,6 +34,10 @@ class ResolvedPos {
   // the parent—text nodes are 'flat' in this model.
   get parent() { return this.node(this.depth) }
 
+  // :: Node
+  // The root node in which the position was resolved.
+  get doc() { return this.node(0) }
+
   // :: (?number) → Node
   // The ancestor node at the given level. `p.node(p.depth)` is the
   // same as `p.parent`.
