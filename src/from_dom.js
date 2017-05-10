@@ -10,6 +10,11 @@ const {Mark} = require("./mark")
 //   A CSS selector describing the kind of DOM elements to match. A
 //   single rule should have _either_ a `tag` or a `style` property.
 //
+//   namespace:: ?string
+//   The namespace to match. This should be used with `tag`.
+//   Nodes are only matched when the namespace matches or this property
+//   is null.
+//
 //   style:: ?string
 //   A CSS property name to match. When given, this rule matches
 //   inline styles that list that property.
@@ -164,7 +169,7 @@ class DOMParser {
   matchTag(dom, context) {
     for (let i = 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
-      if (matches(dom, rule.tag) && (!rule.context || context.matchesContext(rule.context))) {
+      if (matches(dom, rule.tag) && matchesNamespace(dom, rule.namespace) && (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(dom)
           if (result === false) continue
@@ -173,6 +178,10 @@ class DOMParser {
         return rule
       }
     }
+  }
+
+  matchesNamespace(dom, namespace) {
+    return !namespace || dom.namespaceURI == namespace
   }
 
   matchStyle(prop, value, context) {

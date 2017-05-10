@@ -338,6 +338,36 @@ describe("DOMParser", () => {
       })
       ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
     })
+
+    function nsParse(doc) {
+      let schema = new Schema({
+        marks: {},
+        nodes: {doc: {content: "h*"}, text: {},
+                h: {parseDOM: [{tag: "h", namespace: "urn:ns"}]}}
+      })
+      return DOMParser.fromSchema(schema).parse(doc).content.content
+    }
+
+    it("includes nodes when namespace is correct", () => {
+      let doc = document.createElement("doc")
+      let h = document.createElementNS("urn:ns", "h")
+      doc.appendChild(h)
+      ist(nsParse(doc).length, 1)
+    })
+
+    it("excludes nodes when namespace is wrong", () => {
+      let doc = document.createElement("doc")
+      let h = document.createElementNS("urn:nt", "h")
+      doc.appendChild(h)
+      ist(nsParse(doc).length, 0)
+    })
+
+    it("excludes nodes when namespace is absent", () => {
+      let doc = document.createElement("doc")
+      let h = document.createElement("h")
+      doc.appendChild(h)
+      ist(nsParse(doc).length, 0)
+    })
   })
 })
 
