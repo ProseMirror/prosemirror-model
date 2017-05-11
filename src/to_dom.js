@@ -4,7 +4,8 @@
 // itself, or an array.
 //
 // An array describes a DOM element. The first element in the array
-// should be a string, and is the name of the DOM element. If the
+// is the name of the DOM element. It is a string or a QName. A QName
+// is an object with properties `namespace` and `tag`. If the
 // second element is a non-Array, non-DOM node object, it is
 // interpreted as an object providing the DOM element's attributes.
 // Any elements after that (including the 2nd if it's not an attribute
@@ -98,7 +99,14 @@ class DOMSerializer {
       return {dom: doc.createTextNode(structure)}
     if (structure.nodeType != null)
       return {dom: structure}
-    let dom = doc.createElement(structure[0]), contentDOM = null
+    let name = structure[0]
+    let dom
+    if (typeof name == "object") {
+      dom = doc.createElementNS(name.namespace, name.tag)
+    } else {
+      dom = doc.createElement(name)
+    }
+    contentDOM = null
     let attrs = structure[1], start = 1
     if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
       start = 2
