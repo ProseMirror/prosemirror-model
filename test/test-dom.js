@@ -3,7 +3,7 @@ const ist = require("ist")
 const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("../dist")
 
 // declare global: window
-let document = typeof window == "undefined" ? require("jsdom").jsdom() : window.document
+let document = typeof window == "undefined" ? (new (require("jsdom").JSDOM)).window.document : window.document
 
 const parser = DOMParser.fromSchema(schema)
 const serializer = DOMSerializer.fromSchema(schema)
