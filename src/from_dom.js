@@ -169,7 +169,9 @@ class DOMParser {
   matchTag(dom, context) {
     for (let i = 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
-      if (matches(dom, rule.tag) && matchesNamespace(dom, rule.namespace) && (!rule.context || context.matchesContext(rule.context))) {
+      if (matches(dom, rule.tag) &&
+          (!rule.namespace || dom.namespaceURI == rule.namespace) &&
+          (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(dom)
           if (result === false) continue
@@ -178,10 +180,6 @@ class DOMParser {
         return rule
       }
     }
-  }
-
-  matchesNamespace(dom, namespace) {
-    return !namespace || dom.namespaceURI == namespace
   }
 
   matchStyle(prop, value, context) {

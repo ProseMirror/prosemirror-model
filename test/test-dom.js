@@ -339,34 +339,37 @@ describe("DOMParser", () => {
       ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
     })
 
+    const xmlDocument = typeof window == "undefined"
+          ? (new (require("jsdom").JSDOM)("<tag/>", {contentType: "application/xml"})).window.document
+          : window.document
+
     function nsParse(doc) {
       let schema = new Schema({
-        marks: {},
         nodes: {doc: {content: "h*"}, text: {},
                 h: {parseDOM: [{tag: "h", namespace: "urn:ns"}]}}
       })
-      return DOMParser.fromSchema(schema).parse(doc).content.content
+      return DOMParser.fromSchema(schema).parse(doc)
     }
 
     it("includes nodes when namespace is correct", () => {
-      let doc = document.createElement("doc")
-      let h = document.createElementNS("urn:ns", "h")
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElementNS("urn:ns", "h")
       doc.appendChild(h)
-      ist(nsParse(doc).length, 1)
+      ist(nsParse(doc).childCount, 1)
     })
 
     it("excludes nodes when namespace is wrong", () => {
-      let doc = document.createElement("doc")
-      let h = document.createElementNS("urn:nt", "h")
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElementNS("urn:nt", "h")
       doc.appendChild(h)
-      ist(nsParse(doc).length, 0)
+      ist(nsParse(doc).childCount, 0)
     })
 
     it("excludes nodes when namespace is absent", () => {
-      let doc = document.createElement("doc")
-      let h = document.createElement("h")
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElement("h")
       doc.appendChild(h)
-      ist(nsParse(doc).length, 0)
+      ist(nsParse(doc).childCount, 0)
     })
   })
 })
