@@ -180,7 +180,7 @@ export class DOMParser {
     for (let i = 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
       if (matches(dom, rule.tag) &&
-          (!rule.namespace || dom.namespaceURI == rule.namespace) &&
+          (rule.namespace === undefined || dom.namespaceURI == rule.namespace) &&
           (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(dom)
