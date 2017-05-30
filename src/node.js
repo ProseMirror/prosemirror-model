@@ -69,7 +69,7 @@ class Node {
   // into this parent node, and its index.
   forEach(f) { this.content.forEach(f) }
 
-  // :: (?number, ?number, (node: Node, pos: number, parent: Node, index: number) → ?bool)
+  // :: (number, number, (node: Node, pos: number, parent: Node, index: number) → ?bool)
   // Invoke a callback for all descendant nodes recursively between
   // the given two positions that are relative to start of this node's content.
   // The callback is invoked with the node, its parent-relative position,
@@ -220,7 +220,7 @@ class Node {
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
-  // :: (?number, ?number, MarkType) → bool
+  // :: (number, number, MarkType) → bool
   // Test whether a mark of the given type occurs in this document
   // between the two given positions.
   rangeHasMark(from, to, type) {
