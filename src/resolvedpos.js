@@ -233,6 +233,10 @@ let resolveCache = [], resolveCachePos = 0, resolveCacheSize = 6
 
 // ::- Represents a flat range of content.
 class NodeRange {
+  // :: (ResolvedPos, ResolvedPos, number)
+  // Construct a node range. `$from` and `$to` should point into the
+  // same node until at least the given `depth`, since a node range
+  // denotes an adjacent set of nodes in a single parent node.
   constructor($from, $to, depth) {
     // :: ResolvedPos A resolved position along the start of the
     // content. May have a `depth` greater than this object's `depth`
