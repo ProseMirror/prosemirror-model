@@ -251,7 +251,7 @@ class MarkType {
       if (set[i].type == this) return set[i]
   }
 
-  // :: MarkType → bool
+  // :: (MarkType) → bool
   excludes(other) {
     return this.excluded.indexOf(other) > -1
   }
