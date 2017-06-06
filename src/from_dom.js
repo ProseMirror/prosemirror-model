@@ -2,6 +2,43 @@ const {Fragment} = require("./fragment")
 const {Slice} = require("./replace")
 const {Mark} = require("./mark")
 
+// ParseOptions:: interface
+// Set of options for parsing a DOM node.
+//
+//   preserveWhitespace:: ?union<bool, "full">
+//   By default, whitespace is collapsed as per HTML's rules. Pass
+//   `true` to preserve whitespace, but normalize newlines to
+//   spaces, and `"full"` to preserve whitespace entirely.
+//
+//   findPositions:: ?[{node: dom.Node, offset: number}]
+//   When given, the parser will, beside parsing the content,
+//   record the document positions of the given DOM positions. It
+//   will do so by writing to the objects, adding a `pos` property
+//   that holds the document position. DOM positions that are not
+//   in the parsed content will not be written to.
+//
+//   from:: ?number
+//   The child node index to start parsing from.
+//
+//   to:: ?number
+//   The child node index to stop parsing at.
+//
+//   topNode:: ?Node
+//   By default, the content is parsed into the schema's default
+//   [top node type](#model.Schema.topNodeType). You can pass this
+//   option to use the type and attributes from a different node
+//   as the top container.
+//
+//   topStart:: ?number
+//   Can be used to influence the content match at the start of
+//   the topnode. When given, should be a valid index into
+//   `topNode`.
+//
+//   context:: ?ResolvedPos
+//   A set of additional node names to count as
+//   [context](#model.ParseRule.context) when parsing, above the
+//   given [top node](#model.DOMParser.parse^options.topNode).
+
 // ParseRule:: interface
 // A value that describes how to parse a given DOM node or inline
 // style as a ProseMirror node or mark.
@@ -109,51 +146,15 @@ class DOMParser {
     })
   }
 
-  // :: (dom.Node, ?Object) → Node
+  // :: (dom.Node, ?ParseOptions) → Node
   // Parse a document from the content of a DOM node.
-  //
-  //   options::- Configuration options.
-  //
-  //     preserveWhitespace:: ?union<bool, "full">
-  //     By default, whitespace is collapsed as per HTML's rules. Pass
-  //     `true` to preserve whitespace, but normalize newlines to
-  //     spaces, and `"full"` to preserve whitespace entirely.
-  //
-  //     findPositions:: ?[{node: dom.Node, offset: number}]
-  //     When given, the parser will, beside parsing the content,
-  //     record the document positions of the given DOM positions. It
-  //     will do so by writing to the objects, adding a `pos` property
-  //     that holds the document position. DOM positions that are not
-  //     in the parsed content will not be written to.
-  //
-  //     from:: ?number
-  //     The child node index to start parsing from.
-  //
-  //     to:: ?number
-  //     The child node index to stop parsing at.
-  //
-  //     topNode:: ?Node
-  //     By default, the content is parsed into the schema's default
-  //     [top node type](#model.Schema.topNodeType). You can pass this
-  //     option to use the type and attributes from a different node
-  //     as the top container.
-  //
-  //     topStart:: ?number
-  //     Can be used to influence the content match at the start of
-  //     the topnode. When given, should be a valid index into
-  //     `topNode`.
-  //
-  //     context:: ?ResolvedPos
-  //     A set of additional node names to count as
-  //     [context](#model.ParseRule.context) when parsing, above the
-  //     given [top node](#model.DOMParser.parse^options.topNode).
   parse(dom, options = {}) {
     let context = new ParseContext(this, options, false)
     context.addAll(dom, null, options.from, options.to)
     return context.finish()
   }
 
-  // :: (dom.Node, ?Object) → Slice
+  // :: (dom.Node, ?ParseOptions) → Slice
   // Parses the content of the given DOM node, like
   // [`parse`](#model.DOMParser.parse), and takes the same set of
   // options. But unlike that method, which produces a whole node,
