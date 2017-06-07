@@ -51,6 +51,7 @@ the way ProseMirror operates, DOM [parsing](#model.DOMParser) and
 to load this module.)
 
 @DOMParser
+@ParseOptions
 @ParseRule
 
 @DOMSerializer
