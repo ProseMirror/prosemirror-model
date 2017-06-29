@@ -29,6 +29,6 @@
   "scripts": {
     "test": "mocha test/test-*.js",
     "build": "rimraf dist && buble -i src -o dist --no-named-function-expr",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   }
 }
