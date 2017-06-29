@@ -11,14 +11,6 @@ class ReplaceError extends Error {
 }
 exports.ReplaceError = ReplaceError
 
-let warnedAboutOpen = false
-function warnAboutOpen() {
-  if (!warnedAboutOpen && typeof console != "undefined" && console.warn) {
-    warnedAboutOpen = true
-    console.warn("Slice.openLeft has been renamed to openStart, and Slice.openRight to openEnd")
-  }
-}
-
 // ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
 // both side are 'open' / cut through.
@@ -32,9 +24,6 @@ class Slice {
     // :: number The open depth at the end.
     this.openEnd = openEnd
   }
-
-  get openLeft() { warnAboutOpen(); return this.openStart }
-  get openRight() { warnAboutOpen(); return this.openEnd }
 
   // :: number
   // The size this slice would add when inserted into a document.
