@@ -358,7 +358,7 @@ class ParseContext {
   addTextNode(dom) {
     let value = dom.nodeValue
     let top = this.top
-    if ((top.type && top.type.inlineContent) || /\S/.test(value)) {
+    if ((top.type ? top.type.inlineContent : top.content.length && top.content[0].isInline) || /\S/.test(value)) {
       if (!(top.options & OPT_PRESERVE_WS)) {
         value = value.replace(/\s+/g, " ")
         // If this starts with whitespace, and there is either no node
