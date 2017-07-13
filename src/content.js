@@ -99,7 +99,9 @@ class ContentExpr {
       let nodeTypes = expandTypes(nodeType.schema, types[1] ? [types[1]] : types[2].split(/\s*\|\s*/))
       for (let i = 0; i < nodeTypes.length; i++) {
         if (inline == null) inline = nodeTypes[i].isInline
-        else if (inline != nodeTypes[i].isInline) throw new SyntaxError("Mixing inline and block content in a single node")
+        else if (inline != nodeTypes[i].isInline)
+          throw new SyntaxError("Mixing inline and block content (" + expr +
+                                ") in a single node (" + nodeType.name + ")")
       }
       let attrSet = !attrs ? null : parseAttrs(nodeType, attrs[1])
       let markSet = !marks ? false : marks[1] ? true : this.gatherMarks(nodeType.schema, marks[2].split(/\s+/))
