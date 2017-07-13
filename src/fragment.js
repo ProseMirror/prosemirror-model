@@ -9,6 +9,9 @@ const {findDiffStart, findDiffEnd} = require("./diff")
 class Fragment {
   constructor(content, size) {
     this.content = content
+    // :: number
+    // The size of the fragment, which is the total of the size of its
+    // content nodes.
     this.size = size || 0
     if (size == null) for (let i = 0; i < content.length; i++)
       this.size += content[i].nodeSize
