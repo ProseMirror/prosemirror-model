@@ -317,7 +317,7 @@ exports.MarkType = MarkType
 //   node during replace operations (such as paste). Non-defining (the
 //   default) nodes get dropped when their entire content is replaced,
 //   whereas defining nodes persist and wrap the inserted content.
-//   Likewise, the the _inserted_ content, when not inserting into a
+//   Likewise, the _inserted_ content, when not inserting into a
 //   textblock, the defining parents of the content are preserved.
 //   Typically, non-default-paragraph textblock types, and possible
 //   list items, are marked as defining.
