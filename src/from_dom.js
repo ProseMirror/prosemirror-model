@@ -106,12 +106,13 @@ const {Mark} = require("./mark")
 //   Called with a DOM Element for `tag` rules, and with a string (the
 //   style's value) for `style` rules.
 //
-//   contentElement:: ?string
+//   contentElement:: ?union<string, (dom.Node) → dom.Node>
 //   For `tag` rules that produce non-leaf nodes or marks, by default
 //   the content of the DOM element is parsed as content of the mark
 //   or node. If the child nodes are in a descendent node, this may be
 //   a CSS selector string that the parser must use to find the actual
-//   content element.
+//   content element, or a function that returns the actual content
+//   element to the parser.
 //
 //   getContent:: ?(dom.Node) → Fragment
 //   Can be used to override the content of a matched node. Will be
@@ -441,6 +442,7 @@ class ParseContext {
     } else {
       let contentDOM = rule.contentElement
       if (typeof contentDOM == "string") contentDOM = dom.querySelector(contentDOM)
+      else if (typeof contentDOM == "function") contentDOM = contentDOM(dom)
       if (!contentDOM) contentDOM = dom
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, sync)
