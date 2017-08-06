@@ -1,4 +1,4 @@
-const {findDiffStart, findDiffEnd} = require("./diff")
+import {findDiffStart, findDiffEnd} from "./diff"
 
 // ::- Fragment is the type used to represent a node's collection of
 // child nodes.
@@ -6,7 +6,7 @@ const {findDiffStart, findDiffEnd} = require("./diff")
 // Fragments are persistent data structures. That means you should
 // _not_ mutate them or their content, but create new instances
 // whenever needed. The API tries to make this easy.
-class Fragment {
+export class Fragment {
   constructor(content, size) {
     this.content = content
     // :: number
@@ -267,7 +267,6 @@ class Fragment {
     return new Fragment([nodes], nodes.nodeSize)
   }
 }
-exports.Fragment = Fragment
 
 const found = {index: 0, offset: 0}
 function retIndex(index, offset) {

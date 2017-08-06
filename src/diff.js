@@ -1,4 +1,4 @@
-function findDiffStart(a, b, pos) {
+export function findDiffStart(a, b, pos) {
   for (let i = 0;; i++) {
     if (i == a.childCount || i == b.childCount)
       return a.childCount == b.childCount ? null : pos
@@ -20,9 +20,8 @@ function findDiffStart(a, b, pos) {
     pos += childA.nodeSize
   }
 }
-exports.findDiffStart = findDiffStart
 
-function findDiffEnd(a, b, posA, posB) {
+export function findDiffEnd(a, b, posA, posB) {
   for (let iA = a.childCount, iB = b.childCount;;) {
     if (iA == 0 || iB == 0)
       return iA == iB ? null : {a: posA, b: posB}
@@ -49,4 +48,3 @@ function findDiffEnd(a, b, posA, posB) {
     posA -= size; posB -= size
   }
 }
-exports.findDiffEnd = findDiffEnd

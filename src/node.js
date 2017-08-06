@@ -1,8 +1,8 @@
-const {Fragment} = require("./fragment")
-const {Mark} = require("./mark")
-const {Slice, replace} = require("./replace")
-const {ResolvedPos} = require("./resolvedpos")
-const {compareDeep} = require("./comparedeep")
+import {Fragment} from "./fragment"
+import {Mark} from "./mark"
+import {Slice, replace} from "./replace"
+import {ResolvedPos} from "./resolvedpos"
+import {compareDeep} from "./comparedeep"
 
 const emptyAttrs = Object.create(null)
 
@@ -18,7 +18,7 @@ const emptyAttrs = Object.create(null)
 //
 // **Never** directly mutate the properties of a `Node` object. See
 // [this guide](/docs/guides/doc/) for more information.
-class Node {
+export class Node {
   constructor(type, attrs, content, marks) {
     // :: NodeType
     // The type of node that this is.
@@ -349,9 +349,8 @@ class Node {
     return type.create(json.attrs, Fragment.fromJSON(schema, json.content), marks)
   }
 }
-exports.Node = Node
 
-class TextNode extends Node {
+export class TextNode extends Node {
   constructor(type, attrs, content, marks) {
     super(type, attrs, null, marks)
 
@@ -392,7 +391,6 @@ class TextNode extends Node {
     return base
   }
 }
-exports.TextNode = TextNode
 
 function wrapMarks(marks, str) {
   for (let i = marks.length - 1; i >= 0; i--)

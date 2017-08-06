@@ -1,20 +1,19 @@
-const {Fragment} = require("./fragment")
+import {Fragment} from "./fragment"
 
 // ::- Error type raised by [`Node.replace`](#model.Node.replace) when
 // given an invalid replacement.
-class ReplaceError extends Error {
+export class ReplaceError extends Error {
   constructor(message) {
     super(message)
     this.message = message
   }
   get name() { return "ReplaceError" }
 }
-exports.ReplaceError = ReplaceError
 
 // ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
 // both side are 'open' / cut through.
-class Slice {
+export class Slice {
   // :: (Fragment, number, number)
   constructor(content, openStart, openEnd) {
     // :: Fragment The slice's content nodes.
@@ -77,7 +76,6 @@ class Slice {
     return new Slice(fragment, openStart, openEnd)
   }
 }
-exports.Slice = Slice
 
 function removeRange(content, from, to) {
   let {index, offset} = content.findIndex(from), child = content.maybeChild(index)
@@ -104,14 +102,13 @@ function insertInto(content, dist, insert, parent) {
 // The empty slice.
 Slice.empty = new Slice(Fragment.empty, 0, 0)
 
-function replace($from, $to, slice) {
+export function replace($from, $to, slice) {
   if (slice.openStart > $from.depth)
     throw new ReplaceError("Inserted content deeper than insertion position")
   if ($from.depth - slice.openStart != $to.depth - slice.openEnd)
     throw new ReplaceError("Inconsistent open depths")
   return replaceOuter($from, $to, slice, 0)
 }
-exports.replace = replace
 
 function replaceOuter($from, $to, slice, depth) {
   let index = $from.index(depth), node = $from.node(depth)

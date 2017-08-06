@@ -1,11 +1,11 @@
-exports.Node = require("./node").Node
-;({ResolvedPos: exports.ResolvedPos, NodeRange: exports.NodeRange} = require("./resolvedpos"))
-exports.Fragment = require("./fragment").Fragment
-;({Slice: exports.Slice, ReplaceError: exports.ReplaceError} = require("./replace"))
-exports.Mark = require("./mark").Mark
+export {Node} from "./node"
+export {ResolvedPos, NodeRange} from "./resolvedpos"
+export {Fragment} from "./fragment"
+export {Slice, ReplaceError} from "./replace"
+export {Mark} from "./mark"
 
-;({Schema: exports.Schema, NodeType: exports.NodeType, MarkType: exports.MarkType} = require("./schema"))
-;({ContentMatch: exports.ContentMatch} = require("./content"))
+export {Schema, NodeType, MarkType} from "./schema"
+export {ContentMatch, ContentExpr as __ContentExpr} from "./content"
 
-exports.DOMParser = require("./from_dom").DOMParser
-exports.DOMSerializer =  require("./to_dom").DOMSerializer
+export {DOMParser} from "./from_dom"
+export {DOMSerializer} from "./to_dom"

@@ -1,4 +1,4 @@
-const {ContentExpr} = require("../dist/content")
+const {__ContentExpr: ContentExpr} = require("../dist")
 const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("prosemirror-test-builder")
 const ist = require("ist")
 

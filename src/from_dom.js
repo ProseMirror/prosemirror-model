@@ -1,6 +1,6 @@
-const {Fragment} = require("./fragment")
-const {Slice} = require("./replace")
-const {Mark} = require("./mark")
+import {Fragment} from "./fragment"
+import {Slice} from "./replace"
+import {Mark} from "./mark"
 
 // ParseOptions:: interface
 // Set of options for parsing a DOM node.
@@ -129,7 +129,7 @@ const {Mark} = require("./mark")
 // ::- A DOM parser represents a strategy for parsing DOM content into
 // a ProseMirror document conforming to a given schema. Its behavior
 // is defined by an array of [rules](#model.ParseRule).
-class DOMParser {
+export class DOMParser {
   // :: (Schema, [ParseRule])
   // Create a parser that targets the given schema, using the given
   // parsing rules.
@@ -237,7 +237,6 @@ class DOMParser {
       (schema.cached.domParser = new DOMParser(schema, DOMParser.schemaRules(schema)))
   }
 }
-exports.DOMParser = DOMParser
 
 // : Object<bool> The block-level tags in HTML5
 const blockTags = {

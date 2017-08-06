@@ -1,4 +1,4 @@
-const {compareDeep} = require("./comparedeep")
+import {compareDeep} from "./comparedeep"
 
 // ::- A mark is a piece of information that can be attached to a node,
 // such as it being emphasized, in code font, or a link. It has a type
@@ -6,7 +6,7 @@ const {compareDeep} = require("./comparedeep")
 // (such as the target of the link). Marks are created through a
 // `Schema`, which controls which types exist and which
 // attributes they have.
-class Mark {
+export class Mark {
   constructor(type, attrs) {
     // :: MarkType
     // The type of this mark.
@@ -110,7 +110,6 @@ class Mark {
     return copy
   }
 }
-exports.Mark = Mark
 
 // :: [Mark] The empty set of marks.
 Mark.none = []

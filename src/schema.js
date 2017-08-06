@@ -1,9 +1,9 @@
-const OrderedMap = require("orderedmap")
+import OrderedMap from "orderedmap"
 
-const {Node, TextNode} = require("./node")
-const {Fragment} = require("./fragment")
-const {Mark} = require("./mark")
-const {ContentExpr} = require("./content")
+import {Node, TextNode} from "./node"
+import {Fragment} from "./fragment"
+import {Mark} from "./mark"
+import {ContentExpr} from "./content"
 
 // For node types where all attrs have a default value (or which don't
 // have any attributes), build up a single reusable default attribute
@@ -47,7 +47,7 @@ function initAttrs(attrs) {
 // tag `Node` instances with a type. They contain information about
 // the node type, such as its name and what kind of node it
 // represents.
-class NodeType {
+export class NodeType {
   constructor(name, schema, spec) {
     // :: string
     // The name the node type has in this schema.
@@ -177,7 +177,6 @@ class NodeType {
     return result
   }
 }
-exports.NodeType = NodeType
 
 // Attribute descriptors
 
@@ -197,7 +196,7 @@ class Attribute {
 // ::- Like nodes, marks (which are associated with nodes to signify
 // things like emphasis or being part of a link) are tagged with type
 // objects, which are instantiated once per `Schema`.
-class MarkType {
+export class MarkType {
   constructor(name, rank, schema, spec) {
     // :: string
     // The name of the mark type.
@@ -258,7 +257,6 @@ class MarkType {
     return this.excluded.indexOf(other) > -1
   }
 }
-exports.MarkType = MarkType
 
 // SchemaSpec:: interface
 // An object describing a schema, as passed to the `Schema`
@@ -402,7 +400,7 @@ exports.MarkType = MarkType
 //   A function that computes a default value for the attribute.
 
 // ::- A document schema.
-class Schema {
+export class Schema {
   // :: (SchemaSpec)
   // Construct a schema from a specification.
   constructor(spec) {
@@ -503,4 +501,3 @@ class Schema {
     return found
   }
 }
-exports.Schema = Schema

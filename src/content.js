@@ -1,7 +1,7 @@
-const {Fragment} = require("./fragment")
-const {Mark} = require("./mark")
+import {Fragment} from "./fragment"
+import {Mark} from "./mark"
 
-class ContentExpr {
+export class ContentExpr {
   constructor(nodeType, elements, inlineContent) {
     this.nodeType = nodeType
     this.elements = elements
@@ -140,7 +140,6 @@ class ContentExpr {
     return found
   }
 }
-exports.ContentExpr = ContentExpr
 
 class ContentElement {
   constructor(nodeTypes, attrs, marks, min, max) {
@@ -206,7 +205,7 @@ class ContentElement {
 // expression](#model.NodeSpec), and can be used to find out whether further
 // content matches here, and whether a given position is a valid end
 // of the parent node.
-class ContentMatch {
+export class ContentMatch {
   constructor(expr, attrs, index, count) {
     this.expr = expr
     this.attrs = attrs
@@ -375,7 +374,6 @@ class ContentMatch {
     return this.findWrapping(node.type, node.attrs, node.marks)
   }
 }
-exports.ContentMatch = ContentMatch
 
 class AttrValue {
   constructor(attr) { this.attr = attr }

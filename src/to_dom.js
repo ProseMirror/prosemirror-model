@@ -16,7 +16,7 @@
 
 // ::- A DOM serializer knows how to convert ProseMirror nodes and
 // marks of various types to DOM nodes.
-class DOMSerializer {
+export class DOMSerializer {
   // :: (Object<(node: Node) → DOMOutputSpec>, Object<?(mark: Mark, inline: bool) → DOMOutputSpec>)
   // Create a serializer. `nodes` should map node names to functions
   // that take a node and return a description of the corresponding
@@ -161,7 +161,6 @@ class DOMSerializer {
     return gatherToDOM(schema.marks)
   }
 }
-exports.DOMSerializer = DOMSerializer
 
 function gatherToDOM(obj) {
   let result = {}
