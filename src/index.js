@@ -5,7 +5,7 @@ export {Slice, ReplaceError} from "./replace"
 export {Mark} from "./mark"
 
 export {Schema, NodeType, MarkType} from "./schema"
-export {ContentMatch, ContentExpr as __ContentExpr} from "./content"
+export {ContentMatch} from "./content"
 
 export {DOMParser} from "./from_dom"
 export {DOMSerializer} from "./to_dom"

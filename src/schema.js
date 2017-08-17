@@ -3,7 +3,7 @@ import OrderedMap from "orderedmap"
 import {Node, TextNode} from "./node"
 import {Fragment} from "./fragment"
 import {Mark} from "./mark"
-import {ContentExpr} from "./content"
+import {ContentMatch} from "./content"
 
 // For node types where all attrs have a default value (or which don't
 // have any attributes), build up a single reusable default attribute
@@ -65,7 +65,19 @@ export class NodeType {
     this.attrs = initAttrs(spec.attrs)
 
     this.defaultAttrs = defaultAttrs(this.attrs)
-    this.contentExpr = null
+
+    // :: ContentMatch
+    // The starting match of the node type's content expression.
+    this.contentMatch = null
+
+    // : ?[MarkType]
+    // The set of marks allowed in this node. `null` means all marks
+    // are allowed.
+    this.markSet = null
+
+    // :: bool
+    // True if this node type has inline content.
+    this.inlineContent = null
 
     // :: bool
     // True if this is a block type
@@ -83,15 +95,11 @@ export class NodeType {
   // :: bool
   // True if this is a textblock type, a block that contains inline
   // content.
-  get isTextblock() { return this.isBlock && this.contentExpr.inlineContent }
-
-  // :: bool
-  // True if this node type has inline content.
-  get inlineContent() { return this.contentExpr.inlineContent }
+  get isTextblock() { return this.isBlock && this.inlineContent }
 
   // :: bool
   // True for node types that allow no content.
-  get isLeaf() { return this.contentExpr.isLeaf }
+  get isLeaf() { return this.contentMatch == ContentMatch.empty }
 
   // :: bool
   // True when this node is an atom, i.e. when it does not have
@@ -105,7 +113,7 @@ export class NodeType {
   }
 
   compatibleContent(other) {
-    return this == other || this.contentExpr.compatible(other.contentExpr)
+    return this == other || this.contentMatch.compatible(other.contentMatch)
   }
 
   computeAttrs(attrs) {
@@ -131,11 +139,10 @@ export class NodeType {
   // against the node type's content restrictions, and throw an error
   // if it doesn't match.
   createChecked(attrs, content, marks) {
-    attrs = this.computeAttrs(attrs)
     content = Fragment.from(content)
-    if (!this.validContent(content, attrs))
+    if (!this.validContent(content))
       throw new RangeError("Invalid content for node " + this.name)
-    return new Node(this, attrs, content, Mark.setFrom(marks))
+    return new Node(this, this.computeAttrs(attrs), content, Mark.setFrom(marks))
   }
 
   // :: (?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → ?Node
@@ -149,20 +156,53 @@ export class NodeType {
     attrs = this.computeAttrs(attrs)
     content = Fragment.from(content)
     if (content.size) {
-      let before = this.contentExpr.start(attrs).fillBefore(content)
+      let before = this.contentMatch.fillBefore(content)
       if (!before) return null
       content = before.append(content)
     }
-    let after = this.contentExpr.getMatchAt(attrs, content).fillBefore(Fragment.empty, true)
+    let after = this.contentMatch.matchFragment(content).fillBefore(Fragment.empty, true)
     if (!after) return null
     return new Node(this, attrs, content.append(after), Mark.setFrom(marks))
   }
 
-  // :: (Fragment, ?Object) → bool
+  // :: (Fragment) → bool
   // Returns true if the given fragment is valid content for this node
   // type with the given attributes.
-  validContent(content, attrs) {
-    return this.contentExpr.matches(attrs, content)
+  validContent(content) {
+    let result = this.contentMatch.matchFragment(content)
+    if (!result || !result.validEnd) return false
+    for (let i = 0; i < content.childCount; i++)
+      if (!this.allowsMarks(content.child(i).marks)) return false
+    return true
+  }
+
+  // :: (MarkType) → bool
+  // Whether the given mark type is allowed in this node.
+  allowsMarkType(markType) {
+    return this.markSet == null || this.markSet.indexOf(markType) > -1
+  }
+
+  // :: ([Mark]) → bool
+  // Whether the given marks are allowed in this node.
+  allowsMarks(marks) {
+    if (this.markSet == null) return true
+    for (let i = 0; i < marks.length; i++) if (!this.allowsMarkType(marks[i])) return false
+    return true
+  }
+
+  // :: ([Mark]) → [Mark]
+  // Removes the marks that are not allowed in this node from the given set.
+  allowedMarks(marks) {
+    if (this.markSet == null) return marks
+    let copy
+    for (let i = 0; i < marks.length; i++) {
+      if (!this.allowsMarkType(marks[i])) {
+        if (!copy) copy = marks.slice(0, i)
+      } else if (copy) {
+        copy.push(marks[i])
+      }
+    }
+    return !copy ? marks : copy.length ? copy : Mark.empty
   }
 
   static compile(nodes, schema) {
@@ -280,6 +320,13 @@ export class MarkType {
 //   The content expression for this node, as described in the [schema
 //   guide](/docs/guides/schema/). When not given, the node does not allow
 //   any content.
+//
+//   marks:: ?string
+//   The marks that are allowed inside of this node. May be a
+//   space-separated string referring to mark names or groups, `"_"`
+//   to explicitly allow all marks, or `""` to disallow marks. When
+//   not given, nodes with inline content default to allowing all
+//   marks, other nodes default to not allowing marks.
 //
 //   group:: ?string
 //   The group or space-separated groups to which this node belongs, as
@@ -399,6 +446,8 @@ export class MarkType {
 //   compute:: ?() → any
 //   A function that computes a default value for the attribute.
 
+let warnedAboutMarkSyntax = false
+
 // ::- A document schema.
 export class Schema {
   // :: (SchemaSpec)
@@ -426,12 +475,25 @@ export class Schema {
     for (let prop in this.nodes) {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
-      let type = this.nodes[prop]
-      type.contentExpr = ContentExpr.parse(type, this.spec.nodes.get(prop).content || "")
+      let type = this.nodes[prop], contentExpr = type.spec.content || "", markExpr = type.spec.marks
+      let oldStyle = /<(.*?)>/.test(contentExpr)
+      if (oldStyle) {
+        if (!warnedAboutMarkSyntax && typeof console != "undefined" && console.warn) {
+          warnedAboutMarkSyntax = true
+          console.warn("Angle-bracket syntax for marks in content expressions is deprecated. Use the `marks` spec property instead.")
+        }
+        markExpr = oldStyle[1]
+        contentExpr = contentExpr.replace(/<(.*?)>/g, "")
+      }
+      type.contentMatch = ContentMatch.parse(contentExpr, this.nodes)
+      type.inlineContent = type.contentMatch.inlineContent
+      type.markSet = markExpr == "_" ? null :
+        markExpr ? gatherMarks(this, markExpr.split(" ")) :
+        markExpr == "" || !type.inlineContent ? [] : null
     }
     for (let prop in this.marks) {
       let type = this.marks[prop], excl = type.spec.excludes
-      type.excluded = excl == null ? [type] : excl == "" ? [] : ContentExpr.gatherMarks(this, excl.split(" "))
+      type.excluded = excl == null ? [type] : excl == "" ? [] : gatherMarks(this, excl.split(" "))
     }
 
     // :: Object
@@ -500,4 +562,22 @@ export class Schema {
     if (!found) throw new RangeError("Unknown node type: " + name)
     return found
   }
+}
+
+function gatherMarks(schema, marks) {
+  let found = []
+  for (let i = 0; i < marks.length; i++) {
+    let name = marks[i], mark = schema.marks[name], ok = mark
+    if (mark) {
+      found.push(mark)
+    } else {
+      for (let prop in schema.marks) {
+        let mark = schema.marks[prop]
+        if (name == "_" || (mark.spec.group && mark.spec.group.split(" ").indexOf(name) > -1))
+          found.push(ok = mark)
+      }
+    }
+    if (!ok) throw new SyntaxError("Unknown mark type: '" + marks[i] + "'")
+  }
+  return found
 }

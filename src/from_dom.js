@@ -267,7 +267,7 @@ class NodeContext {
     this.type = type
     this.attrs = attrs
     this.solid = solid
-    this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentExpr.start(attrs))
+    this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentMatch)
     this.options = options
     this.content = []
   }
@@ -275,18 +275,20 @@ class NodeContext {
   findWrapping(type, attrs) {
     if (!this.match) {
       if (!this.type) return []
-      let found = this.type.contentExpr.atType(this.attrs, type, attrs)
-      if (!found) {
-        let start = this.type.contentExpr.start(this.attrs), wrap
-        if (wrap = start.findWrapping(type, attrs)) {
+      let fill = this.type.contentMatch.fillBefore(Fragment.from(type.create(attrs)))
+      if (fill) {
+        this.match = this.type.contentMatch.matchFragment(fill)
+      } else {
+        let start = this.type.contentMatch, wrap
+        if (wrap = start.findWrapping(type)) {
           this.match = start
           return wrap
+        } else {
+          return null
         }
       }
-      if (found) this.match = found
-      else return null
     }
-    return this.match.findWrapping(type, attrs)
+    return this.match.findWrapping(type)
   }
 
   finish(openEnd) {
@@ -486,7 +488,7 @@ class ParseContext {
     if (!route) return false
     this.sync(sync)
     for (let i = 0; i < route.length; i++)
-      this.enterInner(route[i].type, route[i].attrs, false)
+      this.enterInner(route[i], null, false)
     return true
   }
 
@@ -501,12 +503,8 @@ class ParseContext {
       this.closeExtra()
       let top = this.top
       if (top.match) {
-        let match = top.match.matchNode(node)
-        if (!match) {
-          node = node.mark(node.marks.filter(mark => top.match.allowsMark(mark.type)))
-          match = top.match.matchNode(node)
-        }
-        top.match = match
+        top.match = top.match.matchType(node.type)
+        if (top.type) node = node.mark(top.type.allowedMarks(node.marks))
       }
       top.content.push(node)
     }

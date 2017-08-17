@@ -8,7 +8,7 @@ let link = (href, title) => schema.mark("link", {href, title})
 let code = schema.mark("code")
 
 let customSchema = new Schema({
-  nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text<_>*"}, text: {}},
+  nodes: {doc: {content: "paragraph+"}, paragraph: {content: "text*"}, text: {}},
   marks: {
     remark: {attrs: {id: {}}, excludes: "", inclusive: false},
     user: {attrs: {id: {}}, excludes: "_"},

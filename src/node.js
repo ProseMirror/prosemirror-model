@@ -279,7 +279,7 @@ export class Node {
   // :: (number) → ContentMatch
   // Get the content match in this node at the given index.
   contentMatchAt(index) {
-    return this.type.contentExpr.getMatchAt(this.attrs, this.content, index)
+    return this.type.contentMatch.matchFragment(this.content, 0, index)
   }
 
   // :: (number, number, ?Fragment, ?number, ?number) → bool
@@ -288,16 +288,22 @@ export class Node {
   // fragment) would leave the node's content valid. You can
   // optionally pass `start` and `end` indices into the replacement
   // fragment.
-  canReplace(from, to, replacement, start, end) {
-    return this.type.contentExpr.checkReplace(this.attrs, this.content, from, to, replacement, start, end)
+  canReplace(from, to, replacement = Fragment.empty, start = 0, end = replacement.childCount) {
+    let one = this.contentMatchAt(from).matchFragment(replacement, start, end)
+    let two = one && one.matchFragment(this.content, to)
+    if (!two || !two.validEnd) return false
+    for (let i = start; i < end; i++) if (!this.type.allowsMarks(replacement.child(i).marks)) return false
+    return true
   }
 
   // :: (number, number, NodeType, ?[Mark]) → bool
   // Test whether replacing the range `from` to `to` (by index) with a
-  // node of the given type with the given attributes and marks would
-  // be valid.
-  canReplaceWith(from, to, type, attrs, marks) {
-    return this.type.contentExpr.checkReplaceWith(this.attrs, this.content, from, to, type, attrs, marks || Mark.none)
+  // node of the given type.
+  canReplaceWith(from, to, type, marks) {
+    if (marks && !this.type.allowsMarks(marks)) return false
+    let start = this.contentMatchAt(from).matchType(type)
+    let end = start && start.matchFragment(this.content, to)
+    return end ? end.validEnd : false
   }
 
   // :: (Node) → bool
@@ -319,7 +325,7 @@ export class Node {
   // Check whether this node and its descendants conform to the
   // schema, and raise error when they do not.
   check() {
-    if (!this.type.validContent(this.content, this.attrs))
+    if (!this.type.validContent(this.content))
       throw new RangeError(`Invalid content for node ${this.type.name}: ${this.content.toString().slice(0, 50)}`)
     this.content.forEach(node => node.check())
   }
@@ -368,7 +374,7 @@ export class TextNode extends Node {
   get nodeSize() { return this.text.length }
 
   mark(marks) {
-    return new TextNode(this.type, this.attrs, this.text, marks)
+    return marks == this.marks ? this : new TextNode(this.type, this.attrs, this.text, marks)
   }
 
   withText(text) {
