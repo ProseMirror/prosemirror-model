@@ -121,12 +121,12 @@ export class ResolvedPos {
     return index == 0 ? null : this.parent.child(index - 1)
   }
 
-  // :: (?bool) → [Mark]
+  // :: () → [Mark]
   // Get the marks at this position, factoring in the surrounding
   // marks' [`inclusive`](#model.MarkSpec.inclusive) property. If the
-  // position is at the start of a non-empty node, or `after` is true,
-  // the marks of the node after it (if any) are returned.
-  marks(after) {
+  // position is at the start of a non-empty node, the marks of the
+  // node after it (if any) are returned.
+  marks() {
     let parent = this.parent, index = this.index()
 
     // In an empty parent, return the empty array
@@ -138,7 +138,7 @@ export class ResolvedPos {
     let main = parent.maybeChild(index - 1), other = parent.maybeChild(index)
     // If the `after` flag is true of there is no node before, make
     // the node after this position the main reference.
-    if ((after && other) || !main) { let tmp = main; main = other; other = tmp }
+    if (!main) { let tmp = main; main = other; other = tmp }
 
     // Use all marks in the main node, except those that have
     // `inclusive` set to false and are not present in the other node.
@@ -147,6 +147,24 @@ export class ResolvedPos {
       if (marks[i].type.spec.inclusive === false && (!other || !marks[i].isInSet(other.marks)))
         marks = marks[i--].removeFromSet(marks)
 
+    return marks
+  }
+
+  // :: () → ?[Mark]
+  // Get the marks after the current position, if any, except those
+  // that are non-inclusive and not present at position `$end`. This
+  // is mostly useful for getting the set of marks to preserve after a
+  // deletion. Will return `null` if this position is at the end of
+  // its parent node or its parent node isn't a textblock (in which
+  // case no marks should be preserved).
+  marksAcross($end) {
+    let after = this.parent.maybeChild(this.index())
+    if (!after || !after.isInline) return null
+
+    let marks = after.marks, next = $end.parent.maybeChild($end.index())
+    for (var i = 0; i < marks.length; i++)
+      if (marks[i].type.spec.inclusive === false && (!next || !marks[i].isInSet(next.marks)))
+        marks = marks[i--].removeFromSet(marks)
     return marks
   }
 
