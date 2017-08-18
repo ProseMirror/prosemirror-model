@@ -1,5 +1,9 @@
 import {Fragment} from "./fragment"
 
+// ::- This represents a match state of a node type's [content
+// expression](#model.NodeSpec.content), and can be used to find out
+// whether further content matches here, and whether a given position
+// is a valid end of the node.
 export class ContentMatch {
   constructor(validEnd) {
     // :: bool
