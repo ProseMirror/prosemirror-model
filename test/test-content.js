@@ -1,177 +1,66 @@
-const {__ContentExpr: ContentExpr} = require("../dist")
+const {ContentMatch} = require("../dist")
 const {schema, eq, doc, p, pre, img, br, h1, h2, em, hr} = require("prosemirror-test-builder")
 const ist = require("ist")
 
-function get(expr) { return ContentExpr.parse(schema.nodes.heading, expr, schema.spec.nodes) }
+function get(expr) { return ContentMatch.parse(expr, schema.nodes) }
 
-function val(value) { return value.attr ? "." + value.attr : value }
-
-function simplify(elt) {
-  let attrs = null
-  if (elt.attrs) {
-    attrs = {}
-    for (let attr in elt.attrs) attrs[attr] = val(elt.attrs[attr])
+describe("ContentMatch", () => {
+  function match(expr, types) {
+    let m = get(expr), ts = types ? types.split(" ").map(t => schema.nodes[t]) : []
+    for (let i = 0; m && i < ts.length; i++) m = m.matchType(ts[i])
+    return m && m.validEnd
   }
-  return {types: elt.nodeTypes.map(t => t.name).sort(),
-          attrs: attrs,
-          marks: Array.isArray(elt.marks) ? elt.marks.map(m => m.name) : elt.marks,
-          min: val(elt.min), max: elt.max == 2e9 ? Infinity : val(elt.max)}
-}
+  function valid(expr, types) { ist(match(expr, types)) }
+  function invalid(expr, types) { ist(!match(expr, types)) }
 
-function normalize(obj) {
-  return {types: obj.types.sort(),
-          attrs: obj.attrs || null,
-          marks: obj.marks || false,
-          min: obj.min == null ? 1 : obj.min,
-          max: obj.max == null ? 1 : obj.max}
-}
+  it("accepts empty content for the empty expr", () => valid("", ""))
+  it("doesn't accept content in the empty expr", () => invalid("", "image"))
 
-describe("ContentExpr", () => {
-  describe("parse", () => {
-    function parse(expr, ...expected) {
-      ist(JSON.stringify(get(expr).elements.map(simplify)),
-          JSON.stringify(expected.map(normalize)))
-    }
+  it("matches nothing to an asterisk", () => valid("image*", ""))
+  it("matches one element to an asterisk", () => valid("image*", "image"))
+  it("matches multiple elements to an asterisk", () => valid("image*", "image image image image"))
+  it("only matches appropriate elements to an asterisk", () => invalid("image*", "image text"))
 
-    it("parses a plain name", () => parse("paragraph", {types: ["paragraph"]}))
+  it("matches group members to a group", () => valid("inline*", "image text"))
+  it("doesn't match non-members to a group", () => invalid("inline*", "paragraph"))
+  it("matches an element to a choice expression", () => valid("(paragraph | heading)", "paragraph"))
+  it("doesn't match unmentioned elements to a choice expr", () => invalid("(paragraph | heading)", "image"))
 
-    it("parses a sequence", () => parse("heading paragraph heading",
-                                        {types: ["heading"]},
-                                        {types: ["paragraph"]},
-                                        {types: ["heading"]}))
+  it("matches a simple sequence", () => valid("paragraph horizontal_rule paragraph", "paragraph horizontal_rule paragraph"))
+  it("fails when a sequence is too long", () => invalid("paragraph horizontal_rule", "paragraph horizontal_rule paragraph"))
+  it("fails when a sequence is too short", () => invalid("paragraph horizontal_rule paragraph", "paragraph horizontal_rule"))
+  it("fails when a sequence starts incorrectly", () => invalid("paragraph horizontal_rule", "horizontal_rule paragraph horizontal_rule"))
 
-    it("recognizes the plus sign", () => parse("paragraph+", {types: ["paragraph"], max: Infinity}))
+  it("accepts a sequence asterisk matching zero elements", () => valid("heading paragraph*", "heading"))
+  it("accepts a sequence asterisk matching multiple elts", () => valid("heading paragraph*", "heading paragraph paragraph"))
+  it("accepts a sequence plus matching one element", () => valid("heading paragraph+", "heading paragraph"))
+  it("accepts a sequence plus matching multiple elts", () => valid("heading paragraph+", "heading paragraph paragraph"))
+  it("fails when a sequence plus has no elements", () => invalid("heading paragraph+", "heading"))
+  it("fails when a sequence plus misses its start", () => invalid("heading paragraph+", "paragraph paragraph"))
 
-    it("recognizes the asterisk", () => parse("paragraph*", {types: ["paragraph"], min: 0, max: Infinity}))
+  it("accepts an optional element being present", () => valid("image?", "image"))
+  it("accepts an optional element being missing", () => valid("image?", ""))
+  it("fails when an optional element is present twice", () => invalid("image?", "image image"))
 
-    it("recognizes the question mark", () => parse("paragraph?", {types: ["paragraph"], min: 0, max: 1}))
+  it("accepts a nested repeat", () => valid("(image text+)+", "image text image text text"))
+  it("fails on extra input after a nested repeat", () => invalid("(image text+)+", "image text image text text paragraph"))
 
-    it("accepts a string attribute", () =>
-       parse("image[title=\"foo\"]*", {types: ["image"], attrs: {title: "foo"}, min: 0, max: Infinity}))
-
-    it("accepts a numeric attribute", () =>
-       parse("heading[level=2]*", {types: ["heading"], attrs: {level: 2}, min: 0, max: Infinity}))
-
-    it("accepts multiple attributes", () =>
-       parse("image[title=\"foo\", href=\"bar\"]*",
-             {types: ["image"], attrs: {title: "foo", href: "bar"}, min: 0, max: Infinity}))
-
-    it("accepts an attribute referring to a parent attribute", () =>
-       parse("heading[level=.level]*",
-             {types: ["heading"], attrs: {level: ".level"}, min: 0, max: Infinity}))
-
-    it("accepts undescore syntax for marks", () =>
-       parse("hard_break<_>", {types: ["hard_break"], marks: true}))
-
-    it("accepts syntax for specific marks", () =>
-       parse("hard_break<strong em>", {types: ["hard_break"], marks: ["strong", "em"]}))
-
-    it("recognizes the pipe operator", () =>
-       parse("(hard_break | text | image)", {types: ["text", "image", "hard_break"]}))
-
-    it("can apply a plus sign to a group", () =>
-       parse("(hard_break | text | image)+",
-             {types: ["text", "image", "hard_break"], max: Infinity}))
-
-    it("understands groups", () =>
-       parse("inline*", {types: ["image", "text", "hard_break"], min: 0, max: Infinity}))
-
-    it("accepts braces to specify a count", () =>
-       parse("paragraph{2}", {types: ["paragraph"], min: 2, max: 2}))
-
-    it("accepts lower and upper bounds on count", () =>
-       parse("paragraph{2, 5}", {types: ["paragraph"], min: 2, max: 5}))
-
-    it("accepts an open range", () =>
-       parse("paragraph{2,}", {types: ["paragraph"], min: 2, max: Infinity}))
-
-    it("accepts a count based on an attribute", () =>
-       parse("paragraph{.level}", {types: ["paragraph"], min: ".level", max: ".level"}))
-
-    function noParse(expr) {
-      ist.throws(() => get(expr))
-    }
-
-    it("fails on an invalid character", () => noParse("paragraph/image"))
-
-    it("doesn't allow identical adjacent groups", () => noParse("paragraph? paragraph"))
-
-    it("doesn't allow overlapping adjacent groups", () => noParse("inline image"))
-
-    it("doesn't allow non-existent attributes", () => noParse("hard_break{.foo}"))
-
-    it("doesn't allow non-existent nodes", () => noParse("foo+"))
-
-    it("doesn't allow non-existent marks", () => noParse("hard_break<bar>"))
-
-    it("disallows all marks plus a specific mark", () => noParse("image<_ em>"))
-
-    it("errors on trailing noise", () => noParse("hard_break+ text* ."))
-
-    it("doesn't allow a group to occur zero times", () => noParse("image{0}"))
-  })
-
-  const attrs = {level: 3}
-
-  describe("matches", () => {
-    function valid(expr, frag) { ist(get(expr).matches(attrs, frag.content)) }
-    function invalid(expr, frag) { ist(!get(expr).matches(attrs, frag.content)) }
-
-    it("accepts empty content for the empty expr", () => valid("", p()))
-    it("doesn't accept content in the empty expr", () => invalid("", p(img)))
-
-    it("matches nothing to an asterisk", () => valid("image*", p()))
-    it("matches one element to an asterisk", () => valid("image*", p(img)))
-    it("matches multiple elements to an asterisk", () => valid("image*", p(img, img, img, img, img)))
-    it("only matches appropriate elements to an asterisk", () => invalid("image*", p(img, "text")))
-
-    it("matches group members to a group", () => valid("inline*", p(img)))
-    it("doesn't match non-members to a group", () => invalid("inline*", doc(p())))
-    it("matches multiple group members to an asterisk", () => valid("inline*", p(img, "text")))
-    it("matches an element to a pipe expression", () => valid("(paragraph | heading)", doc(p())))
-    it("doesn't match unmentioned elements to a pipe expr", () => invalid("(paragraph | heading)", p(img)))
-
-    it("matches a simple sequence", () => valid("paragraph horizontal_rule paragraph", p(p(), hr, p())))
-    it("fails when a sequence is too long", () => invalid("paragraph horizontal_rule", p(p(), hr, p())))
-    it("fails when a sequence is too short", () => invalid("paragraph horizontal_rule paragraph", p(p(), hr)))
-    it("fails when a sequence starts incorrectly", () => invalid("paragraph horizontal_rule", p(hr, p(), hr)))
-
-    it("accepts a sequence asterisk matching zero elements", () => valid("heading paragraph*", doc(h1())))
-    it("accepts a sequence asterisk matching multiple elts", () => valid("heading paragraph*", doc(h1(), p(), p())))
-    it("accepts a sequence plus matching one element", () => valid("heading paragraph+", doc(h1(), p())))
-    it("accepts a sequence plus matching multiple elts", () => valid("heading paragraph+", doc(h1(), p(), p())))
-    it("fails when a sequence plus has no elements", () => invalid("heading paragraph+", doc(h1())))
-    it("fails when a sequence plus misses its start", () => invalid("heading paragraph+", doc(p(), p())))
-
-    it("accepts an optional element being present", () => valid("image?", p(img)))
-    it("accepts an optional element being missing", () => valid("image?", p()))
-    it("fails when an optional element is present twice", () => invalid("image?", p(img, img)))
-
-    it("accepts a matching count", () => valid("hard_break{2}", p(br, br)))
-    it("rejects a count that comes up short", () => invalid("hard_break{2}", p(br)))
-    it("rejects a count that has too many elements", () => invalid("hard_break{2}", p(br, br, br)))
-    it("accepts a count on the lower bound", () => valid("hard_break{2, 4}", p(br, br)))
-    it("accepts a count on the upper bound", () => valid("hard_break{2, 4}", p(br, br, br, br)))
-    it("rejects a range with too few elements", () => invalid("hard_break{2, 4}", p(br)))
-    it("rejects a range with too many elements", () => invalid("hard_break{2, 4}", p(br, br, br, br, br)))
-    it("rejects a range with a bad element after it", () => invalid("hard_break{2, 4} text*", p(br, br, img)))
-    it("accepts a range with a matching element after it", () => valid("hard_break{2, 4} image?", p(br, br, img)))
-    it("accepts an open range", () => valid("hard_break{2,}", p(br, br)))
-    it("accepts an open range matching many", () => valid("hard_break{2,}", p(br, br, br, br, br)))
-    it("rejects an open range with too few elements", () => invalid("hard_break{2,}", p(br)))
-
-    it("accepts a matching attr", () => valid("heading[level=2]", doc(h2())))
-    it("rejects a mismatched attr", () => invalid("heading[level=2]", doc(h1())))
-
-    it("accepts a set with all marks", () => valid("hard_break<_>", p(em(br))))
-    it("rejects a disallowed mark", () => invalid("hard_break", p(em(br))))
-    it("accepts a matching mark", () => valid("hard_break<em strong>", p(em(br))))
-    it("rejects a non-matching mark", () => invalid("hard_break<code strong>", p(em(br))))
-
-    it("accepts an attribute-constrained count", () => valid("hard_break{.level}", p(br, br, br)))
-    it("rejects a bad attribute-constrained count", () => invalid("hard_break{.level}", p(br, br)))
-  })
-
+  it("accepts a matching count", () => valid("hard_break{2}", "hard_break hard_break"))
+  it("rejects a count that comes up short", () => invalid("hard_break{2}", "hard_break"))
+  it("rejects a count that has too many elements", () => invalid("hard_break{2}", "hard_break hard_break hard_break"))
+  it("accepts a count on the lower bound", () => valid("hard_break{2, 4}", "hard_break hard_break"))
+  it("accepts a count on the upper bound", () => valid("hard_break{2, 4}", "hard_break hard_break hard_break hard_break"))
+  it("accepts a count between the bounds", () => valid("hard_break{2, 4}", "hard_break hard_break hard_break"))
+  it("rejects a sequence with too few elements", () => invalid("hard_break{2, 4}", "hard_break"))
+  it("rejects a sequence with too many elements",
+     () => invalid("hard_break{2, 4}", "hard_break hard_break hard_break hard_break hard_break"))
+  it("rejects a sequence with a bad element after it", () => invalid("hard_break{2, 4} text*", "hard_break hard_break image"))
+  it("accepts a sequence with a matching element after it", () => valid("hard_break{2, 4} image?", "hard_break hard_break image"))
+  it("accepts an open range", () => valid("hard_break{2,}", "hard_break hard_break"))
+  it("accepts an open range matching many", () => valid("hard_break{2,}", "hard_break hard_break hard_break hard_break"))
+  it("rejects an open range with too few elements", () => invalid("hard_break{2,}", "hard_break"))
+})
+/*
   describe("fillBefore", () => {
     function fill(expr, before, after, result) {
       let filled = get(expr).getMatchAt(attrs, before.content).fillBefore(after.content, true)
@@ -256,3 +145,4 @@ describe("ContentExpr", () => {
        fill3("paragraph{2}", doc(p()), doc(p()), doc(p()), null))
   })
 })
+*/
