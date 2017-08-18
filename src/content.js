@@ -55,7 +55,7 @@ export class ContentMatch {
   // return a fragment if the resulting match goes to the end of the
   // content expression.
   fillBefore(after, toEnd = false, startIndex = 0) {
-    let seen = []
+    let seen = [this]
     function search(match, types) {
       let finished = match.matchFragment(after, startIndex)
       if (finished && (!toEnd || finished.validEnd))
@@ -98,6 +98,22 @@ export class ContentMatch {
         }
       }
     }
+  }
+
+  toString() {
+    let seen = []
+    function scan(m) {
+      seen.push(m)
+      for (let i = 1; i < m.next.length; i += 2)
+        if (seen.indexOf(m.next[i]) == -1) scan(m.next[i])
+    }
+    scan(this)
+    return seen.map((m, i) => {
+      let out = i + (m.validEnd ? "*" : " ") + " "
+      for (let i = 0; i < m.next.length; i += 2)
+        out += (i ? ", " : "") + m.next[i].name + "->" + seen.indexOf(m.next[i + 1])
+      return out
+    }).join("\n")
   }
 }
 
