@@ -6,6 +6,7 @@ export class ContentMatch {
     // True when this match state represents a valid end of the node.
     this.validEnd = validEnd
     this.next = []
+    this.wrapCache = []
   }
 
   static parse(string, nodeTypes) {
@@ -84,7 +85,14 @@ export class ContentMatch {
   // position. The result may be empty (when it fits directly) and
   // will be null when no such wrapping exists.
   findWrapping(target) {
-    // FIXME cache
+    for (let i = 0; i < this.wrapCache.length; i += 2)
+      if (this.wrapCache[i] == target) return this.wrapCache[i + 1]
+    let computed = this.computeWrapping(target)
+    this.wrapCache.push(target, computed)
+    return computed
+  }
+
+  computeWrapping(target) {
     let seen = Object.create(null), active = [{match: this, type: null, via: null}]
     while (active.length) {
       let current = active.shift(), match = current.match
