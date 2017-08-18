@@ -55,8 +55,6 @@ export class ContentMatch {
   // return a fragment if the resulting match goes to the end of the
   // content expression.
   fillBefore(after, toEnd = false, startIndex = 0) {
-    return search(this, [])
-
     let seen = []
     function search(match, types) {
       let finished = match.matchFragment(after, startIndex)
@@ -72,6 +70,8 @@ export class ContentMatch {
         }
       }
     }
+
+    return search(this, [])
   }
 
   // :: (NodeType) → ?[{type: NodeType, attrs: Object}]
@@ -144,9 +144,28 @@ function parseExprSubscript(stream) {
       expr = {type: "star", expr}
     else if (stream.eat("?"))
       expr = {type: "opt", expr}
+    else if (stream.eat("{"))
+      expr = parseExprRange(stream, expr)
     else break
   }
   return expr
+}
+
+function parseNum(stream) {
+  if (/\D/.test(stream.next)) stream.err("Expected number, got '" + stream.next + "'")
+  let result = Number(stream.next)
+  stream.pos++
+  return result
+}
+
+function parseExprRange(stream, expr) {
+  let min = parseNum(stream), max = min
+  if (stream.eat(",")) {
+    if (stream.next != "}") max = parseNum(stream)
+    else max = -1
+  }
+  if (!stream.eat("}")) stream.err("Unclosed braced range")
+  return {type: "range", min, max, expr}
 }
 
 function resolveName(stream, name) {
@@ -178,6 +197,10 @@ function parseExprAtom(stream) {
     stream.err("Unexpected token '" + stream.next + "'")
   }
 }
+
+// The code below helps compile a regular-expression-like language
+// into a deterministic finite automaton. For a good introduction to
+// these concepts, see https://swtch.com/~rsc/regexp/regexp1.html
 
 // : (Object) → [[{term: ?any, to: number}]]
 // Construct an NFA from an expression as returned by the parser. The
@@ -211,17 +234,35 @@ function nfa(expr) {
         connect(next, from = node())
       }
     } else if (expr.type == "star") {
-      let loop = node(), out = edge(loop)
+      let loop = node()
       edge(from, loop)
       connect(compile(expr.expr, loop), loop)
-      return [out]
+      return [edge(loop)]
     } else if (expr.type == "plus") {
-      let loop = node(), out = edge(loop)
+      let loop = node()
       connect(compile(expr.expr, from), loop)
       connect(compile(expr.expr, loop), loop)
-      return [out]
+      return [edge(loop)]
     } else if (expr.type == "opt") {
       return [edge(from)].concat(compile(expr.expr, from))
+    } else if (expr.type == "range") {
+      let cur = from
+      for (let i = 0; i < expr.min; i++) {
+        let next = node()
+        connect(compile(expr.expr, cur), next)
+        cur = next
+      }
+      if (expr.max == -1) {
+        connect(compile(expr.expr, cur), cur)
+      } else {
+        for (let i = expr.min; i < expr.max; i++) {
+          let next = node()
+          edge(cur, next)
+          connect(compile(expr.expr, cur), next)
+          cur = next
+        }
+      }
+      return [edge(cur)]
     } else if (expr.type == "name") {
       return [edge(from, null, expr.value)]
     }
@@ -246,27 +287,28 @@ function nullFrom(nfa, node) {
 
 // : ([[{term: ?any, to: number}]]) → ContentMatch
 // Compiles an NFA as produced by `nfa` into a DFA, modeled as a set
-// of state objects with transitions between them.
+// of state objects (`ContentMatch` instances) with transitions
+// between them.
 function dfa(nfa) {
   let labeled = Object.create(null)
   return explore(nullFrom(nfa, 0))
 
   function explore(states) {
-    let out = Object.create(null)
+    let out = []
     states.forEach(node => {
       nfa[node].forEach(({term, to}) => {
         if (!term) return
-        let set = out[term]
+        let known = out.indexOf(term), set = known > -1 && out[known + 1]
         nullFrom(nfa, to).forEach(node => {
-          if (!set || set.indexOf(node) == -1)
-            (set || (set = out[term] = [])).push(node)
+          if (!set) out.push(term, set = [])
+          if (set.indexOf(node) == -1) set.push(node)
         })
       })
     })
     let state = labeled[states.join(",")] = new ContentMatch(states.indexOf(nfa.length - 1) > -1)
-    for (let term in out) {
-      let states = out[term].sort(cmp)
-      state.next.push(term, labeled[states.join(",")] || explore(states))
+    for (let i = 0; i < out.length; i += 2) {
+      let states = out[i + 1].sort(cmp)
+      state.next.push(out[i], labeled[states.join(",")] || explore(states))
     }
     return state
   }
