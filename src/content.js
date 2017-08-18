@@ -40,9 +40,13 @@ export class ContentMatch {
     return first ? first.isInline : false
   }
 
+  get defaultType() {
+    return this.next[0]
+  }
+
   compatible(other) {
     for (let i = 0; i < this.next.length; i += 2)
-      for (let j = 0; i < other.next.length; j += 2)
+      for (let j = 0; j < other.next.length; j += 2)
         if (this.next[i] == other.next[j]) return true
     return false
   }
@@ -74,7 +78,7 @@ export class ContentMatch {
     return search(this, [])
   }
 
-  // :: (NodeType) → ?[{type: NodeType, attrs: Object}]
+  // :: (NodeType) → ?[NodeType]
   // Find a set of wrapping node types that would allow a node of type
   // `target` with attributes `targetAttrs` to appear at this
   // position. The result may be empty (when it fits directly) and
@@ -87,7 +91,7 @@ export class ContentMatch {
       if (match.matchType(target)) {
         let result = []
         for (let obj = current; obj.type; obj = obj.via)
-          result.push({type: obj.type, attrs: null})
+          result.push(obj.type)
         return result.reverse()
       }
       for (let i = 0; i < match.next.length; i += 2) {

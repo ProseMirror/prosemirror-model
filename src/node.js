@@ -317,8 +317,7 @@ export class Node {
   }
 
   defaultContentType(at) {
-    let elt = this.contentMatchAt(at).nextElement
-    return elt && elt.defaultType()
+    return this.contentMatchAt(at).defaultType
   }
 
   // :: ()

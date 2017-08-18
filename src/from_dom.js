@@ -272,15 +272,15 @@ class NodeContext {
     this.content = []
   }
 
-  findWrapping(type, attrs) {
+  findWrapping(node) {
     if (!this.match) {
       if (!this.type) return []
-      let fill = this.type.contentMatch.fillBefore(Fragment.from(type.create(attrs)))
+      let fill = this.type.contentMatch.fillBefore(Fragment.from(node))
       if (fill) {
         this.match = this.type.contentMatch.matchFragment(fill)
       } else {
         let start = this.type.contentMatch, wrap
-        if (wrap = start.findWrapping(type)) {
+        if (wrap = start.findWrapping(node.type)) {
           this.match = start
           return wrap
         } else {
@@ -288,7 +288,7 @@ class NodeContext {
         }
       }
     }
-    return this.match.findWrapping(type)
+    return this.match.findWrapping(node.type)
   }
 
   finish(openEnd) {
@@ -473,17 +473,17 @@ class ParseContext {
   // Try to find a way to fit the given node type into the current
   // context. May add intermediate wrappers and/or leave non-solid
   // nodes that we're in.
-  findPlace(type, attrs) {
+  findPlace(node) {
     let route, sync
     for (let depth = this.open; depth >= 0; depth--) {
-      let node = this.nodes[depth]
-      let found = node.findWrapping(type, attrs)
+      let cx = this.nodes[depth]
+      let found = cx.findWrapping(node)
       if (found && (!route || route.length > found.length)) {
         route = found
-        sync = node
+        sync = cx
         if (!found.length) break
       }
-      if (node.solid) break
+      if (cx.solid) break
     }
     if (!route) return false
     this.sync(sync)
@@ -499,7 +499,7 @@ class ParseContext {
       let block = this.textblockFromContext()
       if (block) this.enter(block)
     }
-    if (this.findPlace(node.type, node.attrs)) {
+    if (this.findPlace(node)) {
       this.closeExtra()
       let top = this.top
       if (top.match) {
@@ -514,7 +514,7 @@ class ParseContext {
   // Try to start a node of the given type, adjusting the context when
   // necessary.
   enter(type, attrs, preserveWS) {
-    let ok = this.findPlace(type, attrs)
+    let ok = this.findPlace(type.create(attrs))
     if (ok) this.enterInner(type, attrs, true, preserveWS)
     return ok
   }
