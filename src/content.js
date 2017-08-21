@@ -349,8 +349,7 @@ function dfa(nfa) {
 }
 
 function checkForDeadEnds(match, stream) {
-  let work = [match], i = 0
-  while (i < work.length) {
+  for (let i = 0, work = [match]; i < work.length; i++) {
     let state = work[i], dead = !state.validEnd, nodes = []
     for (let j = 0; j < state.next.length; j += 2) {
       let node = state.next[j], next = state.next[j + 1]
