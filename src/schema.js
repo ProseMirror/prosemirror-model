@@ -13,7 +13,7 @@ function defaultAttrs(attrs) {
   let defaults = Object.create(null)
   for (let attrName in attrs) {
     let attr = attrs[attrName]
-    if (attr.default === undefined) return null
+    if (!attr.hasDefault) return null
     defaults[attrName] = attr.default
   }
   return defaults
@@ -23,14 +23,10 @@ function computeAttrs(attrs, value) {
   let built = Object.create(null)
   for (let name in attrs) {
     let given = value && value[name]
-    if (given == null) {
+    if (given === undefined) {
       let attr = attrs[name]
-      if (attr.default !== undefined)
-        given = attr.default
-      else if (attr.compute)
-        given = attr.compute()
-      else
-        throw new RangeError("No value supplied for attribute " + name)
+      if (attr.hasDefault) given = attr.default
+      else throw new RangeError("No value supplied for attribute " + name)
     }
     built[name] = given
   }
@@ -222,12 +218,12 @@ export class NodeType {
 
 class Attribute {
   constructor(options) {
+    this.hasDefault = Object.prototype.hasOwnProperty.call(options, "default")
     this.default = options.default
-    this.compute = options.compute
   }
 
   get isRequired() {
-    return this.default === undefined && !this.compute
+    return !this.hasDefault
   }
 }
 
@@ -442,9 +438,6 @@ export class MarkType {
 //   default:: ?any
 //   The default value for this attribute, to choose when no
 //   explicit value is provided.
-//
-//   compute:: ?() → any
-//   A function that computes a default value for the attribute.
 
 let warnedAboutMarkSyntax = false
 
