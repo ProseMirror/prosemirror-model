@@ -18,7 +18,9 @@ export class ContentMatch {
     if (stream.next == null) return ContentMatch.empty
     let expr = parseExpr(stream)
     if (stream.next) stream.err("Unexpected trailing text")
-    return dfa(nfa(expr))
+    let match = dfa(nfa(expr))
+    checkForDeadEnds(match, stream)
+    return match
   }
 
   // :: (NodeType) → ?ContentMatch
@@ -343,5 +345,19 @@ function dfa(nfa) {
       state.next.push(out[i], labeled[states.join(",")] || explore(states))
     }
     return state
+  }
+}
+
+function checkForDeadEnds(match, stream) {
+  let work = [match], i = 0
+  while (i < work.length) {
+    let state = work[i], dead = !state.validEnd, nodes = []
+    for (let j = 0; j < state.next.length; j += 2) {
+      let node = state.next[j], next = state.next[j + 1]
+      nodes.push(node.name)
+      if (dead && !state.next[j].hasRequiredAttrs()) dead = false
+      if (work.indexOf(next) == -1) work.push(next)
+    }
+    if (dead) stream.err("Only non-generatable nodes (" + nodes.join(", ") + ") after a match state")
   }
 }
