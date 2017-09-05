@@ -314,7 +314,7 @@ export class MarkType {
 //
 //   content:: ?string
 //   The content expression for this node, as described in the [schema
-//   guide](/docs/guides/schema/). When not given, the node does not allow
+//   guide](/docs/guide/#schema). When not given, the node does not allow
 //   any content.
 //
 //   marks:: ?string
