@@ -54,7 +54,11 @@ import {Mark} from "./mark"
 //
 //   style:: ?string
 //   A CSS property name to match. When given, this rule matches
-//   inline styles that list that property.
+//   inline styles that list that property. May also have the form
+//   `"property=value"`, in which case the rule only matches if the
+//   propery's value exactly matches the given value. (For more
+//   complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
+//   and return undefined to indicate that the match failed.)
 //
 //   context:: ?string
 //   When given, restricts this rule to only match when the current
@@ -187,14 +191,20 @@ export class DOMParser {
   matchStyle(prop, value, context) {
     for (let i = 0; i < this.styles.length; i++) {
       let rule = this.styles[i]
-      if (rule.style == prop && (!rule.context || context.matchesContext(rule.context))) {
-        if (rule.getAttrs) {
-          let result = rule.getAttrs(value)
-          if (result === false) continue
-          rule.attrs = result
-        }
-        return rule
+      if (rule.style.indexOf(prop) != 0 ||
+          rule.context && !context.matchesContext(rule.context) ||
+          // Test that the style string either precisely matches the prop,
+          // or has an '=' sign after the prop, followed by the given
+          // value.
+          rule.style.length > prop.length &&
+          (rule.style.charCodeAt(prop.length) != 61 || rule.style.slice(prop.length + 1) != value))
+        continue
+      if (rule.getAttrs) {
+        let result = rule.getAttrs(value)
+        if (result === false) continue
+        rule.attrs = result
       }
+      return rule
     }
   }
 

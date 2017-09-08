@@ -159,6 +159,10 @@ describe("DOMParser", () => {
        recover("<p>A <strong>big <strong>strong</strong> monster</strong>.</p>",
                doc(p("A ", strong("big strong monster"), "."))))
 
+    it("interprets font-style: italic as em",
+       recover("<p><span style='font-style: italic'>Hello</span>!</p>",
+               doc(p(em("Hello"), "!"))))
+
     it("interprets font-weight: bold as strong",
        recover("<p style='font-weight: bold'>Hello</p>",
                doc(p(strong("Hello")))))
