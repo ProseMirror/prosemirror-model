@@ -146,7 +146,7 @@ export class DOMSerializer {
       (schema.cached.domSerializer = new DOMSerializer(this.nodesFromSchema(schema), this.marksFromSchema(schema)))
   }
 
-  // :: (Schema) → Object<(node: Node) → DOMOutputSpec>
+  // : (Schema) → Object<(node: Node) → DOMOutputSpec>
   // Gather the serializers in a schema's node specs into an object.
   // This can be useful as a base to build a custom serializer from.
   static nodesFromSchema(schema) {
@@ -155,7 +155,7 @@ export class DOMSerializer {
     return result
   }
 
-  // :: (Schema) → Object<(mark: Mark) → DOMOutputSpec>
+  // : (Schema) → Object<(mark: Mark) → DOMOutputSpec>
   // Gather the serializers in a schema's mark specs into an object.
   static marksFromSchema(schema) {
     return gatherToDOM(schema.marks)
