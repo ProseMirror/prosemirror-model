@@ -208,9 +208,7 @@ export class DOMParser {
     }
   }
 
-  // :: (Schema) → [ParseRule]
-  // Extract the parse rules listed in a schema's [node
-  // specs](#model.NodeSpec.parseDOM).
+  // : (Schema) → [ParseRule]
   static schemaRules(schema) {
     let result = []
     function insert(rule) {
