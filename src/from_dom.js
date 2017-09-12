@@ -3,7 +3,9 @@ import {Slice} from "./replace"
 import {Mark} from "./mark"
 
 // ParseOptions:: interface
-// Set of options for parsing a DOM node.
+// These are the options recognized by the
+// [`parse`](#model.DOMParser.parse) and
+// [`parseSlice`](#model.DOMParser.parseSlice) methods.
 //
 //   preserveWhitespace:: ?union<bool, "full">
 //   By default, whitespace is collapsed as per HTML's rules. Pass
@@ -34,7 +36,7 @@ import {Mark} from "./mark"
 //   top node is matched against.
 //
 //   context:: ?ResolvedPos
-//   A set of additional node names to count as
+//   A set of additional nodes to count as
 //   [context](#model.ParseRule.context) when parsing, above the
 //   given [top node](#model.DOMParser.parse^options.topNode).
 
@@ -59,6 +61,13 @@ import {Mark} from "./mark"
 //   complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
 //   and return undefined to indicate that the match failed.)
 //
+//   priority:: ?number
+//   Can be used to change the order in which the parse rules in a
+//   schema are tried. Those with higher priority come first. Rules
+//   without a priority are counted as having priority 50. This
+//   property is only meaningful in a schema—when directly
+//   constructing a parser, the order of the rule array is used.
+//
 //   context:: ?string
 //   When given, restricts this rule to only match when the current
 //   context—the parent nodes into which the content is being
@@ -81,13 +90,6 @@ import {Mark} from "./mark"
 //   mark:: ?string
 //   The name of the mark type to wrap the matched content in.
 //
-//   priority:: ?number
-//   Can be used to change the order in which the parse rules in a
-//   schema are tried. Those with higher priority come first. Rules
-//   without a priority are counted as having priority 50. This
-//   property is only meaningful in a schema—when directly
-//   constructing a parser, the order of the rule array is used.
-//
 //   ignore:: ?bool
 //   When true, ignore content that matches this rule.
 //
@@ -99,7 +101,7 @@ import {Mark} from "./mark"
 //   Attributes for the node or mark created by this rule. When
 //   `getAttrs` is provided, it takes precedence.
 //
-//   getAttrs:: ?(union<dom.Node, string>) → ?union<bool, Object>
+//   getAttrs:: ?(union<dom.Node, string>) → ?union<Object, false>
 //   A function used to compute the attributes for the node or mark
 //   created by this rule. Can also be used to describe further
 //   conditions the DOM element or style must match. When it returns
@@ -118,9 +120,9 @@ import {Mark} from "./mark"
 //   element to the parser.
 //
 //   getContent:: ?(dom.Node) → Fragment
-//   Can be used to override the content of a matched node. Will be
-//   called, and its result used, instead of parsing the node's child
-//   nodes.
+//   Can be used to override the content of a matched node. When
+//   present, instead of parsing the node's child nodes, the result of
+//   this function is used.
 //
 //   preserveWhitespace:: ?union<bool, "full">
 //   Controls whether whitespace should be preserved when parsing the
@@ -138,8 +140,11 @@ export class DOMParser {
   // parsing rules.
   constructor(schema, rules) {
     // :: Schema
+    // The schema into which the parser parses.
     this.schema = schema
     // :: [ParseRule]
+    // The set of [parse rules](#model.ParseRule) that the parser
+    // uses, in order of precedence.
     this.rules = rules
     this.tags = []
     this.styles = []
@@ -238,7 +243,8 @@ export class DOMParser {
 
   // :: (Schema) → DOMParser
   // Construct a DOM parser using the parsing rules listed in a
-  // schema's [node specs](#model.NodeSpec.parseDOM).
+  // schema's [node specs](#model.NodeSpec.parseDOM), reordered by
+  // [priority](#model.ParseRule.priority).
   static fromSchema(schema) {
     return schema.cached.domParser ||
       (schema.cached.domParser = new DOMParser(schema, DOMParser.schemaRules(schema)))

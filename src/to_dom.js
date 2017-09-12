@@ -3,16 +3,18 @@
 // interpreted as a text node, a DOM node, which is interpreted as
 // itself, or an array.
 //
-// An array describes a DOM element. The first element in the array
-// should be a string, and is the name of the DOM element. If the
-// second element is a non-Array, non-DOM node object, it is
-// interpreted as an object providing the DOM element's attributes.
-// Any elements after that (including the 2nd if it's not an attribute
-// object) are interpreted as children of the DOM elements, and must
-// either be valid `DOMOutputSpec` values, or the number zero.
+// An array describes a DOM element. The first value in the array
+// should be a string—the name of the DOM element. If the second
+// element is plain object object, it is interpreted as an set of
+// attributes for the element. Any elements after that (including the
+// 2nd if it's not an attribute object) are interpreted as children of
+// the DOM elements, and must either be valid `DOMOutputSpec` values,
+// or the number zero.
 //
 // The number zero (pronounced “hole”) is used to indicate the place
-// where a ProseMirror node's content should be inserted.
+// where a node's child nodes should be inserted. It it occurs in an
+// output spec, it should be the only child element in its parent
+// node.
 
 // ::- A DOM serializer knows how to convert ProseMirror nodes and
 // marks of various types to DOM nodes.
@@ -27,8 +29,10 @@ export class DOMSerializer {
   // should not be serialized.
   constructor(nodes, marks) {
     // :: Object<(node: Node) → DOMOutputSpec>
+    // The node serialization functions.
     this.nodes = nodes || {}
-    // :: Object<(mark: Mark) → DOMOutputSpec>
+    // :: Object<?(mark: Mark, inline: bool) → DOMOutputSpec>
+    // The mark serialization functions.
     this.marks = marks || {}
   }
 
@@ -69,7 +73,7 @@ export class DOMSerializer {
   // need to serialize a part of a document, as opposed to the whole
   // document. To serialize a whole document, use
   // [`serializeFragment`](#model.DOMSerializer.serializeFragment) on
-  // its [`content`](#model.Node.content).
+  // its [content](#model.Node.content).
   serializeNode(node, options = {}) {
     return this.renderStructure(this.nodes[node.type.name](node), node, options)
   }
@@ -92,7 +96,9 @@ export class DOMSerializer {
   }
 
   // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}
-  // Render an [output spec](#model.DOMOutputSpec).
+  // Render an [output spec](#model.DOMOutputSpec) to a DOM node. If
+  // the spec has a hole (zero) in it, `contentDOM` will point at the
+  // node with the hole.
   static renderSpec(doc, structure) {
     if (typeof structure == "string")
       return {dom: doc.createTextNode(structure)}

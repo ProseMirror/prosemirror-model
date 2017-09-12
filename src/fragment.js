@@ -1,11 +1,10 @@
 import {findDiffStart, findDiffEnd} from "./diff"
 
-// ::- Fragment is the type used to represent a node's collection of
-// child nodes.
+// ::- A fragment represents a node's collection of child nodes.
 //
-// Fragments are persistent data structures. That means you should
-// _not_ mutate them or their content, but create new instances
-// whenever needed. The API tries to make this easy.
+// Like nodes, fragments are persistent data structures, and you
+// should not mutate them or their content. Rather, you create new
+// instances whenever needed. The API tries to make this easy.
 export class Fragment {
   constructor(content, size) {
     this.content = content
@@ -36,7 +35,7 @@ export class Fragment {
 
   // :: ((node: Node, pos: number, parent: Node) → ?bool)
   // Call the given callback for every descendant node. The callback
-  // may return `false` to prevent traversal of its child nodes.
+  // may return `false` to prevent traversal of a given node's children.
   descendants(f) {
     this.nodesBetween(0, this.size, f)
   }
@@ -60,8 +59,8 @@ export class Fragment {
   }
 
   // :: (Fragment) → Fragment
-  // Create a new fragment containing the content of this fragment and
-  // `other`.
+  // Create a new fragment containing the combined content of this
+  // fragment and the other.
   append(other) {
     if (!other.size) return this
     if (!this.size) return other
@@ -230,7 +229,7 @@ export class Fragment {
 
   // :: ([Node]) → Fragment
   // Build a fragment from an array of nodes. Ensures that adjacent
-  // text nodes with the same style are joined together.
+  // text nodes with the same marks are joined together.
   static fromArray(array) {
     if (!array.length) return Fragment.empty
     let joined, size = 0

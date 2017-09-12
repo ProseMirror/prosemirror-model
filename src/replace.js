@@ -12,11 +12,21 @@ export class ReplaceError extends Error {
 
 // ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
-// both side are 'open' / cut through.
+// both side are ‘open’ (cut through).
 export class Slice {
   // :: (Fragment, number, number)
+  // Create a slice. When specifying a non-zero open depth, you must
+  // make sure that there are nodes of at least that depth at the
+  // appropriate side of the fragment—i.e. if the fragment is an empty
+  // paragraph node, `openStart` and `openEnd` can't be greater than
+  // 1.
+  //
+  // It is not necessary for the content of open nodes to conform to
+  // the schema's content constraints, though it should be a valid
+  // start/end/middle for such a node, depending on which sides are
+  // open.
   constructor(content, openStart, openEnd) {
-    // :: Fragment The slice's content nodes.
+    // :: Fragment The slice's content.
     this.content = content
     // :: number The open depth at the start.
     this.openStart = openStart

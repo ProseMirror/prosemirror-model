@@ -1,9 +1,9 @@
 import {Fragment} from "./fragment"
 
-// ::- This represents a match state of a node type's [content
-// expression](#model.NodeSpec.content), and can be used to find out
-// whether further content matches here, and whether a given position
-// is a valid end of the node.
+// ::- Instances of this class represent a match state of a node
+// type's [content expression](#model.NodeSpec.content), and can be
+// used to find out whether further content matches here, and whether
+// a given position is a valid end of the node.
 export class ContentMatch {
   constructor(validEnd) {
     // :: bool
@@ -86,10 +86,10 @@ export class ContentMatch {
   }
 
   // :: (NodeType) → ?[NodeType]
-  // Find a set of wrapping node types that would allow a node of type
-  // `target` with attributes `targetAttrs` to appear at this
-  // position. The result may be empty (when it fits directly) and
-  // will be null when no such wrapping exists.
+  // Find a set of wrapping node types that would allow a node of the
+  // given type to appear at this position. The result may be empty
+  // (when it fits directly) and will be null when no such wrapping
+  // exists.
   findWrapping(target) {
     for (let i = 0; i < this.wrapCache.length; i += 2)
       if (this.wrapCache[i] == target) return this.wrapCache[i + 1]

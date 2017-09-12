@@ -16,7 +16,7 @@ const emptyAttrs = Object.create(null)
 // structure between the old and new data as much as possible, which a
 // tree shape like this (without back pointers) makes easy.
 //
-// **Never** directly mutate the properties of a `Node` object. See
+// **Do not** directly mutate the properties of a `Node` object. See
 // [the guide](/docs/guide/#doc) for more information.
 export class Node {
   constructor(type, attrs, content, marks) {
@@ -26,8 +26,8 @@ export class Node {
 
     // :: Object
     // An object mapping attribute names to values. The kind of
-    // attributes allowed and required are determined by the node
-    // type.
+    // attributes allowed and required are
+    // [determined](#model.NodeSpec.attrs) by the node type.
     this.attrs = attrs
 
     // :: Fragment
@@ -36,7 +36,7 @@ export class Node {
 
     // :: [Mark]
     // The marks (things like whether it is emphasized or part of a
-    // link) associated with this node.
+    // link) applied to this node.
     this.marks = marks || Mark.none
   }
 
@@ -46,7 +46,7 @@ export class Node {
   // :: number
   // The size of this node, as defined by the integer-based [indexing
   // scheme](/docs/guide/#doc.indexing). For text nodes, this is the
-  // amount of characters. For other leaf nodes, it is one. And for
+  // amount of characters. For other leaf nodes, it is one. For
   // non-leaf nodes, it is the size of the content plus two (the start
   // and end token).
   get nodeSize() { return this.isLeaf ? 1 : 2 + this.content.size }
@@ -71,17 +71,18 @@ export class Node {
 
   // :: (number, number, (node: Node, pos: number, parent: Node, index: number) → ?bool)
   // Invoke a callback for all descendant nodes recursively between
-  // the given two positions that are relative to start of this node's content.
-  // The callback is invoked with the node, its parent-relative position,
-  // its parent node, and its child index. If the callback returns false,
-  // the current node's children will not be recursed over.
+  // the given two positions that are relative to start of this node's
+  // content. The callback is invoked with the node, its
+  // parent-relative position, its parent node, and its child index.
+  // When the callback returns false for a given node, that node's
+  // children will not be recursed over.
   nodesBetween(from, to, f, pos = 0) {
     this.content.nodesBetween(from, to, f, pos, this)
   }
 
   // :: ((node: Node, pos: number, parent: Node) → ?bool)
-  // Call the given callback for every descendant node. If doesn't
-  // descend into a child node when the callback returns `false`.
+  // Call the given callback for every descendant node. Doesn't
+  // descend into a node when the callback returns `false`.
   descendants(f) {
     this.nodesBetween(0, this.content.size, f)
   }
@@ -111,7 +112,7 @@ export class Node {
   get lastChild() { return this.content.lastChild }
 
   // :: (Node) → bool
-  // Test whether two nodes represent the same content.
+  // Test whether two nodes represent the same piece of document.
   eq(other) {
     return this == other || (this.sameMarkup(other) && this.content.eq(other.content))
   }
@@ -149,7 +150,7 @@ export class Node {
 
   // :: (number, ?number) → Node
   // Create a copy of this node with only the content between the
-  // given offsets. If `to` is not given, it defaults to the end of
+  // given positions. If `to` is not given, it defaults to the end of
   // the node.
   cut(from, to) {
     if (from == 0 && to == this.content.size) return this
@@ -181,7 +182,7 @@ export class Node {
   }
 
   // :: (number) → ?Node
-  // Find the node after the given position.
+  // Find the node starting at the given position.
   nodeAt(pos) {
     for (let node = this;;) {
       let {index, offset} = node.content.findIndex(pos)
@@ -214,8 +215,8 @@ export class Node {
   }
 
   // :: (number) → ResolvedPos
-  // Resolve the given position in the document, returning an object
-  // describing its path through the document.
+  // Resolve the given position in the document, returning an
+  // [object](#model.ResolvedPos) with information about its context.
   resolve(pos) { return ResolvedPos.resolveCached(this, pos) }
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
@@ -261,8 +262,8 @@ export class Node {
   // :: bool
   // True when this is an atom, i.e. when it does not have directly
   // editable content. This is usually the same as `isLeaf`, but can
-  // be configured with the [`leaf` property](#model.NodeSpec.leaf) on
-  // a node's spec (typically when the node is displayed as an
+  // be configured with the [`atom` property](#model.NodeSpec.atom) on
+  // a node's spec (typically used when the node is displayed as an
   // uneditable [node view](#view.NodeView)).
   get isAtom() { return this.type.isAtom }
 
@@ -283,11 +284,11 @@ export class Node {
   }
 
   // :: (number, number, ?Fragment, ?number, ?number) → bool
-  // Test whether replacing the range `from` to `to` (by index) with
-  // the given replacement fragment (which defaults to the empty
-  // fragment) would leave the node's content valid. You can
-  // optionally pass `start` and `end` indices into the replacement
-  // fragment.
+  // Test whether replacing the range between `from` and `to` (by
+  // child index) with the given replacement fragment (which defaults
+  // to the empty fragment) would leave the node's content valid. You
+  // can optionally pass `start` and `end` indices into the
+  // replacement fragment.
   canReplace(from, to, replacement = Fragment.empty, start = 0, end = replacement.childCount) {
     let one = this.contentMatchAt(from).matchFragment(replacement, start, end)
     let two = one && one.matchFragment(this.content, to)

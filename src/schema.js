@@ -40,8 +40,8 @@ function initAttrs(attrs) {
 }
 
 // ::- Node types are objects allocated once per `Schema` and used to
-// tag `Node` instances with a type. They contain information about
-// the node type, such as its name and what kind of node it
+// [tag](#model.Node.type) `Node` instances. They contain information
+// about the node type, such as its name and what kind of node it
 // represents.
 export class NodeType {
   constructor(name, schema, spec) {
@@ -173,13 +173,13 @@ export class NodeType {
   }
 
   // :: (MarkType) → bool
-  // Whether the given mark type is allowed in this node.
+  // Check whether the given mark type is allowed in this node.
   allowsMarkType(markType) {
     return this.markSet == null || this.markSet.indexOf(markType) > -1
   }
 
   // :: ([Mark]) → bool
-  // Whether the given marks are allowed in this node.
+  // Test whether the given set of marks are allowed in this node.
   allowsMarks(marks) {
     if (this.markSet == null) return true
     for (let i = 0; i < marks.length; i++) if (!this.allowsMarkType(marks[i])) return false
@@ -230,8 +230,9 @@ class Attribute {
 // Marks
 
 // ::- Like nodes, marks (which are associated with nodes to signify
-// things like emphasis or being part of a link) are tagged with type
-// objects, which are instantiated once per `Schema`.
+// things like emphasis or being part of a link) are
+// [tagged](#model.Mark.type) with type objects, which are
+// instantiated once per `Schema`.
 export class MarkType {
   constructor(name, rank, schema, spec) {
     // :: string
@@ -295,16 +296,22 @@ export class MarkType {
 }
 
 // SchemaSpec:: interface
-// An object describing a schema, as passed to the `Schema`
+// An object describing a schema, as passed to the [`Schema`](#model.Schema)
 // constructor.
 //
 //   nodes:: union<Object<NodeSpec>, OrderedMap<NodeSpec>>
-//   The node types in this schema. Maps names to `NodeSpec` objects
-//   describing the node to be associated with that name. Their order
-//   is significant
+//   The node types in this schema. Maps names to
+//   [`NodeSpec`](#model.NodeSpec) objects that describe the node type
+//   associated with that name. Their order is significant—it
+//   determines which [parse rules](#model.NodeSpec.parseDOM) take
+//   precedence by default, and which nodes come first in a given
+//   [group](#model.NodeSpec.group).
 //
 //   marks:: ?union<Object<MarkSpec>, OrderedMap<MarkSpec>>
-//   The mark types that exist in this schema.
+//   The mark types that exist in this schema. The order in which they
+//   are provided determines the order in which [mark
+//   sets](#model.Mark.addToSet) are sorted and in which [parse
+//   rules](#mode.MarkSpec.parseDOM) are tried.
 //
 //   topNode:: ?string
 //   The name of the default top-level node for the schema. Defaults
@@ -314,8 +321,8 @@ export class MarkType {
 //
 //   content:: ?string
 //   The content expression for this node, as described in the [schema
-//   guide](/docs/guide/#schema). When not given, the node does not allow
-//   any content.
+//   guide](/docs/guide/#schema.content_expressions). When not given,
+//   the node does not allow any content.
 //
 //   marks:: ?string
 //   The marks that are allowed inside of this node. May be a
@@ -325,12 +332,12 @@ export class MarkType {
 //   marks, other nodes default to not allowing marks.
 //
 //   group:: ?string
-//   The group or space-separated groups to which this node belongs, as
-//   referred to in the content expressions for the schema.
+//   The group or space-separated groups to which this node belongs,
+//   which can be referred to in the content expressions for the
+//   schema.
 //
 //   inline:: ?bool
-//   Should be set to a truthy value for inline nodes. (Implied for
-//   text nodes.)
+//   Should be set to true for inline nodes. (Implied for text nodes.)
 //
 //   atom:: ?bool
 //   Can be set to true to indicate that, though this isn't a [leaf
@@ -341,8 +348,8 @@ export class MarkType {
 //   The attributes that nodes of this type get.
 //
 //   selectable:: ?bool
-//   Controls whether nodes of this type can be selected (as a [node
-//   selection](#state.NodeSelection)). Defaults to true for non-text
+//   Controls whether nodes of this type can be selected as a [node
+//   selection](#state.NodeSelection). Defaults to true for non-text
 //   nodes.
 //
 //   draggable:: ?bool
@@ -358,25 +365,25 @@ export class MarkType {
 //   node during replace operations (such as paste). Non-defining (the
 //   default) nodes get dropped when their entire content is replaced,
 //   whereas defining nodes persist and wrap the inserted content.
-//   Likewise, the _inserted_ content, when not inserting into a
-//   textblock, the defining parents of the content are preserved.
-//   Typically, non-default-paragraph textblock types, and possible
-//   list items, are marked as defining.
+//   Likewise, in _inserted_ content the defining parents of the
+//   content are preserved when possible. Typically,
+//   non-default-paragraph textblock types, and possibly list items,
+//   are marked as defining.
 //
 //   isolating:: ?bool
 //   When enabled (default is false), the sides of nodes of this type
 //   count as boundaries that regular editing operations, like
 //   backspacing or lifting, won't cross. An example of a node that
-//   should probably have this set is a table cell.
+//   should probably have this enabled is a table cell.
 //
 //   toDOM:: ?(node: Node) → DOMOutputSpec
 //   Defines the default way a node of this type should be serialized
 //   to DOM/HTML (as used by
 //   [`DOMSerializer.fromSchema`](#model.DOMSerializer^fromSchema)).
-//   Should return an [array structure](#model.DOMOutputSpec) that
-//   describes the resulting DOM structure, with an optional number
-//   zero (“hole”) in it to indicate where the node's content should
-//   be inserted.
+//   Should return a DOM node or an [array
+//   structure](#model.DOMOutputSpec) that describes one, with an
+//   optional number zero (“hole”) in it to indicate where the node's
+//   content should be inserted.
 //
 //   For text nodes, the default is to create a text DOM node. Though
 //   it is possible to create a serializer where text is rendered
@@ -398,7 +405,8 @@ export class MarkType {
 //
 //   inclusive:: ?bool
 //   Whether this mark should be active when the cursor is positioned
-//   at the start or end boundary of the mark. Defaults to true.
+//   at its end (or at its start when that is also the start of the
+//   parent node). Defaults to true.
 //
 //   excludes:: ?string
 //   Determines which other marks this mark can coexist with. Should
@@ -416,7 +424,7 @@ export class MarkType {
 //   coexist (as long as they have different attributes).
 //
 //   group:: ?string
-//   The group or space-separated groups to which this node belongs.
+//   The group or space-separated groups to which this mark belongs.
 //
 //   toDOM:: ?(mark: Mark, inline: bool) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized
@@ -429,29 +437,31 @@ export class MarkType {
 
 // AttributeSpec:: interface
 //
-// Used to define attributes. Attributes that have no default or
-// compute property must be provided whenever a node or mark of a type
-// that has them is created.
-//
-// The following fields are supported:
+// Used to [define](#model.NodeSpec.attrs) attributes on nodes or
+// marks.
 //
 //   default:: ?any
-//   The default value for this attribute, to choose when no
-//   explicit value is provided.
+//   The default value for this attribute, to use when no explicit
+//   value is provided. Attributes that have no default must be
+//   provided whenever a node or mark of a type that has them is
+//   created.
 
 let warnedAboutMarkSyntax = false
 
-// ::- A document schema.
+// ::- A document schema. Holds [node](#model.NodeType) and [mark
+// type](#model.MarkType) objects for the nodes and marks that may
+// occur in conforming documents, and provides functionality for
+// creating and deserializing such documents.
 export class Schema {
   // :: (SchemaSpec)
-  // Construct a schema from a specification.
+  // Construct a schema from a schema [specification](#model.SchemaSpec).
   constructor(spec) {
     // :: SchemaSpec
     // The [spec](#model.SchemaSpec) on which the schema is based,
     // with the added guarantee that its `nodes` and `marks`
     // properties are
     // [`OrderedMap`](https://github.com/marijnh/orderedmap) instances
-    // (not raw objects or null).
+    // (not raw objects).
     this.spec = {}
     for (let prop in spec) this.spec[prop] = spec[prop]
     this.spec.nodes = OrderedMap.from(spec.nodes)
@@ -489,13 +499,6 @@ export class Schema {
       type.excluded = excl == null ? [type] : excl == "" ? [] : gatherMarks(this, excl.split(" "))
     }
 
-    // :: Object
-    // An object for storing whatever values modules may want to
-    // compute and cache per schema. (If you want to store something
-    // in it, try to use property names unlikely to clash.)
-    this.cached = Object.create(null)
-    this.cached.wrappings = Object.create(null)
-
     this.nodeFromJSON = this.nodeFromJSON.bind(this)
     this.markFromJSON = this.markFromJSON.bind(this)
 
@@ -503,6 +506,13 @@ export class Schema {
     // The type of the [default top node](#model.SchemaSpec.topNode)
     // for this schema.
     this.topNodeType = this.nodes[this.spec.topNode || "doc"]
+
+    // :: Object
+    // An object for storing whatever values modules may want to
+    // compute and cache per schema. (If you want to store something
+    // in it, try to use property names unlikely to clash.)
+    this.cached = Object.create(null)
+    this.cached.wrappings = Object.create(null)
   }
 
   // :: (union<string, NodeType>, ?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → Node

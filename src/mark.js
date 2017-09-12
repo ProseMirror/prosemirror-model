@@ -19,9 +19,9 @@ export class Mark {
   // :: ([Mark]) → [Mark]
   // Given a set of marks, create a new set which contains this one as
   // well, in the right position. If this mark is already in the set,
-  // the set itself is returned. If a mark of this type with different
-  // attributes is already in the set, a set in which it is replaced
-  // by this one is returned.
+  // the set itself is returned. If any marks that are set to be
+  // [exclusive](#model.MarkSpec.excludes) with this mark are present,
+  // those are replaced by this one.
   addToSet(set) {
     let copy, placed = false
     for (let i = 0; i < set.length; i++) {
