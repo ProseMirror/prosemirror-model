@@ -184,8 +184,9 @@ describe("DOMParser", () => {
        parse("<li>wow</li><li>such</li>", {topNode: schema.nodes.bullet_list.createAndFill()},
              ul(li(p("wow")), li(p("such")))))
 
-    it("accepts the topStart option",
-       parse("<ul><li>x</li></ul>", {topNode: schema.nodes.list_item.createAndFill(), topStart: 1},
+    let item = schema.nodes.list_item.createAndFill()
+    it("accepts the topMatch option",
+       parse("<ul><li>x</li></ul>", {topNode: item, topMatch: item.contentMatchAt(1)},
              li(ul(li(p("x"))))))
 
     it("accepts from and to options",

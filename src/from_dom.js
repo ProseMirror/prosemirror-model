@@ -29,10 +29,9 @@ import {Mark} from "./mark"
 //   option to use the type and attributes from a different node
 //   as the top container.
 //
-//   topStart:: ?number
-//   Can be used to influence the content match at the start of
-//   the topnode. When given, should be a valid index into
-//   `topNode`.
+//   topMatch:: ?ContentMatch
+//   Provide the starting content match that content parsed into the
+//   top node is matched against.
 //
 //   context:: ?ResolvedPos
 //   A set of additional node names to count as
@@ -326,7 +325,7 @@ class ParseContext {
     let topOptions = wsOptionsFor(options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
       topContext = new NodeContext(topNode.type, topNode.attrs, true,
-                                   topNode.contentMatchAt(options.topStart || 0), topOptions)
+                                   options.topMatch || topNode.type.contentMatch, topOptions)
     else if (open)
       topContext = new NodeContext(null, null, true, null, topOptions)
     else
