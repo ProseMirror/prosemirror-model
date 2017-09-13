@@ -348,10 +348,10 @@ describe("DOMParser", () => {
           ? (new (require("jsdom").JSDOM)("<tag/>", {contentType: "application/xml"})).window.document
           : window.document
 
-    function nsParse(doc) {
+    function nsParse(doc, namespace) {
       let schema = new Schema({
         nodes: {doc: {content: "h*"}, text: {},
-                h: {parseDOM: [{tag: "h", namespace: "urn:ns"}]}}
+                h: {parseDOM: [{tag: "h", namespace}]}}
       })
       return DOMParser.fromSchema(schema).parse(doc)
     }
@@ -360,21 +360,44 @@ describe("DOMParser", () => {
       let doc = xmlDocument.createElement("doc")
       let h = xmlDocument.createElementNS("urn:ns", "h")
       doc.appendChild(h)
-      ist(nsParse(doc).childCount, 1)
+      ist(nsParse(doc, "urn:ns").childCount, 1)
     })
 
     it("excludes nodes when namespace is wrong", () => {
       let doc = xmlDocument.createElement("doc")
       let h = xmlDocument.createElementNS("urn:nt", "h")
       doc.appendChild(h)
-      ist(nsParse(doc).childCount, 0)
+      ist(nsParse(doc, "urn:ns").childCount, 0)
     })
 
     it("excludes nodes when namespace is absent", () => {
       let doc = xmlDocument.createElement("doc")
-      let h = xmlDocument.createElement("h")
+      // in HTML documents, createElement gives namespace
+      // 'http://www.w3.org/1999/xhtml' so use createElementNS
+      let h = xmlDocument.createElementNS(null, "h")
       doc.appendChild(h)
-      ist(nsParse(doc).childCount, 0)
+      ist(nsParse(doc, "urn:ns").childCount, 0)
+    })
+
+    it("excludes nodes when namespace is wrong and xhtml", () => {
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElementNS("urn:nt", "h")
+      doc.appendChild(h)
+      ist(nsParse(doc, "http://www.w3.org/1999/xhtml").childCount, 0)
+    })
+
+    it("excludes nodes when namespace is wrong and empty", () => {
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElementNS("urn:nt", "h")
+      doc.appendChild(h)
+      ist(nsParse(doc, "").childCount, 0)
+    })
+
+    it("includes nodes when namespace is correct and empty", () => {
+      let doc = xmlDocument.createElement("doc")
+      let h = xmlDocument.createElementNS(null, "h")
+      doc.appendChild(h)
+      ist(nsParse(doc, null).childCount, 1)
     })
   })
 })
