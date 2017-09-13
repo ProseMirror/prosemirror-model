@@ -6,18 +6,14 @@ ProseMirror is a well-behaved rich semantic content editor based on
 contentEditable, with support for collaborative editing and custom
 document schemas.
 
-This [module](http://prosemirror.net/ref.html#model) implements
-ProseMirror's [document model](http://prosemirror.net/guide/doc.html),
+This [module](http://prosemirror.net/docs/ref/#model) implements
+ProseMirror's [document model](http://prosemirror\.net/docs/guide/#doc),
 along with the mechanisms needed to support
-[schemas](http://prosemirror.net/guide/schema.html).
+[schemas](http://prosemirror\.net/docs/guide/#schema).
 
 The [project page](http://prosemirror.net) has more information, a
-number of [demos](http://prosemirror.net/#demos) and the
-[documentation](http://prosemirror.net/docs.html).
-
-**NOTE:** This project is in *BETA* stage. It isn't thoroughly tested,
-and the API might still change across `0.x` releases. You are welcome
-to use it, but don't expect it to be very stable yet.
+number of [examples](http://prosemirror.net/examples/) and the
+[documentation](http://prosemirror.net/docs/).
 
 This code is released under an
 [MIT license](https://github.com/prosemirror/prosemirror/tree/master/LICENSE).
