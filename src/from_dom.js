@@ -38,7 +38,7 @@ import {Mark} from "./mark"
 //   context:: ?ResolvedPos
 //   A set of additional nodes to count as
 //   [context](#model.ParseRule.context) when parsing, above the
-//   given [top node](#model.DOMParser.parse^options.topNode).
+//   given [top node](#model.ParseOptions.topNode).
 
 // ParseRule:: interface
 // A value that describes how to parse a given DOM node or inline

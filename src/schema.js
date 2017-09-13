@@ -311,7 +311,7 @@ export class MarkType {
 //   The mark types that exist in this schema. The order in which they
 //   are provided determines the order in which [mark
 //   sets](#model.Mark.addToSet) are sorted and in which [parse
-//   rules](#mode.MarkSpec.parseDOM) are tried.
+//   rules](#model.MarkSpec.parseDOM) are tried.
 //
 //   topNode:: ?string
 //   The name of the default top-level node for the schema. Defaults
@@ -411,7 +411,7 @@ export class MarkType {
 //   excludes:: ?string
 //   Determines which other marks this mark can coexist with. Should
 //   be a space-separated strings naming other marks or groups of marks.
-//   When a mark is [added](#model.mark.addToSet) to a set, all marks
+//   When a mark is [added](#model.Mark.addToSet) to a set, all marks
 //   that it excludes are removed in the process. If the set contains
 //   any mark that excludes the new mark but is not, itself, excluded
 //   by the new mark, the mark can not be added an the set. You can
