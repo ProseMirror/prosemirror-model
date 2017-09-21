@@ -182,7 +182,7 @@ export class NodeType {
   // Test whether the given set of marks are allowed in this node.
   allowsMarks(marks) {
     if (this.markSet == null) return true
-    for (let i = 0; i < marks.length; i++) if (!this.allowsMarkType(marks[i])) return false
+    for (let i = 0; i < marks.length; i++) if (!this.allowsMarkType(marks[i].type)) return false
     return true
   }
 
@@ -192,7 +192,7 @@ export class NodeType {
     if (this.markSet == null) return marks
     let copy
     for (let i = 0; i < marks.length; i++) {
-      if (!this.allowsMarkType(marks[i])) {
+      if (!this.allowsMarkType(marks[i].type)) {
         if (!copy) copy = marks.slice(0, i)
       } else if (copy) {
         copy.push(marks[i])
