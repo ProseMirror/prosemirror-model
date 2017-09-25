@@ -610,10 +610,13 @@ class ParseContext {
     }
   }
 
-  // : (string) → bool
+  // : (string | [string]) → bool
   // Determines whether the given [context
-  // string](#ParseRule.context) matches this context.
+  // string](#ParseRule.context), or one of context strings, matches this context.
   matchesContext(context) {
+    if (Array.isArray(context)) {
+      return context.some(this.matchesContext, this);
+    }
     let parts = context.split("/")
     let option = this.options.context
     let useRoot = !this.isOpen && (!option || option.parent.type == this.nodes[0].type)
