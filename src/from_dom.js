@@ -77,7 +77,9 @@ import {Mark} from "./mark"
 //   parent node is a paragraph, `"blockquote/paragraph/"` restricts
 //   it to be in a paragraph that is inside a blockquote, and
 //   `"section//"` matches any position inside a section—a double
-//   slash matches any sequence of ancestor nodes.
+//   slash matches any sequence of ancestor nodes. To allow multiple
+//   different contexts, they can be separated by a pipe (`|`)
+//   character, as in `"blockquote/|list_item/"`.
 //
 //   node:: ?string
 //   The name of the node type to create when this rule matches. Only
@@ -614,6 +616,9 @@ class ParseContext {
   // Determines whether the given [context
   // string](#ParseRule.context) matches this context.
   matchesContext(context) {
+    if (context.indexOf("|") > -1)
+      return context.split(/\s*\|\s*/).some(this.matchesContext, this)
+
     let parts = context.split("/")
     let option = this.options.context
     let useRoot = !this.isOpen && (!option || option.parent.type == this.nodes[0].type)

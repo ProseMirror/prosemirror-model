@@ -305,6 +305,12 @@ describe("DOMParser", () => {
           doc(blockquote(ol(li(p("a"), hr)))), eq)
     })
 
+    it("understands pipes in context restrictions", () => {
+      ist(contextParser("list_item/|blockquote/")
+          .parse(domFrom("<foo></foo><blockquote><p></p><foo></foo></blockquote><ol><li><p>a</p><foo></foo></li></ol>")),
+          doc(blockquote(p(), hr), ol(li(p("a"), hr))), eq)
+    })
+
     it("uses the passed context", () => {
       let cxDoc = doc(blockquote("<a>", hr))
       ist(contextParser("doc//blockquote/").parse(domFrom("<blockquote><foo></foo></blockquote>"), {
