@@ -446,8 +446,6 @@ export class MarkType {
 //   provided whenever a node or mark of a type that has them is
 //   created.
 
-let warnedAboutMarkSyntax = false
-
 // ::- A document schema. Holds [node](#model.NodeType) and [mark
 // type](#model.MarkType) objects for the nodes and marks that may
 // occur in conforming documents, and provides functionality for
@@ -479,15 +477,6 @@ export class Schema {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
       let type = this.nodes[prop], contentExpr = type.spec.content || "", markExpr = type.spec.marks
-      let oldStyle = /<(.*?)>/.test(contentExpr)
-      if (oldStyle) {
-        if (!warnedAboutMarkSyntax && typeof console != "undefined" && console.warn) {
-          warnedAboutMarkSyntax = true
-          console.warn("Angle-bracket syntax for marks in content expressions is deprecated. Use the `marks` spec property instead.")
-        }
-        markExpr = oldStyle[1]
-        contentExpr = contentExpr.replace(/<(.*?)>/g, "")
-      }
       type.contentMatch = ContentMatch.parse(contentExpr, this.nodes)
       type.inlineContent = type.contentMatch.inlineContent
       type.markSet = markExpr == "_" ? null :
