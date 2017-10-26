@@ -18,8 +18,7 @@ export class Slice {
   // Create a slice. When specifying a non-zero open depth, you must
   // make sure that there are nodes of at least that depth at the
   // appropriate side of the fragment—i.e. if the fragment is an empty
-  // paragraph node, `openStart` and `openEnd` can't be greater than
-  // 1.
+  // paragraph node, `openStart` and `openEnd` can't be greater than 1.
   //
   // It is not necessary for the content of open nodes to conform to
   // the schema's content constraints, though it should be a valid
