@@ -1,14 +1,18 @@
 import {Fragment} from "./fragment"
 
-// ::- Error type raised by [`Node.replace`](#model.Node.replace) when
+// ReplaceError:: class extends Error
+// Error type raised by [`Node.replace`](#model.Node.replace) when
 // given an invalid replacement.
-export class ReplaceError extends Error {
-  constructor(message) {
-    super(message)
-    this.message = message
-  }
-  get name() { return "ReplaceError" }
+
+export function ReplaceError(message) {
+  let err = Error.call(this, message)
+  err.__proto__ = ReplaceError.prototype
+  return err
 }
+
+ReplaceError.prototype = Object.create(Error.prototype)
+ReplaceError.prototype.constructor = ReplaceError
+ReplaceError.prototype.name = "ReplaceError"
 
 // ::- A slice represents a piece cut out of a larger document. It
 // stores not only a fragment, but also the depth up to which nodes on
