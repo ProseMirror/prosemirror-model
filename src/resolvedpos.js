@@ -149,7 +149,7 @@ export class ResolvedPos {
     return marks
   }
 
-  // :: () → ?[Mark]
+  // :: (ResolvedPos) → ?[Mark]
   // Get the marks after the current position, if any, except those
   // that are non-inclusive and not present at position `$end`. This
   // is mostly useful for getting the set of marks to preserve after a
