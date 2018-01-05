@@ -115,6 +115,10 @@ describe("DOMParser", () => {
        recover(" <blockquote> <p>woo  \n  <em> hooo</em></p> </blockquote> ",
                doc(blockquote(p("woo ", em("hooo"))))))
 
+    it("preserves non-breaking spaces",
+       recover("consolidate these   spaces but not these\u00a0\u00a0\u00a0spaces",
+               doc(p("consolidate these spaces but not these\u00a0\u00a0\u00a0spaces"))))
+
     it("finds a valid place for invalid content",
        recover("<ul><li>hi</li><p>whoah</p><li>again</li></ul>",
                doc(ul(li(p("hi")), li(p("whoah")), li(p("again"))))))
