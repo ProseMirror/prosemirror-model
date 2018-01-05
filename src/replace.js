@@ -79,13 +79,13 @@ export class Slice {
     return new Slice(Fragment.fromJSON(schema, json.content), json.openStart || 0, json.openEnd || 0)
   }
 
-  // :: (Fragment) → Slice
+  // :: (Fragment, ?bool) → Slice
   // Create a slice from a fragment by taking the maximum possible
   // open value on both side of the fragment.
-  static maxOpen(fragment) {
+  static maxOpen(fragment, openIsolating=true) {
     let openStart = 0, openEnd = 0
-    for (let n = fragment.firstChild; n && !n.isLeaf; n = n.firstChild) openStart++
-    for (let n = fragment.lastChild; n && !n.isLeaf; n = n.lastChild) openEnd++
+    for (let n = fragment.firstChild; n && !n.isLeaf && (openIsolating || !n.type.spec.isolating); n = n.firstChild) openStart++
+    for (let n = fragment.lastChild; n && !n.isLeaf && (openIsolating || !n.type.spec.isolating); n = n.lastChild) openEnd++
     return new Slice(fragment, openStart, openEnd)
   }
 }
