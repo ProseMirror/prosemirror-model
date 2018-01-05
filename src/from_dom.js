@@ -377,7 +377,8 @@ class ParseContext {
     let top = this.top
     if ((top.type ? top.type.inlineContent : top.content.length && top.content[0].isInline) || /\S/.test(value)) {
       if (!(top.options & OPT_PRESERVE_WS)) {
-        value = value.replace(/\s+/g, " ")
+        // Replace all matches for "\s" except non-breaking space character \u00a0
+        value = value.replace(/[ \f\n\r\t\v\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+/g, " ")
         // If this starts with whitespace, and there is either no node
         // before it or a node that ends with whitespace, strip the
         // leading space.
