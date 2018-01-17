@@ -299,7 +299,7 @@ export class Node {
 
   // :: (number, number, NodeType, ?[Mark]) → bool
   // Test whether replacing the range `from` to `to` (by index) with a
-  // node of the given type.
+  // node of the given type would leave the node's content valid.
   canReplaceWith(from, to, type, marks) {
     if (marks && !this.type.allowsMarks(marks)) return false
     let start = this.contentMatchAt(from).matchType(type)
