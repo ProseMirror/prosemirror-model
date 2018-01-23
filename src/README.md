@@ -16,7 +16,7 @@ describes the type of the content, and holds a
 ### Resolved Positions
 
 Positions in a document can be represented as integer
-[offsets](/docs/guides/doc/#indexing). But you'll often want to use a
+[offsets](/docs/guide/#doc.indexing). But you'll often want to use a
 more convenient representation.
 
 @ResolvedPos
