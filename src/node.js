@@ -226,7 +226,7 @@ export class Node {
   // between the two given positions.
   rangeHasMark(from, to, type) {
     let found = false
-    this.nodesBetween(from, to, node => {
+    if (to > from) this.nodesBetween(from, to, node => {
       if (type.isInSet(node.marks)) found = true
       return !found
     })
