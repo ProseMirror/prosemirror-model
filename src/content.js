@@ -24,8 +24,8 @@ export class ContentMatch {
   }
 
   // :: (NodeType) → ?ContentMatch
-  // Match a node type and marks, returning a match after that node
-  // if successful.
+  // Match a node type, returning a match after that node if
+  // successful.
   matchType(type) {
     for (let i = 0; i < this.next.length; i += 2)
       if (this.next[i] == type) return this.next[i + 1]
