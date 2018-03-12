@@ -236,7 +236,7 @@ export class ResolvedPos {
   static resolveCached(doc, pos) {
     for (let i = 0; i < resolveCache.length; i++) {
       let cached = resolveCache[i]
-      if (cached.pos == pos && cached.node(0) == doc) return cached
+      if (cached.pos == pos && cached.doc == doc) return cached
     }
     let result = resolveCache[resolveCachePos] = ResolvedPos.resolve(doc, pos)
     resolveCachePos = (resolveCachePos + 1) % resolveCacheSize
@@ -244,7 +244,7 @@ export class ResolvedPos {
   }
 }
 
-let resolveCache = [], resolveCachePos = 0, resolveCacheSize = 6
+let resolveCache = [], resolveCachePos = 0, resolveCacheSize = 12
 
 // ::- Represents a flat range of content, i.e. one that starts and
 // ends in the same node.
