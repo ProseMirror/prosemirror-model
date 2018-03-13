@@ -69,15 +69,16 @@ export class Node {
   // into this parent node, and its index.
   forEach(f) { this.content.forEach(f) }
 
-  // :: (number, number, (node: Node, pos: number, parent: Node, index: number) → ?bool)
+  // :: (number, number, (node: Node, pos: number, parent: Node, index: number) → ?bool, ?number)
   // Invoke a callback for all descendant nodes recursively between
   // the given two positions that are relative to start of this node's
   // content. The callback is invoked with the node, its
   // parent-relative position, its parent node, and its child index.
   // When the callback returns false for a given node, that node's
-  // children will not be recursed over.
-  nodesBetween(from, to, f, pos = 0) {
-    this.content.nodesBetween(from, to, f, pos, this)
+  // children will not be recursed over. The last parameter can be
+  // used to specify a starting position to count from.
+  nodesBetween(from, to, f, startPos = 0) {
+    this.content.nodesBetween(from, to, f, startPos, this)
   }
 
   // :: ((node: Node, pos: number, parent: Node) → ?bool)

@@ -16,7 +16,7 @@ export class Fragment {
       this.size += content[i].nodeSize
   }
 
-  // :: (number, number, (node: Node, start: number, parent: Node, index: number) → ?bool)
+  // :: (number, number, (node: Node, start: number, parent: Node, index: number) → ?bool, ?number)
   // Invoke a callback for all descendant nodes between the given two
   // positions (relative to start of this fragment). Doesn't descend
   // into a node when the callback returns `false`.
