@@ -409,9 +409,15 @@ describe("DOMParser", () => {
 })
 
 describe("DOMSerializer", () => {
+  let noEm = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {em: null}))
+
   it("can omit a mark", () => {
-    let s = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {em: null}))
-    ist(s.serializeNode(p("foo", em("bar"), strong("baz")), {document}).innerHTML,
+    ist(noEm.serializeNode(p("foo", em("bar"), strong("baz")), {document}).innerHTML,
         "foobar<strong>baz</strong>")
+  })
+
+  it("doesn't split other marks for omitted marks", () => {
+    ist(noEm.serializeNode(p("foo", code("bar"), em(code("baz"), "quux")), {document}).innerHTML,
+        "foo<code>barbaz</code>quux")
   })
 })

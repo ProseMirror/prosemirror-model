@@ -48,18 +48,24 @@ export class DOMSerializer {
     fragment.forEach(node => {
       if (active || node.marks.length) {
         if (!active) active = []
-        let keep = 0
-        for (; keep < Math.min(active.length, node.marks.length); ++keep)
-          if (!node.marks[keep].eq(active[keep])) break
+        let keep = 0, rendered = 0
+        while (keep < active.length && rendered < node.marks.length) {
+          let next = node.marks[rendered]
+          if (!this.marks[next.type.name]) { rendered++; continue }
+          if (!next.eq(active[keep])) break
+          keep++; rendered++
+        }
         while (keep < active.length) {
           let removed = active.pop()
           if (this.marks[removed.type.name]) top = top.parentNode
         }
-        while (active.length < node.marks.length) {
-          let add = node.marks[active.length]
-          active.push(add)
+        while (rendered < node.marks.length) {
+          let add = node.marks[rendered++]
           let markDOM = this.serializeMark(add, node.isInline, options)
-          if (markDOM) top = top.appendChild(markDOM)
+          if (markDOM) {
+            active.push(add)
+            top = top.appendChild(markDOM)
+          }
         }
       }
       top.appendChild(this.serializeNode(node, options))
