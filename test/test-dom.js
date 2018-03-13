@@ -417,7 +417,15 @@ describe("DOMSerializer", () => {
   })
 
   it("doesn't split other marks for omitted marks", () => {
-    ist(noEm.serializeNode(p("foo", code("bar"), em(code("baz"), "quux")), {document}).innerHTML,
-        "foo<code>barbaz</code>quux")
+    ist(noEm.serializeNode(p("foo", code("bar"), em(code("baz"), "quux"), "xyz"), {document}).innerHTML,
+        "foo<code>barbaz</code>quuxxyz")
+  })
+
+  it("can render marks with complex structure", () => {
+    let deepEm = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {
+      em() { return ["em", ["i", {"data-emphasis": true}, 0]] }
+    }))
+    ist(deepEm.serializeNode(p(strong("foo", code("bar"), em(code("baz"))), em("quux"), "xyz"), {document}).innerHTML,
+        "<strong>foo<code>bar</code></strong><em><i data-emphasis=\"true\"><strong><code>baz</code></strong>quux</i></em>xyz")
   })
 })

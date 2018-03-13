@@ -53,18 +53,19 @@ export class DOMSerializer {
           let next = node.marks[rendered]
           if (!this.marks[next.type.name]) { rendered++; continue }
           if (!next.eq(active[keep])) break
-          keep++; rendered++
+          keep += 2; rendered++
         }
         while (keep < active.length) {
-          let removed = active.pop()
-          if (this.marks[removed.type.name]) top = top.parentNode
+          top = active.pop()
+          active.pop()
         }
         while (rendered < node.marks.length) {
           let add = node.marks[rendered++]
           let markDOM = this.serializeMark(add, node.isInline, options)
           if (markDOM) {
-            active.push(add)
-            top = top.appendChild(markDOM)
+            active.push(add, top)
+            top.appendChild(markDOM.dom)
+            top = markDOM.contentDOM || markDOM.dom
           }
         }
       }
@@ -81,7 +82,17 @@ export class DOMSerializer {
   // [`serializeFragment`](#model.DOMSerializer.serializeFragment) on
   // its [content](#model.Node.content).
   serializeNode(node, options = {}) {
-    return this.renderStructure(this.nodes[node.type.name](node), node, options)
+    let {dom, contentDOM} =
+        DOMSerializer.renderSpec(doc(options), this.nodes[node.type.name](node))
+    if (contentDOM) {
+      if (node.isLeaf)
+        throw new RangeError("Content hole not allowed in a leaf node spec")
+      if (options.onContent)
+        options.onContent(node, contentDOM, options)
+      else
+        this.serializeFragment(node.content, options, contentDOM)
+    }
+    return dom
   }
 
   serializeNodeAndMarks(node, options = {}) {
@@ -89,8 +100,8 @@ export class DOMSerializer {
     for (let i = node.marks.length - 1; i >= 0; i--) {
       let wrap = this.serializeMark(node.marks[i], node.isInline, options)
       if (wrap) {
-        wrap.appendChild(dom)
-        dom = wrap
+        ;(wrap.contentDOM || wrap.dom).appendChild(dom)
+        dom = wrap.dom
       }
     }
     return dom
@@ -98,7 +109,7 @@ export class DOMSerializer {
 
   serializeMark(mark, inline, options = {}) {
     let toDOM = this.marks[mark.type.name]
-    return toDOM && this.renderStructure(toDOM(mark, inline), null, options)
+    return toDOM && DOMSerializer.renderSpec(doc(options), toDOM(mark, inline))
   }
 
   // :: (dom.Document, DOMOutputSpec) → {dom: dom.Node, contentDOM: ?dom.Node}
@@ -135,19 +146,6 @@ export class DOMSerializer {
       }
     }
     return {dom, contentDOM}
-  }
-
-  renderStructure(structure, node, options) {
-    let {dom, contentDOM} = DOMSerializer.renderSpec(doc(options), structure)
-    if (contentDOM) {
-      if (!node || node.isLeaf)
-        throw new RangeError("Content hole not allowed in a mark or leaf node spec")
-      if (options.onContent)
-        options.onContent(node, contentDOM, options)
-      else
-        this.serializeFragment(node.content, options, contentDOM)
-    }
-    return dom
   }
 
   // :: (Schema) → DOMSerializer
