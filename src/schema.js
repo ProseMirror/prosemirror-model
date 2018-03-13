@@ -428,7 +428,9 @@ export class MarkType {
 //
 //   toDOM:: ?(mark: Mark, inline: bool) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized
-//   to DOM/HTML.
+//   to DOM/HTML. When the resulting spec contains a hole, that is
+//   where the marked content is placed. Otherwise, it is appended to
+//   the top node.
 //
 //   parseDOM:: ?[ParseRule]
 //   Associates DOM parser information with this mark (see the
