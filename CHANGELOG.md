@@ -1,3 +1,17 @@
+## 1.2.0 (2018-03-14)
+
+### Bug fixes
+
+[`rangeHasMark`](https://prosemirror.net/docs/ref/#model.Node.rangeHasMark) now always returns false for empty ranges.
+
+The DOM renderer no longer needlessly splits mark nodes when starting a non-rendered mark.
+
+### New features
+
+[`DOMSerializer`](https://prosemirror.net/docs/ref/#model.DOMSerializer) now allows [DOM specs](https://prosemirror.net/docs/ref/#model.DOMOutputSpec) for marks to have holes in them, to specify the precise position where their content should be rendered.
+
+The base position parameter to [`Node.nodesBetween`](https://prosemirror.net/docs/ref/#model.Node.nodesBetween) and [`Fragment.nodesBetween`](https://prosemirror.net/docs/ref/#model.Fragment.nodesBetween) is now part of the public interface.
+
 ## 1.1.0 (2018-01-05)
 
 ### New features
