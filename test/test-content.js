@@ -63,9 +63,9 @@ describe("ContentMatch", () => {
     it("fails when an optional element is present twice", () => invalid("image?", "image image"))
 
     it("accepts a nested repeat", () =>
-       valid("(hard_break text+)+", "hard_break text hard_break text text"))
+       valid("(heading paragraph+)+", "heading paragraph heading paragraph paragraph"))
     it("fails on extra input after a nested repeat", () =>
-       invalid("(hard_break text+)+", "hard_break text hard_break text text paragraph"))
+       invalid("(heading paragraph+)+", "heading paragraph heading paragraph paragraph horizontal_rule"))
 
     it("accepts a matching count", () => valid("hard_break{2}", "hard_break hard_break"))
     it("rejects a count that comes up short", () => invalid("hard_break{2}", "hard_break"))

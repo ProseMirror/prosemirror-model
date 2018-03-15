@@ -74,7 +74,7 @@ export class ContentMatch {
 
       for (let i = 0; i < match.next.length; i += 2) {
         let type = match.next[i], next = match.next[i + 1]
-        if (!type.hasRequiredAttrs() && seen.indexOf(next) == -1) {
+        if (!(type.isText || type.hasRequiredAttrs()) && seen.indexOf(next) == -1) {
           seen.push(next)
           let found = search(next, types.concat(type))
           if (found) return found
@@ -354,9 +354,9 @@ function checkForDeadEnds(match, stream) {
     for (let j = 0; j < state.next.length; j += 2) {
       let node = state.next[j], next = state.next[j + 1]
       nodes.push(node.name)
-      if (dead && !state.next[j].hasRequiredAttrs()) dead = false
+      if (dead && !(node.isText || node.hasRequiredAttrs())) dead = false
       if (work.indexOf(next) == -1) work.push(next)
     }
-    if (dead) stream.err("Only non-generatable nodes (" + nodes.join(", ") + ") after a match state")
+    if (dead) stream.err("Only non-generatable nodes (" + nodes.join(", ") + ") in a required position")
   }
 }
