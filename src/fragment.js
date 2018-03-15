@@ -224,7 +224,9 @@ export class Fragment {
   // :: (Schema, ?Object) → Fragment
   // Deserialize a fragment from its JSON representation.
   static fromJSON(schema, value) {
-    return value ? new Fragment(value.map(schema.nodeFromJSON)) : Fragment.empty
+    if (!value) return Fragment.empty
+    if (!Array.isArray(value)) throw new RangeError("Invalid input for Fragment.fromJSON")
+    return new Fragment(value.map(schema.nodeFromJSON))
   }
 
   // :: ([Node]) → Fragment

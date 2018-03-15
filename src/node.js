@@ -349,11 +349,18 @@ export class Node {
   // :: (Schema, Object) → Node
   // Deserialize a node from its JSON representation.
   static fromJSON(schema, json) {
-    let marks = json.marks && json.marks.map(schema.markFromJSON)
-    if (json.type == "text") return schema.text(json.text, marks)
-    let type = schema.nodeType(json.type)
-    if (!type) throw new RangeError(`There is no node type ${json.type} in this schema`)
-    return type.create(json.attrs, Fragment.fromJSON(schema, json.content), marks)
+    if (!json) throw new RangeError("Invalid input for Node.fromJSON")
+    let marks = null
+    if (json.marks) {
+      if (!Array.isArray(json.marks)) throw new RangeError("Invalid mark data for Node.fromJSON")
+      marks = json.marks.map(schema.markFromJSON)
+    }
+    if (json.type == "text") {
+      if (typeof json.text != "string") throw new RangeError("Invalid text node in JSON")
+      return schema.text(json.text, marks)
+    }
+    let content = Fragment.fromJSON(schema, json.content)
+    return schema.nodeType(json.type).create(json.attrs, content, marks)
   }
 }
 

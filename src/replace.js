@@ -76,6 +76,9 @@ export class Slice {
   // Deserialize a slice from its JSON representation.
   static fromJSON(schema, json) {
     if (!json) return Slice.empty
+    let openStart = json.openStart || 0, openEnd = json.openEnd || 0
+    if (typeof openStart != "number" || typeof openEnd != "number")
+      throw new RangeError("Invalid input for Slice.fromJSON")
     return new Slice(Fragment.fromJSON(schema, json.content), json.openStart || 0, json.openEnd || 0)
   }
 

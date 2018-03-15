@@ -84,6 +84,7 @@ export class Mark {
 
   // :: (Schema, Object) → Mark
   static fromJSON(schema, json) {
+    if (!json) throw new RangeError("Invalid input for Mark.fromJSON")
     let type = schema.marks[json.type]
     if (!type) throw new RangeError(`There is no mark type ${json.type} in this schema`)
     return type.create(json.attrs)

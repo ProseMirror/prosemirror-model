@@ -125,7 +125,6 @@ export class NodeType {
   // `null`. Similarly `marks` may be `null` to default to the empty
   // set of marks.
   create(attrs, content, marks) {
-    if (typeof content == "string") throw new Error("Calling create with string")
     if (this.isText) throw new Error("NodeType.create can't construct text nodes")
     return new Node(this, this.computeAttrs(attrs), Fragment.from(content), Mark.setFrom(marks))
   }
