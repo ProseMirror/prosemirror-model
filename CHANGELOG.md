@@ -1,3 +1,9 @@
+## 1.2.1 (2018-03-15)
+
+### Bug fixes
+
+Content expressions with text nodes in required positions now raise the appropriate error about being unable to generate such nodes.
+
 ## 1.2.0 (2018-03-14)
 
 ### Bug fixes
