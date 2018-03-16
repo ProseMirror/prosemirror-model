@@ -182,7 +182,7 @@ export class Fragment {
     return findDiffStart(this, other, pos)
   }
 
-  // :: (Node) → ?{a: number, b: number}
+  // :: (Fragment) → ?{a: number, b: number}
   // Find the first position, searching from the end, at which this
   // fragment and the given fragment differ, or `null` if they are the
   // same. Since this position will not be the same in both nodes, an
