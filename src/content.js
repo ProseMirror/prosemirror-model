@@ -321,15 +321,20 @@ function nfa(expr) {
 
 function cmp(a, b) { return a - b }
 
+// Get the set of nodes reachable by null edges from `node`. Omit
+// nodes with only a single null-out-edge, since they may lead to
+// needless duplicated nodes.
 function nullFrom(nfa, node) {
   let result = []
   scan(node)
   return result.sort(cmp)
 
   function scan(node) {
+    let edges = nfa[node]
+    if (edges.length == 1 && !edges[0].term) return scan(edges[0].to)
     result.push(node)
-    for (let a = nfa[node], i = 0; i < a.length; i++) {
-      let {term, to} = a[i]
+    for (let i = 0; i < edges.length; i++) {
+      let {term, to} = edges[i]
       if (!term && result.indexOf(to) == -1) scan(to)
     }
   }
