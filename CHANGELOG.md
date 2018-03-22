@@ -1,3 +1,9 @@
+## 1.3.0 (2018-03-22)
+
+### New features
+
+`ContentMatch` objects now have an [`edgeCount`](https://prosemirror.net/docs/ref/#model.ContentMatch.edgeCount) property and an [`edge`](https://prosemirror.net/docs/ref/#model.ContentMatch.edge) method, providing direct access to the finite automaton structure.
+
 ## 1.2.2 (2018-03-15)
 
 ### Bug fixes
