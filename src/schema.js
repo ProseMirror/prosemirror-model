@@ -474,11 +474,13 @@ export class Schema {
     // A map from mark names to mark type objects.
     this.marks = MarkType.compile(this.spec.marks, this)
 
+    let contentExprCache = Object.create(null)
     for (let prop in this.nodes) {
       if (prop in this.marks)
         throw new RangeError(prop + " can not be both a node and a mark")
       let type = this.nodes[prop], contentExpr = type.spec.content || "", markExpr = type.spec.marks
-      type.contentMatch = ContentMatch.parse(contentExpr, this.nodes)
+      type.contentMatch = contentExprCache[contentExpr] ||
+        (contentExprCache[contentExpr] = ContentMatch.parse(contentExpr, this.nodes))
       type.inlineContent = type.contentMatch.inlineContent
       type.markSet = markExpr == "_" ? null :
         markExpr ? gatherMarks(this, markExpr.split(" ")) :
