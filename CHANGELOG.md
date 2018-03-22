@@ -1,3 +1,9 @@
+## 1.4.0 (2018-03-22)
+
+### New features
+
+[`ContentMatch.defaultType`](https://prosemirror.net/docs/ref/#model.ContentMatch.defaultType), a way to get a matching node type at a content match position, is now public.
+
 ## 1.3.0 (2018-03-22)
 
 ### New features
