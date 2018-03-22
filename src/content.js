@@ -118,6 +118,22 @@ export class ContentMatch {
     }
   }
 
+  // :: number
+  // The number of outgoing edges this node has in the finite
+  // automaton that describes the content expression.
+  get edgeCount() {
+    return this.next.length >> 1
+  }
+
+  // :: (number) → {type: NodeType, next: ContentMatch}
+  // Get the _n_th outgoing edge from this node in the finite
+  // automaton that describes the content expression.
+  edge(n) {
+    let i = n << 1
+    if (i > this.next.length) throw new RangeError(`There's no ${n}th edge in this content match`)
+    return {type: this.next[i], next: this.next[i + 1]}
+  }
+
   toString() {
     let seen = []
     function scan(m) {
