@@ -47,8 +47,14 @@ export class ContentMatch {
     return first ? first.isInline : false
   }
 
+  // :: ?NodeType
+  // Get the first matching node type at this match position that can
+  // be generated.
   get defaultType() {
-    return this.next[0]
+    for (let i = 0; i < this.next.length; i += 2) {
+      let type = this.next[i]
+      if (!(type.isText || type.hasRequiredAttrs())) return type
+    }
   }
 
   compatible(other) {

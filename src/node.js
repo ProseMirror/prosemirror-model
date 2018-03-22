@@ -318,6 +318,7 @@ export class Node {
     else return this.type.compatibleContent(other.type)
   }
 
+  // Unused. Left for backwards compatibility.
   defaultContentType(at) {
     return this.contentMatchAt(at).defaultType
   }

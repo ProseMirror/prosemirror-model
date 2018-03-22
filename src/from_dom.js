@@ -648,7 +648,7 @@ class ParseContext {
   textblockFromContext() {
     let $context = this.options.context
     if ($context) for (let d = $context.depth; d >= 0; d--) {
-      let deflt = $context.node(d).defaultContentType($context.indexAfter(d))
+      let deflt = $context.node(d).contentMatchAt($context.indexAfter(d)).defaultType
       if (deflt && deflt.isTextblock && deflt.defaultAttrs) return deflt
     }
     for (let name in this.parser.schema.nodes) {
