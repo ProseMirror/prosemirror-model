@@ -278,13 +278,14 @@ function wsOptionsFor(preserveWhitespace) {
 }
 
 class NodeContext {
-  constructor(type, attrs, solid, match, options) {
+  constructor(type, attrs, solid, match, options, marks = Mark.none) {
     this.type = type
     this.attrs = attrs
     this.solid = solid
     this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentMatch)
     this.options = options
     this.content = []
+    this.marks = marks
   }
 
   findWrapping(node) {
@@ -317,7 +318,7 @@ class NodeContext {
     let content = Fragment.from(this.content)
     if (!openEnd && this.match)
       content = content.append(this.match.fillBefore(Fragment.empty, true))
-    return this.type ? this.type.create(this.attrs, content) : content
+    return this.type ? this.type.create(this.attrs, content, this.marks) : content
   }
 }
 
@@ -536,12 +537,13 @@ class ParseContext {
 
   // Open a node of the given type
   enterInner(type, attrs, solid, preserveWS) {
+    let marks = this.marks
     this.closeExtra()
     let top = this.top
     top.match = top.match && top.match.matchType(type, attrs)
     let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
-    this.nodes.push(new NodeContext(type, attrs, solid, null, options))
+    this.nodes.push(new NodeContext(type, attrs, solid, null, options, marks))
     this.open++
   }
 
