@@ -183,7 +183,7 @@ export class Node {
   }
 
   // :: (number) → ?Node
-  // Find the node starting at the given position.
+  // Find the node directly after the given position.
   nodeAt(pos) {
     for (let node = this;;) {
       let {index, offset} = node.content.findIndex(pos)
