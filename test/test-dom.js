@@ -1,4 +1,5 @@
-const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr} = require("prosemirror-test-builder")
+const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr,
+       builders} = require("prosemirror-test-builder")
 const ist = require("ist")
 const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("../dist")
 
@@ -18,12 +19,12 @@ describe("DOMParser", () => {
 
     function test(doc, html) {
       return () => {
-        let derivedDOM = document.createElement("div")
-        derivedDOM.appendChild(serializer.serializeFragment(doc.content, {document}))
+        let derivedDOM = document.createElement("div"), schema = doc.type.schema
+        derivedDOM.appendChild(DOMSerializer.fromSchema(schema).serializeFragment(doc.content, {document}))
         let declaredDOM = domFrom(html)
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
-        ist(DOMParser.fromSchema(doc.type.schema).parse(derivedDOM), doc, eq)
+        ist(DOMParser.fromSchema(schema).parse(derivedDOM), doc, eq)
       }
     }
 
@@ -78,6 +79,19 @@ describe("DOMParser", () => {
     it("supports leaf nodes in marks",
        test(doc(p(em("hi", br, "x"))),
             "<p><em>hi<br>x</em></p>"))
+
+    it("can parse marks on block nodes", () => {
+      let commentSchema = new Schema({
+        nodes: schema.spec.nodes.update("doc", Object.assign({marks: "comment"}, schema.spec.nodes.get("doc"))),
+        marks: schema.spec.marks.update("comment", {
+          parseDOM: [{tag: "div.comment"}],
+          toDOM() { return ["div", {class: "comment"}, 0] }
+        })
+      })
+      let b = builders(commentSchema)
+      test(b.doc(b.paragraph("one"), b.comment(b.paragraph("two"), b.paragraph(b.strong("three"))), b.paragraph("four")),
+           "<p>one</p><div class=\"comment\"><p>two</p><p><strong>three</strong></p></div><p>four</p>")()
+    })
 
     function recover(html, doc, options) {
       return () => {

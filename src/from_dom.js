@@ -278,13 +278,15 @@ function wsOptionsFor(preserveWhitespace) {
 }
 
 class NodeContext {
-  constructor(type, attrs, solid, match, options) {
+  constructor(type, attrs, marks, solid, match, options) {
     this.type = type
     this.attrs = attrs
     this.solid = solid
     this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentMatch)
     this.options = options
     this.content = []
+    this.marks = marks
+    this.activeMarks = Mark.none
   }
 
   findWrapping(node) {
@@ -317,7 +319,16 @@ class NodeContext {
     let content = Fragment.from(this.content)
     if (!openEnd && this.match)
       content = content.append(this.match.fillBefore(Fragment.empty, true))
-    return this.type ? this.type.create(this.attrs, content) : content
+    return this.type ? this.type.create(this.attrs, content, this.marks) : content
+  }
+
+  // : (Mark) → [Mark]
+  // Add a mark to the current set of marks, return the old set.
+  addMark(mark) {
+    let old = this.activeMarks
+    if (this.type && this.type.allowsMarkType(mark.type))
+      this.activeMarks = mark.addToSet(old)
+    return old
   }
 }
 
@@ -332,15 +343,14 @@ class ParseContext {
     let topNode = options.topNode, topContext
     let topOptions = wsOptionsFor(options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
-      topContext = new NodeContext(topNode.type, topNode.attrs, true,
+      topContext = new NodeContext(topNode.type, topNode.attrs, Mark.none, true,
                                    options.topMatch || topNode.type.contentMatch, topOptions)
     else if (open)
-      topContext = new NodeContext(null, null, true, null, topOptions)
+      topContext = new NodeContext(null, null, Mark.none, true, null, topOptions)
     else
-      topContext = new NodeContext(parser.schema.topNodeType, null, true, null, topOptions)
+      topContext = new NodeContext(parser.schema.topNodeType, null, Mark.none, true, null, topOptions)
     this.nodes = [topContext]
     // : [Mark] The current set of marks
-    this.marks = Mark.none
     this.open = 0
     this.find = options.findPositions
     this.needsBlock = false
@@ -348,14 +358,6 @@ class ParseContext {
 
   get top() {
     return this.nodes[this.open]
-  }
-
-  // : (Mark) → [Mark]
-  // Add a mark to the current set of marks, return the old set.
-  addMark(mark) {
-    let old = this.marks
-    this.marks = mark.addToSet(this.marks)
-    return old
   }
 
   // : (dom.Node)
@@ -366,9 +368,12 @@ class ParseContext {
     if (dom.nodeType == 3) {
       this.addTextNode(dom)
     } else if (dom.nodeType == 1) {
-      let style = dom.getAttribute("style")
-      if (style) this.addElementWithStyles(parseStyles(style), dom)
-      else this.addElement(dom)
+      let style = dom.getAttribute("style"), marks = Mark.none
+      if (style) {
+        marks = this.readStyles(parseStyles(style))
+        if (marks == null) return
+      }
+      this.addElement(dom, marks)
     }
   }
 
@@ -389,7 +394,7 @@ class ParseContext {
       } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
         value = value.replace(/\r?\n|\r/g, " ")
       }
-      if (value) this.insertNode(this.parser.schema.text(value, this.marks))
+      if (value) this.insertNode(this.parser.schema.text(value, this.top.activeMarks))
       this.findInText(dom)
     } else {
       this.findInside(dom)
@@ -399,7 +404,7 @@ class ParseContext {
   // : (dom.Element)
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
-  addElement(dom) {
+  addElement(dom, marks) {
     let name = dom.nodeName.toLowerCase()
     if (listTags.hasOwnProperty(name)) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
@@ -407,48 +412,52 @@ class ParseContext {
       this.findInside(dom)
     } else if (!rule || rule.skip) {
       if (rule && rule.skip.nodeType) dom = rule.skip
-      let sync, oldNeedsBlock = this.needsBlock
+      let sync, top = this.top, oldMarks = top.activeMarks, oldNeedsBlock = this.needsBlock
       if (blockTags.hasOwnProperty(name)) {
-        sync = this.top
-        if (!sync.type) this.needsBlock = true
+        sync = true
+        if (!top.type) this.needsBlock = true
       }
+      for (let i = 0; i < marks.length; i++) top.addMark(marks[i])
       this.addAll(dom)
-      if (sync) this.sync(sync)
+      if (sync) this.sync(top)
+      top.activeMarks = oldMarks
       this.needsBlock = oldNeedsBlock
     } else {
-      this.addElementByRule(dom, rule)
+      this.addElementByRule(dom, rule, marks)
     }
   }
 
-  // Run any style parser associated with the node's styles. After
-  // that, if no style parser suppressed the node's content, pass it
-  // through to `addElement`.
-  addElementWithStyles(styles, dom) {
-    let oldMarks = this.marks, ignore = false
+  // Run any style parser associated with the node's styles. Either
+  // return an array of marks, or null to indicate some of the styles
+  // had a rule with `ignore` set.
+  readStyles(styles) {
+    let marks = Mark.none
     for (let i = 0; i < styles.length; i += 2) {
       let rule = this.parser.matchStyle(styles[i], styles[i + 1], this)
       if (!rule) continue
-      if (rule.ignore) { ignore = true; break }
-      this.addMark(this.parser.schema.marks[rule.mark].create(rule.attrs))
+      if (rule.ignore) return null
+      marks = this.parser.schema.marks[rule.mark].create(rule.attrs).addToSet(marks)
     }
-    if (!ignore) this.addElement(dom)
-    this.marks = oldMarks
+    return marks
   }
 
   // : (dom.Element, ParseRule) → bool
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
-  addElementByRule(dom, rule) {
+  addElementByRule(dom, rule, marks) {
     let sync, before, nodeType, markType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
-      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs, null, this.marks))
-      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace) && this.top
+      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs, null, this.top.activeMarks))
+      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
     } else {
       markType = this.parser.schema.marks[rule.mark]
-      before = this.addMark(mark = markType.create(rule.attrs))
+      if (markType.name == "comment") console.log("adding a comment")
+      before = this.top.addMark(mark = markType.create(rule.attrs))
     }
+    let startIn = this.top
+    for (let i = 0; i < marks.length; i++) before = before || startIn.addMark(marks[i])
 
     if (nodeType && nodeType.isLeaf) {
       this.findInside(dom)
@@ -463,8 +472,8 @@ class ParseContext {
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, sync)
     }
-    if (sync) { this.sync(sync); this.open-- }
-    else if (before) this.marks = before
+    if (sync) { this.sync(startIn); this.open-- }
+    if (before) startIn.activeMarks = before
     return true
   }
 
@@ -541,7 +550,7 @@ class ParseContext {
     top.match = top.match && top.match.matchType(type, attrs)
     let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
-    this.nodes.push(new NodeContext(type, attrs, solid, null, options))
+    this.nodes.push(new NodeContext(type, attrs, top.activeMarks, solid, null, options))
     this.open++
   }
 
@@ -550,7 +559,6 @@ class ParseContext {
   closeExtra(openEnd) {
     let i = this.nodes.length - 1
     if (i > this.open) {
-      this.marks = Mark.none
       for (; i > this.open; i--) this.nodes[i - 1].content.push(this.nodes[i].finish(openEnd))
       this.nodes.length = this.open + 1
     }
