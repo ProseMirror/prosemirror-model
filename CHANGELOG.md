@@ -1,3 +1,9 @@
+## 1.4.1 (2018-04-13)
+
+### Bug fixes
+
+`DOMParser` can now parse marks on block nodes.
+
 ## 1.4.0 (2018-03-22)
 
 ### New features
