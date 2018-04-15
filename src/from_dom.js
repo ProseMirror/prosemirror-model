@@ -453,7 +453,6 @@ class ParseContext {
       else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
     } else {
       markType = this.parser.schema.marks[rule.mark]
-      if (markType.name == "comment") console.log("adding a comment")
       before = this.top.addMark(mark = markType.create(rule.attrs))
     }
     let startIn = this.top
