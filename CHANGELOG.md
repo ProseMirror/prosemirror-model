@@ -1,3 +1,9 @@
+## 1.4.2 (2018-04-15)
+
+### Bug fixes
+
+Remove a `console.log` that was accidentally left in the previous release.
+
 ## 1.4.1 (2018-04-13)
 
 ### Bug fixes
