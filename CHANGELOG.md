@@ -1,3 +1,9 @@
+## 1.4.3 (2018-04-27)
+
+### Bug fixes
+
+[`DOMParser.parseSlice`](https://prosemirror.net/docs/ref/#model.DOMParser.parseSlice) can now correctly parses marks at the top level again.
+
 ## 1.4.2 (2018-04-15)
 
 ### Bug fixes
