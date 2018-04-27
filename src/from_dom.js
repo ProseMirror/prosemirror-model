@@ -326,7 +326,7 @@ class NodeContext {
   // Add a mark to the current set of marks, return the old set.
   addMark(mark) {
     let old = this.activeMarks
-    if (this.type && this.type.allowsMarkType(mark.type))
+    if (!this.type || this.type.allowsMarkType(mark.type))
       this.activeMarks = mark.addToSet(old)
     return old
   }
