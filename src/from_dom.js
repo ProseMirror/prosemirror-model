@@ -321,15 +321,6 @@ class NodeContext {
       content = content.append(this.match.fillBefore(Fragment.empty, true))
     return this.type ? this.type.create(this.attrs, content, this.marks) : content
   }
-
-  // : (Mark) → [Mark]
-  // Add a mark to the current set of marks, return the old set.
-  addMark(mark) {
-    let old = this.activeMarks
-    if (!this.type || this.type.allowsMarkType(mark.type))
-      this.activeMarks = mark.addToSet(old)
-    return old
-  }
 }
 
 class ParseContext {
@@ -340,6 +331,7 @@ class ParseContext {
     // : Object The options passed to this parse.
     this.options = options
     this.isOpen = open
+    this.pendingMarks = []
     let topNode = options.topNode, topContext
     let topOptions = wsOptionsFor(options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
@@ -368,12 +360,17 @@ class ParseContext {
     if (dom.nodeType == 3) {
       this.addTextNode(dom)
     } else if (dom.nodeType == 1) {
-      let style = dom.getAttribute("style"), marks = Mark.none
-      if (style) {
-        marks = this.readStyles(parseStyles(style))
-        if (marks == null) return
+      let style = dom.getAttribute("style")
+      if (!style) {
+        this.addElement(dom)
+      } else {
+        let marks = this.readStyles(parseStyles(style))
+        if (marks != null) {
+          for (let i = 0; i < marks.length; i++) this.addPendingMark(marks[i])
+          this.addElement(dom)
+          for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i])
+        }
       }
-      this.addElement(dom, marks)
     }
   }
 
@@ -394,7 +391,7 @@ class ParseContext {
       } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
         value = value.replace(/\r?\n|\r/g, " ")
       }
-      if (value) this.insertNode(this.parser.schema.text(value, this.top.activeMarks))
+      if (value) this.insertNode(this.parser.schema.text(value))
       this.findInText(dom)
     } else {
       this.findInside(dom)
@@ -404,7 +401,7 @@ class ParseContext {
   // : (dom.Element)
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
-  addElement(dom, marks) {
+  addElement(dom) {
     let name = dom.nodeName.toLowerCase()
     if (listTags.hasOwnProperty(name)) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
@@ -417,13 +414,12 @@ class ParseContext {
         sync = true
         if (!top.type) this.needsBlock = true
       }
-      for (let i = 0; i < marks.length; i++) top.addMark(marks[i])
       this.addAll(dom)
       if (sync) this.sync(top)
       top.activeMarks = oldMarks
       this.needsBlock = oldNeedsBlock
     } else {
-      this.addElementByRule(dom, rule, marks)
+      this.addElementByRule(dom, rule)
     }
   }
 
@@ -445,24 +441,24 @@ class ParseContext {
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
-  addElementByRule(dom, rule, marks) {
-    let sync, before, nodeType, markType, mark
+  addElementByRule(dom, rule) {
+    let sync, nodeType, markType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
-      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs, null, this.top.activeMarks))
+      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs))
       else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
     } else {
       markType = this.parser.schema.marks[rule.mark]
-      before = this.top.addMark(mark = markType.create(rule.attrs))
+      mark = markType.create(rule.attrs)
+      this.addPendingMark(mark)
     }
     let startIn = this.top
-    for (let i = 0; i < marks.length; i++) before = before || startIn.addMark(marks[i])
 
     if (nodeType && nodeType.isLeaf) {
       this.findInside(dom)
     } else if (rule.getContent) {
       this.findInside(dom)
-      rule.getContent(dom).forEach(node => this.insertNode(mark ? node.mark(mark.addToSet(node.marks)) : node))
+      rule.getContent(dom).forEach(node => this.insertNode(node))
     } else {
       let contentDOM = rule.contentElement
       if (typeof contentDOM == "string") contentDOM = dom.querySelector(contentDOM)
@@ -472,7 +468,7 @@ class ParseContext {
       this.addAll(contentDOM, sync)
     }
     if (sync) { this.sync(startIn); this.open-- }
-    if (before) startIn.activeMarks = before
+    if (mark) this.removePendingMark(mark)
     return true
   }
 
@@ -525,11 +521,23 @@ class ParseContext {
     if (this.findPlace(node)) {
       this.closeExtra()
       let top = this.top
-      if (top.match) {
-        top.match = top.match.matchType(node.type)
-        if (top.type) node = node.mark(top.type.allowedMarks(node.marks))
+      this.applyPendingMarks(top)
+      if (top.match) top.match = top.match.matchType(node.type)
+      let marks = top.activeMarks
+      for (let i = 0; i < node.marks.length; i++)
+        if (!top.type || top.type.allowsMarkType(node.marks[i].type))
+          marks = node.marks[i].addToSet(marks)
+      top.content.push(node.mark(marks))
+    }
+  }
+
+  applyPendingMarks(top) {
+    for (let i = 0; i < this.pendingMarks.length; i++) {
+      let mark = this.pendingMarks[i]
+      if ((!top.type || top.type.allowsMarkType(mark.type)) && !mark.type.isInSet(top.activeMarks)) {
+        top.activeMarks = mark.addToSet(top.activeMarks)
+        this.pendingMarks.splice(i--, 1)
       }
-      top.content.push(node)
     }
   }
 
@@ -538,7 +546,10 @@ class ParseContext {
   // necessary.
   enter(type, attrs, preserveWS) {
     let ok = this.findPlace(type.create(attrs))
-    if (ok) this.enterInner(type, attrs, true, preserveWS)
+    if (ok) {
+      this.applyPendingMarks(this.top)
+      this.enterInner(type, attrs, true, preserveWS)
+    }
     return ok
   }
 
@@ -573,6 +584,20 @@ class ParseContext {
     for (let i = this.open; i >= 0; i--) if (this.nodes[i] == to) {
       this.open = i
       return
+    }
+  }
+
+  addPendingMark(mark) {
+    this.pendingMarks.push(mark)
+  }
+
+  removePendingMark(mark) {
+    let found = this.pendingMarks.lastIndexOf(mark)
+    if (found > -1) {
+      this.pendingMarks.splice(mark, 1)
+    } else {
+      let top = this.top
+      top.activeMarks = mark.removeFromSet(top.activeMarks)
     }
   }
 

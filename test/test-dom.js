@@ -185,6 +185,10 @@ describe("DOMParser", () => {
        recover("<p><u>a</u>bc</p>",
                doc(p("abc"))))
 
+    it("can add marks specified before their parent node is opened",
+       recover("<em>hi</em> you",
+               doc(p(em("hi"), " you"))))
+
     function parse(html, options, doc) {
       return () => {
         let dom = document.createElement("div")
