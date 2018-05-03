@@ -1,3 +1,9 @@
+## 1.4.4 (2018-05-03)
+
+### Bug fixes
+
+Fix a regression where `DOMParser.parse` would fail to apply mark nodes directly at the start of the input.
+
 ## 1.4.3 (2018-04-27)
 
 ### Bug fixes
