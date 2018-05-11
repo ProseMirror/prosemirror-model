@@ -337,7 +337,7 @@ export class Node {
   toJSON() {
     let obj = {type: this.type.name}
     for (let _ in this.attrs) {
-      obj.attrs = this.attrs
+      obj.attrs = Object.assign({}, this.attrs)
       break
     }
     if (this.content.size)
