@@ -1,3 +1,9 @@
+## 1.5.0 (2018-05-31)
+
+### New features
+
+[`ParseRule.getContent`](https://prosemirror.net/docs/ref/#model.ParseRule.getContent) is now passed the parser schema as second argument.
+
 ## 1.4.4 (2018-05-03)
 
 ### Bug fixes
