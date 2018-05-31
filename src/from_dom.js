@@ -121,7 +121,7 @@ import {Mark} from "./mark"
 //   content element, or a function that returns the actual content
 //   element to the parser.
 //
-//   getContent:: ?(dom.Node) → Fragment
+//   getContent:: ?(dom.Node, schema: Schema) → Fragment
 //   Can be used to override the content of a matched node. When
 //   present, instead of parsing the node's child nodes, the result of
 //   this function is used.
@@ -458,7 +458,7 @@ class ParseContext {
       this.findInside(dom)
     } else if (rule.getContent) {
       this.findInside(dom)
-      rule.getContent(dom).forEach(node => this.insertNode(node))
+      rule.getContent(dom, this.parser.schema).forEach(node => this.insertNode(node))
     } else {
       let contentDOM = rule.contentElement
       if (typeof contentDOM == "string") contentDOM = dom.querySelector(contentDOM)
