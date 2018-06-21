@@ -1,6 +1,15 @@
 const ist = require("ist")
-const {Fragment} = require("../dist")
+const {Fragment, Schema} = require("../dist")
 const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("prosemirror-test-builder")
+
+let customSchema = new Schema({
+  nodes: {
+    doc: {content: "paragraph+"},
+    paragraph: {content: "text*"},
+    text: { toDebugString() { return 'custom_text' } },
+    hard_break: { toDebugString() { return 'custom_hard_break' } }
+  },
+})
 
 describe("Node", () => {
   describe("toString", () => {
@@ -127,5 +136,21 @@ describe("Node", () => {
     it("can serialize block leaf nodes", () => roundTrip(doc(p("a"), hr, p("b"), p())))
 
     it("can serialize nested nodes", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img))), p("c")), p("d"))))
+  })
+
+  describe("toString", () => {
+    it("should have the default toString method [text]", () => ist(schema.text("hello").toString(), "\"hello\""))
+    it("should have the default toString method [br]", () => ist(br().toString(), "hard_break"))
+
+    it("should be able to redefine it from NodeSpec by specifying toDebugString method", () => ist(customSchema.text("hello").toString(), "custom_text"));
+
+    it("should be respected by Fragment", () =>
+      ist(
+        Fragment.fromArray(
+          [customSchema.text("hello"), customSchema.nodes.hard_break.createChecked(), customSchema.text("world")]
+        ),
+        "<custom_text, custom_hard_break, custom_text>"
+      )
+    )
   })
 })
