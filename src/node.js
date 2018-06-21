@@ -272,6 +272,7 @@ export class Node {
   // Return a string representation of this node for debugging
   // purposes.
   toString() {
+    if (this.type.spec.toDebugString) return this.type.spec.toDebugString(this)
     let name = this.type.name
     if (this.content.size)
       name += "(" + this.content.toStringInner() + ")"
@@ -374,7 +375,10 @@ export class TextNode extends Node {
     this.text = content
   }
 
-  toString() { return wrapMarks(this.marks, JSON.stringify(this.text)) }
+  toString() {
+    if (this.type.spec.toDebugString) return this.type.spec.toDebugString(this)
+    return wrapMarks(this.marks, JSON.stringify(this.text))
+  }
 
   get textContent() { return this.text }
 

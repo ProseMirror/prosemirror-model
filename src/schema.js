@@ -396,6 +396,10 @@ export class MarkType {
 //   implied (the name of this node will be filled in automatically).
 //   If you supply your own parser, you do not need to also specify
 //   parsing rules in your schema.
+//
+//   toDebugString:: ?(node: Node) -> string
+//   Defines the default way a node of this type should be serialized
+//   to a string representation for debugging (e.g. in error messages).
 
 // MarkSpec:: interface
 //
