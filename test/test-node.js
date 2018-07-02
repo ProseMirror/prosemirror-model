@@ -142,7 +142,8 @@ describe("Node", () => {
     it("should have the default toString method [text]", () => ist(schema.text("hello").toString(), "\"hello\""))
     it("should have the default toString method [br]", () => ist(br().toString(), "hard_break"))
 
-    it("should be able to redefine it from NodeSpec by specifying toDebugString method", () => ist(customSchema.text("hello").toString(), "custom_text"));
+    it("should be able to redefine it from NodeSpec by specifying toDebugString method",
+       () => ist(customSchema.text("hello").toString(), "custom_text"))
 
     it("should be respected by Fragment", () =>
       ist(
