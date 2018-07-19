@@ -242,6 +242,10 @@ describe("DOMParser", () => {
     it("will create textblocks for block nodes",
        open("<div><div>foo</div><div>bar</div></div>", [p("foo"), p("bar")], 1, 1))
 
+    it("can parse marks at the start of defaulted textblocks",
+       open("<div>foo</div><div><em>bar</em></div>",
+            [p("foo"), p(em("bar"))], 1, 1))
+
     function find(html, doc) {
       return () => {
         let dom = document.createElement("div")

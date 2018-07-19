@@ -516,7 +516,7 @@ class ParseContext {
   insertNode(node) {
     if (node.isInline && this.needsBlock && !this.top.type) {
       let block = this.textblockFromContext()
-      if (block) this.enter(block)
+      if (block) this.enterInner(block)
     }
     if (this.findPlace(node)) {
       this.closeExtra()
