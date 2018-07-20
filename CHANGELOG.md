@@ -1,3 +1,13 @@
+## 1.6.0 (2018-07-20)
+
+### Bug fixes
+
+Fix issue where marks would be applied to the wrong node when parsing a slice from DOM.
+
+### New features
+
+Adds a new node spec property, [`toDebugString`](https://prosemirror.net/docs/ref/#model.NodeSpec.toDebugString), making it possible to customize your nodes' `toString` behavior.
+
 ## 1.5.0 (2018-05-31)
 
 ### New features
