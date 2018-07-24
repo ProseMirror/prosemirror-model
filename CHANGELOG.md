@@ -1,3 +1,9 @@
+## 1.6.1 (2018-07-24)
+
+### Bug fixes
+
+Fix a bug where marks were sometimes parsed incorrectly.
+
 ## 1.6.0 (2018-07-20)
 
 ### Bug fixes
