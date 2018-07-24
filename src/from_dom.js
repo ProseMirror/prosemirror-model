@@ -361,16 +361,10 @@ class ParseContext {
       this.addTextNode(dom)
     } else if (dom.nodeType == 1) {
       let style = dom.getAttribute("style")
-      if (!style) {
-        this.addElement(dom)
-      } else {
-        let marks = this.readStyles(parseStyles(style))
-        if (marks != null) {
-          for (let i = 0; i < marks.length; i++) this.addPendingMark(marks[i])
-          this.addElement(dom)
-          for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i])
-        }
-      }
+      let marks = style ? this.readStyles(parseStyles(style)) : null
+      if (marks != null) for (let i = 0; i < marks.length; i++) this.addPendingMark(marks[i])
+      this.addElement(dom)
+      if (marks != null) for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i])
     }
   }
 
@@ -409,14 +403,13 @@ class ParseContext {
       this.findInside(dom)
     } else if (!rule || rule.skip) {
       if (rule && rule.skip.nodeType) dom = rule.skip
-      let sync, top = this.top, oldMarks = top.activeMarks, oldNeedsBlock = this.needsBlock
+      let sync, top = this.top, oldNeedsBlock = this.needsBlock
       if (blockTags.hasOwnProperty(name)) {
         sync = true
         if (!top.type) this.needsBlock = true
       }
       this.addAll(dom)
       if (sync) this.sync(top)
-      top.activeMarks = oldMarks
       this.needsBlock = oldNeedsBlock
     } else {
       this.addElementByRule(dom, rule)
@@ -594,7 +587,7 @@ class ParseContext {
   removePendingMark(mark) {
     let found = this.pendingMarks.lastIndexOf(mark)
     if (found > -1) {
-      this.pendingMarks.splice(mark, 1)
+      this.pendingMarks.splice(found, 1)
     } else {
       let top = this.top
       top.activeMarks = mark.removeFromSet(top.activeMarks)

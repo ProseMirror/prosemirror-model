@@ -189,6 +189,10 @@ describe("DOMParser", () => {
        recover("<em>hi</em> you",
                doc(p(em("hi"), " you"))))
 
+    it("keeps applying a mark for the all of the node's content",
+       recover("<p><strong><span>xx</span>bar</strong></p>",
+               doc(p(strong("xxbar")))))
+
     function parse(html, options, doc) {
       return () => {
         let dom = document.createElement("div")
