@@ -282,7 +282,9 @@ export class Node {
   // :: (number) → ContentMatch
   // Get the content match in this node at the given index.
   contentMatchAt(index) {
-    return this.type.contentMatch.matchFragment(this.content, 0, index)
+    let match = this.type.contentMatch.matchFragment(this.content, 0, index)
+    if (!match) throw new Error("Called contentMatchAt on a node with invalid content")
+    return match
   }
 
   // :: (number, number, ?Fragment, ?number, ?number) → bool
