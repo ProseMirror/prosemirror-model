@@ -279,7 +279,7 @@ export class Node {
     return wrapMarks(this.marks, name)
   }
 
-  // :: (number) → ContentMatch
+  // :: (number) → ?ContentMatch
   // Get the content match in this node at the given index.
   contentMatchAt(index) {
     let match = this.type.contentMatch.matchFragment(this.content, 0, index)
