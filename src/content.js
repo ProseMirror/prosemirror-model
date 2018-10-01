@@ -116,7 +116,7 @@ export class ContentMatch {
       }
       for (let i = 0; i < match.next.length; i += 2) {
         let type = match.next[i]
-        if (!type.isLeaf && !(type.name in seen) && (!current.type || match.next[i + 1].validEnd)) {
+        if (!type.isLeaf && !type.hasRequiredAttrs() && !(type.name in seen) && (!current.type || match.next[i + 1].validEnd)) {
           active.push({match: type.contentMatch, type, via: current})
           seen[type.name] = true
         }
