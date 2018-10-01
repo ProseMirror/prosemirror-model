@@ -1,3 +1,9 @@
+## 1.6.2 (2018-10-01)
+
+### Bug fixes
+
+Prevent [`ContentMatch.findWrapping`](https://prosemirror.net/docs/ref/#model.ContentMatch.findWrapping) from returning node types with required attributes.
+
 ## 1.6.1 (2018-07-24)
 
 ### Bug fixes
