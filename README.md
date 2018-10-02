@@ -1,6 +1,6 @@
 # prosemirror-model
 
-[ [**WEBSITE**](http://prosemirror.net) | [**ISSUES**](https://github.com/prosemirror/prosemirror/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**GITTER**](https://gitter.im/ProseMirror/prosemirror) | [**CHANGELOG**](https://github.com/ProseMirror/prosemirror/blob/master/CHANGELOG.md) ]
+[ [**WEBSITE**](http://prosemirror.net) | [**ISSUES**](https://github.com/prosemirror/prosemirror/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**GITTER**](https://gitter.im/ProseMirror/prosemirror) | [**CHANGELOG**](https://github.com/ProseMirror/prosemirror-model/blob/master/CHANGELOG.md) ]
 
 This is a [core module](http://prosemirror.net/docs/ref/#model) of [ProseMirror](http://prosemirror.net).
 ProseMirror is a well-behaved rich semantic content editor based on
