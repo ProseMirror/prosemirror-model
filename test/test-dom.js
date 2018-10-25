@@ -129,6 +129,10 @@ describe("DOMParser", () => {
        recover(" <blockquote> <p>woo  \n  <em> hooo</em></p> </blockquote> ",
                doc(blockquote(p("woo ", em("hooo"))))))
 
+   it("removes whitespace after a hard break",
+      recover("<p>hello<br>\n  world</p>",
+              doc(p("hello", br, "world"))))
+
     it("finds a valid place for invalid content",
        recover("<ul><li>hi</li><p>whoah</p><li>again</li></ul>",
                doc(ul(li(p("hi")), li(p("whoah")), li(p("again"))))))
