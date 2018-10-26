@@ -1,3 +1,9 @@
+## 1.6.3 (2018-10-26)
+
+### Bug fixes
+
+The DOM parser now drops whitespace after BR nodes when not in whitespace-preserving mode.
+
 ## 1.6.2 (2018-10-01)
 
 ### Bug fixes
