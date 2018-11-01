@@ -244,7 +244,7 @@ export class Node {
   get isTextblock() { return this.type.isTextblock }
 
   // :: bool
-  // True when this node has inline content.
+  // True when this node allows inline content.
   get inlineContent() { return this.type.inlineContent }
 
   // :: bool
