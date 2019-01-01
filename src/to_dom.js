@@ -126,9 +126,7 @@ export class DOMSerializer {
     if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
       start = 2
       for (let name in attrs) {
-        if (attrs[name] != null) {
-          dom.setAttribute(name, attrs[name])
-        }
+        if (attrs[name] != null) dom.setAttribute(name, attrs[name])
       }
     }
     for (let i = start; i < structure.length; i++) {
