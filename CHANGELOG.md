@@ -1,3 +1,9 @@
+## 1.6.4 (2019-01-05)
+
+### Bug fixes
+
+Don't output empty style attributes when a style property with a null value is present in `renderSpec`.
+
 ## 1.6.3 (2018-10-26)
 
 ### Bug fixes
