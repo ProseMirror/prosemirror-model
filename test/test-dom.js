@@ -93,6 +93,20 @@ describe("DOMParser", () => {
            "<p>one</p><div class=\"comment\"><p>two</p><p><strong>three</strong></p></div><p>four</p>")()
     })
 
+    it("serializes non-spanning marks correctly", () => {
+      let markSchema = new Schema({
+        nodes: schema.spec.nodes,
+        marks: schema.spec.marks.update("test", {
+          parseDOM: [{tag: "test"}],
+          toDOM() { return ["test", 0] },
+          spanning: false
+        })
+      })
+      let b = builders(markSchema)
+      test(b.doc(b.paragraph(b.test("a", b.image({src: "x"}), "b"))),
+           "<p><test>a</test><test><img src=\"x\"></test><test>b</test></p>")()
+    })
+
     function recover(html, doc, options) {
       return () => {
         let dom = document.createElement("div")
