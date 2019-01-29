@@ -52,7 +52,7 @@ export class DOMSerializer {
         while (keep < active.length && rendered < node.marks.length) {
           let next = node.marks[rendered]
           if (!this.marks[next.type.name]) { rendered++; continue }
-          if (!next.eq(active[keep])) break
+          if (!next.eq(active[keep]) || next.type.spec.spanning === false) break
           keep += 2; rendered++
         }
         while (keep < active.length) {

@@ -429,6 +429,10 @@ export class MarkType {
 //   group:: ?string
 //   The group or space-separated groups to which this mark belongs.
 //
+//   spanning:: ?bool
+//   Determines whether marks of this type can span multiple adjacent
+//   nodes when serialized to DOM/HTML. Defaults to true.
+//
 //   toDOM:: ?(mark: Mark, inline: bool) → DOMOutputSpec
 //   Defines the default way marks of this type should be serialized
 //   to DOM/HTML. When the resulting spec contains a hole, that is
