@@ -1,3 +1,9 @@
+## 1.7.0 (2019-01-29)
+
+### New features
+
+Mark specs now support a property [`spanning`](https://prosemirror.net/docs/ref/#model.MarkSpec.spanning) which, when set to `false`, prevents the mark's DOM markup from spanning multiple nodes, so that a separate wrapper is created for each adjacent marked node.
+
 ## 1.6.4 (2019-01-05)
 
 ### Bug fixes
