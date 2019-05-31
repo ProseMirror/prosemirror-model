@@ -93,6 +93,31 @@ describe("DOMParser", () => {
            "<p>one</p><div class=\"comment\"><p>two</p><p><strong>three</strong></p></div><p>four</p>")()
     })
 
+    it("parses unique, non-exclusive, same-typed marks", () => {
+      let commentSchema = new Schema({
+        nodes: schema.spec.nodes,
+        marks: schema.spec.marks.update("comment", {
+          attrs: { id: { default: null }},
+          parseDOM: [{
+            tag: "span.comment",
+            getAttrs(dom) { return { id: parseInt(dom.getAttribute('data-id'), 10) } }
+          }],
+          excludes: '',
+          toDOM(mark) { return ["span", {class: "comment", "data-id": mark.attrs.id }, 0] }
+        })
+      })
+      let b = builders(commentSchema)
+      test(b.schema.nodes.doc.createAndFill(undefined, [
+          b.schema.nodes.paragraph.createAndFill(undefined, [
+            b.schema.text('double comment', [
+                b.schema.marks.comment.create({ id: 1 }),
+                b.schema.marks.comment.create({ id: 2 })
+              ])
+          ])
+        ]),
+           "<p><span class=\"comment\" data-id=\"1\"><span class=\"comment\" data-id=\"2\">double comment</span></span></p>")()
+    })
+
     it("serializes non-spanning marks correctly", () => {
       let markSchema = new Schema({
         nodes: schema.spec.nodes,
