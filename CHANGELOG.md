@@ -1,3 +1,11 @@
+## 1.7.1 (2019-05-31)
+
+### Bug fixes
+
+Using `Fragment.from` on an invalid value, including a `Fragment` instance from a different version/instance of the library, now raises a meaningful error rather than getting confused.
+
+Fix a bug in parsing overlapping marks of the same non-self-exclusive type.
+
 ## 1.7.0 (2019-01-29)
 
 ### New features
