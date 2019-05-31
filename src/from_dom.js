@@ -530,7 +530,7 @@ class ParseContext {
   applyPendingMarks(top) {
     for (let i = 0; i < this.pendingMarks.length; i++) {
       let mark = this.pendingMarks[i]
-      if ((!top.type || top.type.allowsMarkType(mark.type)) && !mark.type.isInSet(top.activeMarks)) {
+      if ((!top.type || top.type.allowsMarkType(mark.type)) && !mark.isInSet(top.activeMarks)) {
         top.activeMarks = mark.addToSet(top.activeMarks)
         this.pendingMarks.splice(i--, 1)
       }
