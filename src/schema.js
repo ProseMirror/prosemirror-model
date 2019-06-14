@@ -114,7 +114,7 @@ export class NodeType {
 
   computeAttrs(attrs) {
     if (!attrs && this.defaultAttrs) return this.defaultAttrs
-    else return computeAttrs(this.attrs, attrs)
+    else return computeAttrs(this.attrs)
   }
 
   // :: (?Object, ?union<Fragment, Node, [Node]>, ?[Mark]) → Node
