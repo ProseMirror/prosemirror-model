@@ -28,7 +28,7 @@ export class ContentMatch {
   // successful.
   matchType(type) {
     for (let i = 0; i < this.next.length; i += 2)
-      if (this.next[i] == type) return this.next[i + 1]
+      if (this.next[i].name == type.name) return this.next[i + 1]
     return null
   }
 
