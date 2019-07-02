@@ -59,7 +59,7 @@ import {Mark} from "./mark"
 //   `"property=value"`, in which case the rule only matches if the
 //   propery's value exactly matches the given value. (For more
 //   complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
-//   and return undefined to indicate that the match failed.)
+//   and return false to indicate that the match failed.)
 //
 //   priority:: ?number
 //   Can be used to change the order in which the parse rules in a
