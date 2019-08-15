@@ -12,7 +12,7 @@
 // number zero.
 //
 // The number zero (pronounced “hole”) is used to indicate the place
-// where a node's child nodes should be inserted. It it occurs in an
+// where a node's child nodes should be inserted. If it occurs in an
 // output spec, it should be the only child element in its parent
 // node.
 
