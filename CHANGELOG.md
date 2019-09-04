@@ -1,3 +1,9 @@
+## 1.7.2 (2019-09-04)
+
+### Bug fixes
+
+When `<br>` DOM nodes can't be parsed normally, the parser now converts them to newlines. This should improve parsing of some forms of source code HTML.
+
 ## 1.7.1 (2019-05-31)
 
 ### Bug fixes
