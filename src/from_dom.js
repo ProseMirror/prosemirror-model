@@ -410,6 +410,9 @@ class ParseContext {
       if (blockTags.hasOwnProperty(name)) {
         sync = true
         if (!top.type) this.needsBlock = true
+      } else if (!dom.firstChild) {
+        this.leafFallback(dom)
+        return
       }
       this.addAll(dom)
       if (sync) this.sync(top)
@@ -417,6 +420,12 @@ class ParseContext {
     } else {
       this.addElementByRule(dom, rule)
     }
+  }
+
+  // Called for leaf DOM nodes that would otherwise be ignored
+  leafFallback(dom) {
+    if (dom.nodeName == "BR" && this.top.type && this.top.type.inlineContent)
+      this.addTextNode(dom.ownerDocument.createTextNode("\n"))
   }
 
   // Run any style parser associated with the node's styles. Either
@@ -441,8 +450,11 @@ class ParseContext {
     let sync, nodeType, markType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
-      if (nodeType.isLeaf) this.insertNode(nodeType.create(rule.attrs))
-      else sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
+      if (!nodeType.isLeaf) {
+        sync = this.enter(nodeType, rule.attrs, rule.preserveWhitespace)
+      } else if (!this.insertNode(nodeType.create(rule.attrs))) {
+        this.leafFallback(dom)
+      }
     } else {
       markType = this.parser.schema.marks[rule.mark]
       mark = markType.create(rule.attrs)
@@ -465,7 +477,6 @@ class ParseContext {
     }
     if (sync) { this.sync(startIn); this.open-- }
     if (mark) this.removePendingMark(mark)
-    return true
   }
 
   // : (dom.Node, ?NodeBuilder, ?number, ?number)
@@ -524,7 +535,9 @@ class ParseContext {
         if (!top.type || top.type.allowsMarkType(node.marks[i].type))
           marks = node.marks[i].addToSet(marks)
       top.content.push(node.mark(marks))
+      return true
     }
+    return false
   }
 
   applyPendingMarks(top) {
