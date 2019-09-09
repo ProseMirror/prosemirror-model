@@ -75,7 +75,7 @@ export class ResolvedPos {
 
   // :: (?number) → number
   // The (absolute) position directly before the wrapping node at the
-  // given level, or, when `level` is `this.depth + 1`, the original
+  // given level, or, when `depth` is `this.depth + 1`, the original
   // position.
   before(depth) {
     depth = this.resolveDepth(depth)
@@ -85,7 +85,7 @@ export class ResolvedPos {
 
   // :: (?number) → number
   // The (absolute) position directly after the wrapping node at the
-  // given level, or the original position when `level` is `this.depth + 1`.
+  // given level, or the original position when `depth` is `this.depth + 1`.
   after(depth) {
     depth = this.resolveDepth(depth)
     if (!depth) throw new RangeError("There is no position after the top-level node")
