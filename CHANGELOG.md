@@ -1,3 +1,9 @@
+## 1.7.3 (2019-10-03)
+
+### Bug fixes
+
+Fix an issue where _any_ whitespace (not just the characters that HTML collapses) was collapsed by the parser in non-whitespace-preserving mode.
+
 ## 1.7.2 (2019-09-04)
 
 ### Bug fixes
