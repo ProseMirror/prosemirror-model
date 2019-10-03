@@ -308,10 +308,10 @@ class NodeContext {
     return this.match.findWrapping(node.type)
   }
 
-  finish(openEnd) {
+finish(openEnd) {
     if (!(this.options & OPT_PRESERVE_WS)) { // Strip trailing whitespace
       let last = this.content[this.content.length - 1], m
-      if (last && last.isText && (m = /\s+$/.exec(last.text))) {
+      if (last && last.isText && (m = /[ \t\r\n\u000c]+$/.exec(last.text))) {
         if (last.text.length == m[0].length) this.content.pop()
         else this.content[this.content.length - 1] = last.withText(last.text.slice(0, last.text.length - m[0].length))
       }
@@ -371,18 +371,18 @@ class ParseContext {
   addTextNode(dom) {
     let value = dom.nodeValue
     let top = this.top
-    if ((top.type ? top.type.inlineContent : top.content.length && top.content[0].isInline) || /\S/.test(value)) {
+    if ((top.type ? top.type.inlineContent : top.content.length && top.content[0].isInline) || /[^ \t\r\n\u000c]/.test(value)) {
       if (!(top.options & OPT_PRESERVE_WS)) {
-        value = value.replace(/\s+/g, " ")
+        value = value.replace(/[ \t\r\n\u000c]+/g, " ")
         // If this starts with whitespace, and there is no node before it, or
         // a hard break, or a text node that ends with whitespace, strip the
         // leading space.
-        if (/^\s/.test(value) && this.open == this.nodes.length - 1) {
+        if (/^[ \t\r\n\u000c]/.test(value) && this.open == this.nodes.length - 1) {
           let nodeBefore = top.content[top.content.length - 1]
           let domNodeBefore = dom.previousSibling
           if (!nodeBefore ||
               (domNodeBefore && domNodeBefore.nodeName == 'BR') ||
-              (nodeBefore.isText && /\s$/.test(nodeBefore.text)))
+              (nodeBefore.isText && /[ \t\r\n\u000c]$/.test(nodeBefore.text)))
             value = value.slice(1)
         }
       } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {

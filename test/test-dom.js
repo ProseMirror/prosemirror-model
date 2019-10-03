@@ -80,6 +80,10 @@ describe("DOMParser", () => {
        test(doc(p(em("hi", br, "x"))),
             "<p><em>hi<br>x</em></p>"))
 
+    it("doesn't collapse non-breaking spaces",
+       test(doc(p("\u00a0 \u00a0hello\u00a0")),
+            "<p>\u00a0 \u00a0hello\u00a0</p>"))
+
     it("can parse marks on block nodes", () => {
       let commentSchema = new Schema({
         nodes: schema.spec.nodes.update("doc", Object.assign({marks: "comment"}, schema.spec.nodes.get("doc"))),
