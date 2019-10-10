@@ -1,3 +1,9 @@
+## 1.7.4 (2019-10-10)
+
+### Bug fixes
+
+Fix an issue where `fillBefore` would in some cases insert unneccesary optional child nodes in the generated content.
+
 ## 1.7.3 (2019-10-03)
 
 ### Bug fixes
