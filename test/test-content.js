@@ -118,6 +118,8 @@ describe("ContentMatch", () => {
 
     it("adds elements for two counted groups", () => fill("code_block{2} paragraph{2}", doc(pre()), doc(p()), doc(pre(), p())))
 
+    it("doesn't include optional elements", () => fill("heading paragraph? horizontal_rule", doc(h1()), doc(), doc(hr)))
+
     it("completes a sequence", () =>
        fill3("paragraph horizontal_rule paragraph horizontal_rule paragraph",
              doc(p()), doc(p()), doc(p()), doc(hr), doc(hr)))

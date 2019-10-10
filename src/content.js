@@ -325,7 +325,7 @@ function nfa(expr) {
   }
 }
 
-function cmp(a, b) { return a - b }
+function cmp(a, b) { return b - a }
 
 // Get the set of nodes reachable by null edges from `node`. Omit
 // nodes with only a single null-out-edge, since they may lead to
