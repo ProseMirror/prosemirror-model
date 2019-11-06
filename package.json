@@ -3,6 +3,7 @@
   "version": "1.7.5",
   "description": "ProseMirror's document model",
   "main": "dist/index.js",
+  "module": "src/index.js",
   "license": "MIT",
   "maintainers": [
     {
