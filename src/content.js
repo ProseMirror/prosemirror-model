@@ -132,11 +132,11 @@ export class ContentMatch {
   }
 
   // :: (number) → {type: NodeType, next: ContentMatch}
-  // Get the _n_th outgoing edge from this node in the finite
+  // Get the _n_​th outgoing edge from this node in the finite
   // automaton that describes the content expression.
   edge(n) {
     let i = n << 1
-    if (i > this.next.length) throw new RangeError(`There's no ${n}th edge in this content match`)
+    if (i >= this.next.length) throw new RangeError(`There's no ${n}th edge in this content match`)
     return {type: this.next[i], next: this.next[i + 1]}
   }
 
