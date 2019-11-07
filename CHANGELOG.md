@@ -1,3 +1,9 @@
+## 1.7.5 (2019-11-07)
+
+### Bug fixes
+
+`ContentMatch.edge` now throws, as it is supposed to, when you try to access the edge past the last one.
+
 ## 1.7.4 (2019-10-10)
 
 ### Bug fixes
