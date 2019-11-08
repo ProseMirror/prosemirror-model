@@ -25,8 +25,15 @@ function computeAttrs(attrs, value) {
     let given = value && value[name]
     if (given === undefined) {
       let attr = attrs[name]
-      if (attr.hasDefault) given = attr.default
-      else throw new RangeError("No value supplied for attribute " + name)
+      if (attr.hasDefault) {
+        if(typeof attr.default === 'function') {
+          given = attr.default()
+        } else {
+          given = attr.default
+        }
+      } else {
+        throw new RangeError("No value supplied for attribute " + name)
+      }
     }
     built[name] = given
   }
