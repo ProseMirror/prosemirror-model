@@ -1,3 +1,41 @@
+## 1.8.0 (2019-11-08)
+
+### New features
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
+Add a `module` field to package json file.
+
 ## 1.7.5 (2019-11-07)
 
 ### Bug fixes
