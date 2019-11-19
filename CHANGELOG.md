@@ -1,3 +1,9 @@
+## 1.8.1 (2019-11-19)
+
+### Bug fixes
+
+The file referred to in the package's `module` field now is compiled down to ES5.
+
 ## 1.8.0 (2019-11-08)
 
 ### New features
