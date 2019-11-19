@@ -1,4 +1,4 @@
-const {Mark, Schema} = require("../dist")
+const {Mark, Schema} = require("..")
 const {schema, doc, p, em, a} = require("prosemirror-test-builder")
 const ist = require("ist")
 

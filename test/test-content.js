@@ -1,4 +1,4 @@
-const {ContentMatch} = require("../dist")
+const {ContentMatch} = require("..")
 const {schema, eq, doc, p, pre, img, br, h1, hr} = require("prosemirror-test-builder")
 const ist = require("ist")
 

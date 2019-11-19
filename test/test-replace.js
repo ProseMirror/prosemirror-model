@@ -1,4 +1,4 @@
-const {Slice} = require("../dist")
+const {Slice} = require("..")
 const {eq, doc, blockquote, h1, p, ul, li} = require("prosemirror-test-builder")
 const ist = require("ist")
 

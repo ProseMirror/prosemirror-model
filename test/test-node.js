@@ -1,5 +1,5 @@
 const ist = require("ist")
-const {Fragment, Schema} = require("../dist")
+const {Fragment, Schema} = require("..")
 const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("prosemirror-test-builder")
 
 let customSchema = new Schema({

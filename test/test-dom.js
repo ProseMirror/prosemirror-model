@@ -1,7 +1,7 @@
 const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr,
        builders} = require("prosemirror-test-builder")
 const ist = require("ist")
-const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("../dist")
+const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("..")
 
 // declare global: window
 let document = typeof window == "undefined" ? (new (require("jsdom").JSDOM)).window.document : window.document
