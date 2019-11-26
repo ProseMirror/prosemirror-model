@@ -192,19 +192,19 @@ The base position parameter to [`Node.nodesBetween`](https://prosemirror.net/doc
 
 ### New features
 
-[`Slice.maxOpen`](http://prosemirror.net/docs/ref/#model.Slice^maxOpen) now has a second argument that can be used to prevent it from opening isolating nodes.
+[`Slice.maxOpen`](https://prosemirror.net/docs/ref/#model.Slice^maxOpen) now has a second argument that can be used to prevent it from opening isolating nodes.
 
 ## 1.0.1 (2017-11-10)
 
 ### Bug fixes
 
-[`ReplaceError`](http://prosemirror.net/docs/ref/#model.ReplaceError) instances now properly inherit from `Error`.
+[`ReplaceError`](https://prosemirror.net/docs/ref/#model.ReplaceError) instances now properly inherit from `Error`.
 
 ## 1.0.0 (2017-10-13)
 
 ### New features
 
-[`ParseRule.context`](http://prosemirror.net/docs/ref/#model.ParseRule.context) may now include multiple, pipe-separated context expressions.
+[`ParseRule.context`](https://prosemirror.net/docs/ref/#model.ParseRule.context) may now include multiple, pipe-separated context expressions.
 
 ## 0.23.1 (2017-09-21)
 
@@ -216,25 +216,25 @@ The base position parameter to [`Node.nodesBetween`](https://prosemirror.net/doc
 
 ### Breaking changes
 
-[`ResolvedPos.marks`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marks) no longer takes a parameter (you probably want [`marksAcross`](http://prosemirror.net/doc/ref/version/0.23.0.html#model.ResolvedPos.marksAcross) if you were passing true there).
+[`ResolvedPos.marks`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marks) no longer takes a parameter (you probably want [`marksAcross`](https://prosemirror.net/doc/ref/version/0.23.0.html#model.ResolvedPos.marksAcross) if you were passing true there).
 
-Attribute and mark constraints in [content expressions](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content) are no longer supported (this also means the `prosemirror-schema-table` package, which relied on them, is no longer supported). In this release, mark constraints are still (approximately) recognized with a warning, when present.
+Attribute and mark constraints in [content expressions](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content) are no longer supported (this also means the `prosemirror-schema-table` package, which relied on them, is no longer supported). In this release, mark constraints are still (approximately) recognized with a warning, when present.
 
-[`ContentMatch`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch) objects lost a number of methods: `matchNode`, `matchToEnd`, `findWrappingFor` (which can be easily emulated using the remaining API), and `allowsMark`, which is now the responsibility of [node types](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType) instead.
+[`ContentMatch`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch) objects lost a number of methods: `matchNode`, `matchToEnd`, `findWrappingFor` (which can be easily emulated using the remaining API), and `allowsMark`, which is now the responsibility of [node types](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType) instead.
 
-[`ContentMatch.validEnd`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.validEnd) is now a property rather than a method.
+[`ContentMatch.validEnd`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.validEnd) is now a property rather than a method.
 
-[`ContentMatch.findWrapping`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.findWrapping) now returns an array of plain node types, with no attribute information (since this is no longer necessary).
+[`ContentMatch.findWrapping`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ContentMatch.findWrapping) now returns an array of plain node types, with no attribute information (since this is no longer necessary).
 
 The `compute` method for attributes is no longer supported.
 
 Fragments no longer have an `offsetAt` method.
 
-`DOMParser.schemaRules` is no longer public (use [`fromSchema`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMParser^fromSchema) and get the resulting parser's `rules` property instead).
+`DOMParser.schemaRules` is no longer public (use [`fromSchema`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMParser^fromSchema) and get the resulting parser's `rules` property instead).
 
-The DOM parser option `topStart` has been replaced by [`topMatch`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseOptions.topMatch).
+The DOM parser option `topStart` has been replaced by [`topMatch`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseOptions.topMatch).
 
-The `DOMSerializer` methods `nodesFromSchema` and `marksFromSchema` are no longer public (construct a serializer with [`fromSchema`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMSerializer^fromSchema) and read its `nodes` and `marks` properties instead).
+The `DOMSerializer` methods `nodesFromSchema` and `marksFromSchema` are no longer public (construct a serializer with [`fromSchema`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.DOMSerializer^fromSchema) and read its `nodes` and `marks` properties instead).
 
 ### Bug fixes
 
@@ -244,53 +244,53 @@ Attribute default values of `undefined` are now allowed.
 
 ### New features
 
-[`contentElement`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.contentElement) in parse rules may now be a function.
+[`contentElement`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.contentElement) in parse rules may now be a function.
 
-The new method [`ResolvedPos.marksAcross`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marksAcross) can be used to find the set of marks that should be preserved after a deletion.
+The new method [`ResolvedPos.marksAcross`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ResolvedPos.marksAcross) can be used to find the set of marks that should be preserved after a deletion.
 
-[Content expressions](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content) are now a regular language, meaning all the operators can be nested and composed as desired, and a bunch of constraints on what could appear next to what have been lifted.
+[Content expressions](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.content) are now a regular language, meaning all the operators can be nested and composed as desired, and a bunch of constraints on what could appear next to what have been lifted.
 
-The starting content match for a node type now lives in [`NodeType.contentMatch`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.contentMatch).
+The starting content match for a node type now lives in [`NodeType.contentMatch`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.contentMatch).
 
-Allowed marks are now specified per node, rather than in content expressions, using the [`marks`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.marks) property on the node spec.
+Allowed marks are now specified per node, rather than in content expressions, using the [`marks`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeSpec.marks) property on the node spec.
 
-Node types received new methods [`allowsMarkType`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType), [`allowsMarks`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarks), and [`allowedMarks`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowedMarks), which tell you about the marks that node supports.
+Node types received new methods [`allowsMarkType`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarkType), [`allowsMarks`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowsMarks), and [`allowedMarks`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.NodeType.allowedMarks), which tell you about the marks that node supports.
 
-The [`style`](http://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.style) property on parse rules may now have the form `"font-style=italic"` to only match styles that have the value after the equals sign.
+The [`style`](https://prosemirror.net/docs/ref/version/0.23.0.html#model.ParseRule.style) property on parse rules may now have the form `"font-style=italic"` to only match styles that have the value after the equals sign.
 
 ## 0.22.0 (2017-06-29)
 
 ### Bug fixes
 
-When using [`parseSlice`](http://prosemirror.net/docs/ref/version/0.22.0.html#model.DOMParser.parseSlice), inline DOM content wrapped in block elements for which no parse rule is defined will now be properly wrapped in a textblock node.
+When using [`parseSlice`](https://prosemirror.net/docs/ref/version/0.22.0.html#model.DOMParser.parseSlice), inline DOM content wrapped in block elements for which no parse rule is defined will now be properly wrapped in a textblock node.
 
 ### New features
 
-[Resolved positions](http://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos) now have a [`doc`](http://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.doc) accessor to easily get their root node.
+[Resolved positions](https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos) now have a [`doc`](https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.doc) accessor to easily get their root node.
 
-Parse rules now support a [`namespace` property](http://prosemirror.net/docs/ref/version/0.22.0.html#model.ParseRule.namespace) to match XML namespaces.
+Parse rules now support a [`namespace` property](https://prosemirror.net/docs/ref/version/0.22.0.html#model.ParseRule.namespace) to match XML namespaces.
 
-The [`NodeRange`](http://prosemirror.net/docs/ref/version/0.22.0.html#model.NodeRange) constructor is now public (whereas before you could only construct these through [`blockRange`](http://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.blockRange)).
+The [`NodeRange`](https://prosemirror.net/docs/ref/version/0.22.0.html#model.NodeRange) constructor is now public (whereas before you could only construct these through [`blockRange`](https://prosemirror.net/docs/ref/version/0.22.0.html#model.ResolvedPos.blockRange)).
 
 ## 0.21.0 (2017-05-03)
 
 ### Breaking changes
 
-The `openLeft` and `openRight` properties of `Slice` objects have been renamed to [`openStart`](http://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openStart) and [`openEnd`](http://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openEnd) to avoid confusion in right-to-left text. The old names will continue to work with a warning until the next release.
+The `openLeft` and `openRight` properties of `Slice` objects have been renamed to [`openStart`](https://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openStart) and [`openEnd`](https://prosemirror.net/docs/ref/version/0.21.0.html#model.Slice.openEnd) to avoid confusion in right-to-left text. The old names will continue to work with a warning until the next release.
 
 ### New features
 
-Mark [serializing functions](http://prosemirror.net/docs/ref/version/0.21.0.html#model.MarkSpec.toDOM) now get a second parameter that indicates whether the mark's content is inline or block nodes.
+Mark [serializing functions](https://prosemirror.net/docs/ref/version/0.21.0.html#model.MarkSpec.toDOM) now get a second parameter that indicates whether the mark's content is inline or block nodes.
 
-Setting a mark serializer to `null` in a [`DOMSerializer`](http://prosemirror.net/docs/ref/version/0.21.0.html#model.DOMSerializer) can now be used to omit that mark when serializing.
+Setting a mark serializer to `null` in a [`DOMSerializer`](https://prosemirror.net/docs/ref/version/0.21.0.html#model.DOMSerializer) can now be used to omit that mark when serializing.
 
-Node specs support a new property [`isolating`](http://prosemirror.net/docs/ref/version/0.21.0.html#model.NodeSpec.isolating), which is used to disable editing actions like backspacing and lifting across such a node's boundaries.
+Node specs support a new property [`isolating`](https://prosemirror.net/docs/ref/version/0.21.0.html#model.NodeSpec.isolating), which is used to disable editing actions like backspacing and lifting across such a node's boundaries.
 
 ## 0.20.0 (2017-04-03)
 
 ### Breaking changes
 
-Newlines in the text are now normalized to spaces when parsing except when you set `preserveWhitespace` to `"full"` in your [options](http://prosemirror.net/docs/ref/version/0.20.0.html#model.DOMParser.parse) or in a [parse rule](http://prosemirror.net/docs/ref/version/0.20.0.html#model.ParseRule.preserveWhitespace).
+Newlines in the text are now normalized to spaces when parsing except when you set `preserveWhitespace` to `"full"` in your [options](https://prosemirror.net/docs/ref/version/0.20.0.html#model.DOMParser.parse) or in a [parse rule](https://prosemirror.net/docs/ref/version/0.20.0.html#model.ParseRule.preserveWhitespace).
 
 ### Bug fixes
 
@@ -298,51 +298,51 @@ Fix crash in IE when parsing DOM content.
 
 ### New features
 
-Fragments now have [`nodesBetween`](http://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragment.nodesBetween) and [`descendants`](http://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragments.descendants) methods, providing the same functionality as the methods by the same name on nodes.
+Fragments now have [`nodesBetween`](https://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragment.nodesBetween) and [`descendants`](https://prosemirror.net/docs/ref/version/0.20.0.html#model.Fragments.descendants) methods, providing the same functionality as the methods by the same name on nodes.
 
-Resolved positions now have [`max`](http://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.max) and [`min`](http://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.min) methods to easily find a maximum or minimum position.
+Resolved positions now have [`max`](https://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.max) and [`min`](https://prosemirror.net/docs/ref/version/0.20.0.html#model.ResolvedPos.min) methods to easily find a maximum or minimum position.
 
 ## 0.19.0 (2017-03-16)
 
 ### Breaking changes
 
-`MarkSpec.inclusiveRight` was replaced by [`inclusive`](http://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive), which behaves slightly differently. `inclusiveRight` will be interpreted as `inclusive` (with a warning) until the next release.
+`MarkSpec.inclusiveRight` was replaced by [`inclusive`](https://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive), which behaves slightly differently. `inclusiveRight` will be interpreted as `inclusive` (with a warning) until the next release.
 
 ### New features
 
-The new [`inlineContent`](http://prosemirror.net/docs/ref/version/0.19.0.html#model.Node.inlineContent) property on nodes and node types tells you whether a node type supports inline content.
+The new [`inlineContent`](https://prosemirror.net/docs/ref/version/0.19.0.html#model.Node.inlineContent) property on nodes and node types tells you whether a node type supports inline content.
 
-[`MarkSpec.inclusive`](http://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive) can now be used to control whether content inserted at the boundary of a mark receives that mark.
+[`MarkSpec.inclusive`](https://prosemirror.net/docs/ref/version/0.19.0.html#model.MarkSpec.inclusive) can now be used to control whether content inserted at the boundary of a mark receives that mark.
 
-Parse rule [`context`](http://prosemirror.net/docs/ref/version/0.19.0.html#model.ParseRule.context) restrictions can now use node [groups](http://prosemirror.net/docs/ref/version/0.19.0.html#model.NodeSpec.group), not just node names, to specify valid context.
+Parse rule [`context`](https://prosemirror.net/docs/ref/version/0.19.0.html#model.ParseRule.context) restrictions can now use node [groups](https://prosemirror.net/docs/ref/version/0.19.0.html#model.NodeSpec.group), not just node names, to specify valid context.
 
 ## 0.18.0 (2017-02-24)
 
 ### Breaking changes
 
-`schema.nodeSpec` and `schema.markSpec` have been deprecated in favor of [`schema.spec`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec). The properties still work with a warning in this release, but will be dropped in the next.
+`schema.nodeSpec` and `schema.markSpec` have been deprecated in favor of [`schema.spec`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec). The properties still work with a warning in this release, but will be dropped in the next.
 
 ### New features
 
-`Node` objects now have a [`check`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.check) method which can be used to assert that they conform to the schema.
+`Node` objects now have a [`check`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.check) method which can be used to assert that they conform to the schema.
 
-Node specs now support an [`atom` property](http://prosemirror.net/docs/ref/version/0.18.0.html#model.NodeSpec.atom), and nodes an [`isAtom` accessor](http://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.isAtom), which is currently only used to determine whether such nodes should be directly selectable (for example when they are rendered as an uneditable node view).
+Node specs now support an [`atom` property](https://prosemirror.net/docs/ref/version/0.18.0.html#model.NodeSpec.atom), and nodes an [`isAtom` accessor](https://prosemirror.net/docs/ref/version/0.18.0.html#model.Node.isAtom), which is currently only used to determine whether such nodes should be directly selectable (for example when they are rendered as an uneditable node view).
 
-The new [`excludes`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.excludes) field on mark specs can be used to control the marks that this mark may coexist with. Mark type objects also gained an [`excludes` _method_](http://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkType.excludes) to querty this relation.
+The new [`excludes`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.excludes) field on mark specs can be used to control the marks that this mark may coexist with. Mark type objects also gained an [`excludes` _method_](https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkType.excludes) to querty this relation.
 
-Mark specs now support a [`group`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.group) property, and marks can be referred to by group name in content specs.
+Mark specs now support a [`group`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.MarkSpec.group) property, and marks can be referred to by group name in content specs.
 
-The `Schema` class now provides its whole [spec](http://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec) under its [`spec`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec) property.
+The `Schema` class now provides its whole [spec](https://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec) under its [`spec`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.spec) property.
 
-The name of a schema's default top-level node is now [configurable](http://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec.topNode). You can use [`schema.topNodeType`](http://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.topNodeType) to retrieve the top node type.
+The name of a schema's default top-level node is now [configurable](https://prosemirror.net/docs/ref/version/0.18.0.html#model.SchemaSpec.topNode). You can use [`schema.topNodeType`](https://prosemirror.net/docs/ref/version/0.18.0.html#model.Schema.topNodeType) to retrieve the top node type.
 
-[Parse rules](http://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule) now support a [`context` field](http://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule.context) that can be used to only make the rule match inside certain ancestor nodes.
+[Parse rules](https://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule) now support a [`context` field](https://prosemirror.net/docs/ref/version/0.18.0.html#model.ParseRule.context) that can be used to only make the rule match inside certain ancestor nodes.
 
 ## 0.17.0 (2017-01-05)
 
 ### Breaking changes
 
-`Node.marksAt` was replaced with [`ResolvedPos.marks`](http://prosemirror.net/docs/ref/version/0.17.0.html#model.ResolvedPos.marks). It still works (with a warning) in this release, but will be removed in the next one.
+`Node.marksAt` was replaced with [`ResolvedPos.marks`](https://prosemirror.net/docs/ref/version/0.17.0.html#model.ResolvedPos.marks). It still works (with a warning) in this release, but will be removed in the next one.
 
 ## 0.15.0 (2016-12-10)
 
@@ -352,39 +352,39 @@ The name of a schema's default top-level node is now [configurable](http://prose
 
 ### New features
 
-Parse rules associated with a schema can now specify a [`priority`](http://prosemirror.net/docs/ref/version/0.15.0.html#model.ParseRule.priority) to influence the order in which they are applied.
+Parse rules associated with a schema can now specify a [`priority`](https://prosemirror.net/docs/ref/version/0.15.0.html#model.ParseRule.priority) to influence the order in which they are applied.
 
-Resolved positions have a new getter [`textOffset`](http://prosemirror.net/docs/ref/version/0.15.0.html#model.ResolvedPos.textOffset) to find their position within a text node (if any).
+Resolved positions have a new getter [`textOffset`](https://prosemirror.net/docs/ref/version/0.15.0.html#model.ResolvedPos.textOffset) to find their position within a text node (if any).
 
 ## 0.14.1 (2016-11-30)
 
 ### Bug fixes
 
-[`DOMParser.parseSlice`](http://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMParser.parseSlice) will now ignore whitespace-only text nodes at the top of the slice.
+[`DOMParser.parseSlice`](https://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMParser.parseSlice) will now ignore whitespace-only text nodes at the top of the slice.
 
 ## 0.14.0 (2016-11-28)
 
 ### New features
 
-Parse rules now support [`skip`](http://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.skip) (skip outer element, parse content) and [`getContent`](http://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.getContent) (compute content using custom code) properties.
+Parse rules now support [`skip`](https://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.skip) (skip outer element, parse content) and [`getContent`](https://prosemirror.net/docs/ref/version/0.14.0.html#model.ParseRule.getContent) (compute content using custom code) properties.
 
-The `DOMSerializer` class now exports a static [`renderSpec`](http://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMSerializer^renderSpec) method that can help render DOM spec arrays.
+The `DOMSerializer` class now exports a static [`renderSpec`](https://prosemirror.net/docs/ref/version/0.14.0.html#model.DOMSerializer^renderSpec) method that can help render DOM spec arrays.
 
 ## 0.13.0 (2016-11-11)
 
 ### Breaking changes
 
-`ResolvedPos.sameDepth` is now called [`ResolvedPos.sharedDepth`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.ResolvedPos.sharedDepth), and takes a raw, unresolved position as argument.
+`ResolvedPos.sameDepth` is now called [`ResolvedPos.sharedDepth`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.ResolvedPos.sharedDepth), and takes a raw, unresolved position as argument.
 
 ### New features
 
-[`DOMSerializer`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMSerializer)'s `nodes` and `marks` properties are now public.
+[`DOMSerializer`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMSerializer)'s `nodes` and `marks` properties are now public.
 
-[`ContentMatch.findWrapping`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrapping) now takes a third argument, `marks`. There's a new method [`findWrappingFor`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrappingFor) that accepts a whole node.
+[`ContentMatch.findWrapping`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrapping) now takes a third argument, `marks`. There's a new method [`findWrappingFor`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.ContentMatch.findWrappingFor) that accepts a whole node.
 
-Adds [`Slice.maxOpen`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice^maxOpen) static method to create maximally open slices.
+Adds [`Slice.maxOpen`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice^maxOpen) static method to create maximally open slices.
 
-DOM parser objects now have a [`parseSlice`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMParser.parseSlice) method which parses an HTML fragment into a [`Slice`](http://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice), rather than trying to create a whole document from it.
+DOM parser objects now have a [`parseSlice`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.DOMParser.parseSlice) method which parses an HTML fragment into a [`Slice`](https://prosemirror.net/docs/ref/version/0.13.0.html#model.Slice), rather than trying to create a whole document from it.
 
 ## 0.12.0 (2016-10-21)
 
@@ -404,29 +404,29 @@ falsy values.
 
 Moved into a separate module.
 
-The JSON representation of [marks](http://prosemirror.net/docs/ref/version/0.11.0.html#model.Mark) has changed from
+The JSON representation of [marks](https://prosemirror.net/docs/ref/version/0.11.0.html#model.Mark) has changed from
 `{"_": "type", "attr1": "value"}` to `{"type": "type", "attrs":
 {"attr1": "value"}}`, where `attrs` may be omitted when the mark has
 no attributes.
 
 Mark-related JSON methods now live on the
-[`Mark` class](http://prosemirror.net/docs/ref/version/0.11.0.html#model.Mark^fromJSON).
+[`Mark` class](https://prosemirror.net/docs/ref/version/0.11.0.html#model.Mark^fromJSON).
 
 The way node and mark types in a schema are defined was changed from
 defining subclasses to passing plain objects
-([`NodeSpec`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.NodeSpec) and [`MarkSpec`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.MarkSpec)).
+([`NodeSpec`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.NodeSpec) and [`MarkSpec`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.MarkSpec)).
 
 DOM serialization and parsing logic is now done through dedicated
-objects ([`DOMSerializer`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.DOMSerializer) and
-[`DOMParser`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.DOMParser)), rather than through the schema. It
+objects ([`DOMSerializer`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.DOMSerializer) and
+[`DOMParser`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.DOMParser)), rather than through the schema. It
 is now possible to define alternative parsing and serializing
 strategies without touching the schema.
 
 ### New features
 
-The [`Slice`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.Slice) class now has an [`eq` method](http://prosemirror.net/docs/ref/version/0.11.0.html#model.Slice.eq).
+The [`Slice`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.Slice) class now has an [`eq` method](https://prosemirror.net/docs/ref/version/0.11.0.html#model.Slice.eq).
 
-The [`Node.marksAt`](http://prosemirror.net/docs/ref/version/0.11.0.html#model.Node.marksAt) method got a second
+The [`Node.marksAt`](https://prosemirror.net/docs/ref/version/0.11.0.html#model.Node.marksAt) method got a second
 parameter to indicate you're interested in the marks _after_ the
 position.
 
