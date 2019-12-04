@@ -38,9 +38,12 @@ export class ResolvedPos {
   // The root node in which the position was resolved.
   get doc() { return this.node(0) }
 
-  // :: (?number) → Node
+  // :: (?number) → ?Node
   // The ancestor node at the given level. `p.node(p.depth)` is the
   // same as `p.parent`.
+  // Negative values for `depth` return the ancestor node at the current
+  // depth minus the value.
+  // If no node exists at the resolved depth, it returns undefined
   node(depth) { return this.path[this.resolveDepth(depth) * 3] }
 
   // :: (?number) → number
