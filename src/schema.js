@@ -102,9 +102,10 @@ export class NodeType {
   // directly editable content.
   get isAtom() { return this.isLeaf || this.spec.atom }
 
-  hasRequiredAttrs(ignore) {
-    for (let n in this.attrs)
-      if (this.attrs[n].isRequired && (!ignore || !(n in ignore))) return true
+  // :: () → bool
+  // Tells you whether this node type has any required attributes.
+  hasRequiredAttrs() {
+    for (let n in this.attrs) if (this.attrs[n].isRequired) return true
     return false
   }
 
