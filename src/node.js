@@ -321,11 +321,6 @@ export class Node {
     else return this.type.compatibleContent(other.type)
   }
 
-  // Unused. Left for backwards compatibility.
-  defaultContentType(at) {
-    return this.contentMatchAt(at).defaultType
-  }
-
   // :: ()
   // Check whether this node and its descendants conform to the
   // schema, and raise error when they do not.
