@@ -5,25 +5,29 @@ const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("..")
 
 // declare global: window
 let document = typeof window == "undefined" ? (new (require("jsdom").JSDOM)).window.document : window.document
+const xmlDocument = typeof window == "undefined"
+      ? (new (require("jsdom").JSDOM)("<tag/>", {contentType: "application/xml"})).window.document
+      : window.document
 
 const parser = DOMParser.fromSchema(schema)
 const serializer = DOMSerializer.fromSchema(schema)
 
 describe("DOMParser", () => {
   describe("parse", () => {
-    function domFrom(html) {
-      let dom = document.createElement("div")
+    function domFrom(html, document_ = document) {
+      let dom = document_.createElement("div")
       dom.innerHTML = html
       return dom
     }
 
-    function test(doc, html) {
+    function test(doc, html, document_ = document) {
       return () => {
-        let derivedDOM = document.createElement("div"), schema = doc.type.schema
-        derivedDOM.appendChild(DOMSerializer.fromSchema(schema).serializeFragment(doc.content, {document}))
-        let declaredDOM = domFrom(html)
+        let derivedDOM = document_.createElement("div"), schema = doc.type.schema
+        derivedDOM.appendChild(DOMSerializer.fromSchema(schema).serializeFragment(doc.content, {document: document_}))
+        let declaredDOM = domFrom(html, document_)
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
+        console.log(derivedDOM.innerHTML);
         ist(DOMParser.fromSchema(schema).parse(derivedDOM), doc, eq)
       }
     }
@@ -134,6 +138,29 @@ describe("DOMParser", () => {
       let b = builders(markSchema)
       test(b.doc(b.paragraph(b.test("a", b.image({src: "x"}), "b"))),
            "<p><test>a</test><test><img src=\"x\"></test><test>b</test></p>")()
+    })
+
+    it("serializes an element and an attribute with XML namespace", () => {
+      let xmlnsSchema = new Schema({
+        nodes: {
+          doc: { content: "svg*" }, text: {},
+          "svg": {
+            parseDOM: [{tag: "svg", namespace: 'http://www.w3.org/2000/svg'}],
+            group: 'block',
+            toDOM() { return ["http://www.w3.org/2000/svg svg", ["use", { "http://www.w3.org/1999/xlink href": "#svg-id" }]] },
+          },
+        },
+      })
+
+      let b = builders(xmlnsSchema)
+      let d = b.doc(b.svg())
+      test(d, "<svg><use href=\"#svg-id\"></use></svg>", xmlDocument)()
+
+      let dom = xmlDocument.createElement('div')
+      dom.appendChild(DOMSerializer.fromSchema(xmlnsSchema).serializeFragment(d.content, {document: xmlDocument}))
+      ist(dom.querySelector('svg').namespaceURI, 'http://www.w3.org/2000/svg')
+      ist(dom.querySelector('use').namespaceURI, 'http://www.w3.org/2000/svg')
+      ist(dom.querySelector('use').attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink')
     })
 
     function recover(html, doc, options) {
@@ -426,10 +453,6 @@ describe("DOMParser", () => {
       })
       ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
     })
-
-    const xmlDocument = typeof window == "undefined"
-          ? (new (require("jsdom").JSDOM)("<tag/>", {contentType: "application/xml"})).window.document
-          : window.document
 
     function nsParse(doc, namespace) {
       let schema = new Schema({
