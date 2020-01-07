@@ -27,7 +27,6 @@ describe("DOMParser", () => {
         let declaredDOM = domFrom(html, document_)
 
         ist(derivedDOM.innerHTML, declaredDOM.innerHTML)
-        console.log(derivedDOM.innerHTML);
         ist(DOMParser.fromSchema(schema).parse(derivedDOM), doc, eq)
       }
     }
