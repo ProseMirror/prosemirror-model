@@ -4,13 +4,12 @@
 // itself, or an array.
 //
 // An array describes a DOM element. The first value in the array
-// should be a string—the name of the DOM element. It also can be
-// space-separated the XML namespace and the name. If the second
-// element is plain object, it is interpreted as a set of attributes
-// for the element. Any elements after that (including the 2nd if it's
-// not an attribute object) are interpreted as children of the DOM
-// elements, and must either be valid `DOMOutputSpec` values, or the
-// number zero.
+// should be a string—the name of the DOM element, optionally prefixed
+// by a namespace URL and a space. If the second element is plain
+// object, it is interpreted as a set of attributes for the element.
+// Any elements after that (including the 2nd if it's not an attribute
+// object) are interpreted as children of the DOM elements, and must
+// either be valid `DOMOutputSpec` values, or the number zero.
 //
 // The number zero (pronounced “hole”) is used to indicate the place
 // where a node's child nodes should be inserted. If it occurs in an
