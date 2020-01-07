@@ -116,28 +116,24 @@ export class DOMSerializer {
   // Render an [output spec](#model.DOMOutputSpec) to a DOM node. If
   // the spec has a hole (zero) in it, `contentDOM` will point at the
   // node with the hole.
-  static renderSpec(doc, structure, parentXmlns = null) {
+  static renderSpec(doc, structure, xmlNS = null) {
     if (typeof structure == "string")
       return {dom: doc.createTextNode(structure)}
     if (structure.nodeType != null)
       return {dom: structure}
-    let contentDOM = null, xmlns = parentXmlns, tag
-    if (structure[0].indexOf(" ") > -1) [xmlns, tag] = structure[0].split(" ", 2)
-    else tag = structure[0]
-    let dom = xmlns ? doc.createElementNS(xmlns, tag) : doc.createElement(tag)
+    let tagName = structure[0], space = tagName.indexOf(" ")
+    if (space > 0) {
+      xmlNS = tagName.slice(0, space)
+      tagName = tagName.slice(space + 1)
+    }
+    let contentDOM = null, dom = xmlNS ? doc.createElementNS(xmlNS, tagName) : doc.createElement(tagName)
     let attrs = structure[1], start = 1
     if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
       start = 2
-      for (let name in attrs) {
-        if (attrs[name] != null) {
-          let [xmlnsAttr, nameWithoutXmlns] = name.split(' ', 2)
-          if (nameWithoutXmlns) {
-            dom.setAttributeNS(xmlnsAttr, nameWithoutXmlns, attrs[name])
-          } else {
-            dom.setAttribute(name, attrs[name])
-          }
-
-        }
+      for (let name in attrs) if (attrs[name] != null) {
+        let space = name.indexOf(" ")
+        if (space > 0) dom.setAttributeNS(name.slice(0, space), name.slice(space + 1), attrs[name])
+        else dom.setAttribute(name, attrs[name])
       }
     }
     for (let i = start; i < structure.length; i++) {
@@ -147,7 +143,7 @@ export class DOMSerializer {
           throw new RangeError("Content hole must be the only child of its parent node")
         return {dom, contentDOM: dom}
       } else {
-        let {dom: inner, contentDOM: innerContent} = DOMSerializer.renderSpec(doc, child, xmlns)
+        let {dom: inner, contentDOM: innerContent} = DOMSerializer.renderSpec(doc, child, xmlNS)
         dom.appendChild(inner)
         if (innerContent) {
           if (contentDOM) throw new RangeError("Multiple content holes")
