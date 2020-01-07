@@ -1,3 +1,11 @@
+## 1.9.0 (2020-01-07)
+
+### New features
+
+The `NodeType` method [`hasRequiredAttrs`](https://prosemirror.net/docs/ref/#model.NodeType.hasRequiredAttrs) is now public.
+
+Element and attribute names in [`DOMOutputSpec`](https://prosemirror.net/docs/ref/#model.DOMOutputSpec) structures can now contain namespaces.
+
 ## 1.8.2 (2019-11-20)
 
 ### Bug fixes
