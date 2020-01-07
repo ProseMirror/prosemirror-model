@@ -121,12 +121,9 @@ export class DOMSerializer {
       return {dom: doc.createTextNode(structure)}
     if (structure.nodeType != null)
       return {dom: structure}
-    let contentDOM = null
-    let [xmlns, tag] = structure[0].split(' ', 2)
-    if (!tag) {
-      tag = structure[0]
-      xmlns = parentXmlns
-    }
+    let contentDOM = null, xmlns = parentXmlns, tag
+    if (structure[0].indexOf(" ") > -1) [xmlns, tag] = structure[0].split(" ", 2)
+    else tag = structure[0]
     let dom = xmlns ? doc.createElementNS(xmlns, tag) : doc.createElement(tag)
     let attrs = structure[1], start = 1
     if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
