@@ -569,7 +569,7 @@ class ParseContext {
     top.match = top.match && top.match.matchType(type, attrs)
     let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
-    this.nodes.push(new NodeContext(type, attrs, top.activeMarks, solid, null, options))
+    this.nodes.push(new NodeContext(type, attrs, top.activeMarks.filter(mark => type.allowsMarkType(mark)), solid, null, options))
     this.open++
   }
 

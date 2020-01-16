@@ -327,6 +327,9 @@ describe("DOMParser", () => {
        open("<div>foo</div><div><em>bar</em></div>",
             [p("foo"), p(em("bar"))], 1, 1))
 
+    it("will not apply invalid marks to nodes",
+      open("<ul style='font-weight: bold'><li>foo</li></ul>", [ul(li(p("foo")))], 3, 3))
+
     function find(html, doc) {
       return () => {
         let dom = document.createElement("div")
