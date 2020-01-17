@@ -528,7 +528,7 @@ class ParseContext {
     if (this.findPlace(node)) {
       this.closeExtra()
       let top = this.top
-      this.applyPendingMarks(top)
+      this.applyPendingMarks(top, node.type)
       if (top.match) top.match = top.match.matchType(node.type)
       let marks = top.activeMarks
       for (let i = 0; i < node.marks.length; i++)
@@ -540,10 +540,11 @@ class ParseContext {
     return false
   }
 
-  applyPendingMarks(top) {
+  applyPendingMarks(top, nextType) {
     for (let i = 0; i < this.pendingMarks.length; i++) {
       let mark = this.pendingMarks[i]
-      if ((!top.type || top.type.allowsMarkType(mark.type)) && !mark.isInSet(top.activeMarks)) {
+      if ((top.type ? top.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
+          !mark.isInSet(top.activeMarks)) {
         top.activeMarks = mark.addToSet(top.activeMarks)
         this.pendingMarks.splice(i--, 1)
       }
@@ -556,7 +557,7 @@ class ParseContext {
   enter(type, attrs, preserveWS) {
     let ok = this.findPlace(type.create(attrs))
     if (ok) {
-      this.applyPendingMarks(this.top)
+      this.applyPendingMarks(this.top, type)
       this.enterInner(type, attrs, true, preserveWS)
     }
     return ok
@@ -569,7 +570,7 @@ class ParseContext {
     top.match = top.match && top.match.matchType(type, attrs)
     let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
-    this.nodes.push(new NodeContext(type, attrs, top.activeMarks.filter(mark => type.allowsMarkType(mark)), solid, null, options))
+    this.nodes.push(new NodeContext(type, attrs, top.activeMarks, solid, null, options))
     this.open++
   }
 
@@ -733,4 +734,24 @@ function copy(obj) {
   let copy = {}
   for (let prop in obj) copy[prop] = obj[prop]
   return copy
+}
+
+// Used when finding a mark at the top level of a fragment parse.
+// Checks whether it would be reasonable to apply a given mark type to
+// a given node, by looking at the way the mark occurs in the schema.
+function markMayApply(markType, nodeType) {
+  let nodes = nodeType.schema.nodes
+  for (let name in nodes) {
+    let parent = nodes[name]
+    if (!parent.allowsMarkType(markType)) continue
+    let seen = [], scan = match => {
+      seen.push(match)
+      for (let i = 0; i < match.edgeCount; i++) {
+        let {type, next} = match.edge(i)
+        if (type == nodeType) return true
+        if (seen.indexOf(next) < 0 && scan(next)) return true
+      }
+    }
+    if (scan(parent.contentMatch)) return true
+  }
 }
