@@ -328,7 +328,10 @@ describe("DOMParser", () => {
             [p("foo"), p(em("bar"))], 1, 1))
 
     it("will not apply invalid marks to nodes",
-      open("<ul style='font-weight: bold'><li>foo</li></ul>", [ul(li(p(strong("foo"))))], 3, 3))
+       open("<ul style='font-weight: bold'><li>foo</li></ul>", [ul(li(p(strong("foo"))))], 3, 3))
+
+    it("will apply pending marks from parents to all children",
+       open("<ul style='font-weight: bold'><li>foo</li><li>bar</li></ul>", [ul(li(p(strong("foo"))), li(p(strong("bar"))))], 3, 3))
 
     function find(html, doc) {
       return () => {

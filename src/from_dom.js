@@ -278,15 +278,19 @@ function wsOptionsFor(preserveWhitespace) {
 }
 
 class NodeContext {
-  constructor(type, attrs, marks, solid, match, options) {
+  constructor(type, attrs, marks, pendingMarks, solid, match, options) {
     this.type = type
     this.attrs = attrs
     this.solid = solid
     this.match = match || (options & OPT_OPEN_LEFT ? null : type.contentMatch)
     this.options = options
     this.content = []
+    // Marks applied to this node itself
     this.marks = marks
+    // Marks applied to its children
     this.activeMarks = Mark.none
+    // Marks that can't apply here, but will be used in children if possible
+    this.pendingMarks = pendingMarks
   }
 
   findWrapping(node) {
@@ -308,7 +312,7 @@ class NodeContext {
     return this.match.findWrapping(node.type)
   }
 
-finish(openEnd) {
+  finish(openEnd) {
     if (!(this.options & OPT_PRESERVE_WS)) { // Strip trailing whitespace
       let last = this.content[this.content.length - 1], m
       if (last && last.isText && (m = /[ \t\r\n\u000c]+$/.exec(last.text))) {
@@ -321,6 +325,17 @@ finish(openEnd) {
       content = content.append(this.match.fillBefore(Fragment.empty, true))
     return this.type ? this.type.create(this.attrs, content, this.marks) : content
   }
+
+  applyPending(nextType) {
+    for (let i = 0, pending = this.pendingMarks; i < pending.length; i++) {
+      let mark = pending[i]
+      if ((this.type ? this.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
+          !mark.isInSet(this.activeMarks)) {
+        this.activeMarks = mark.addToSet(this.activeMarks)
+        this.pendingMarks = mark.removeFromSet(this.pendingMarks)
+      }
+    }
+  }
 }
 
 class ParseContext {
@@ -331,16 +346,15 @@ class ParseContext {
     // : Object The options passed to this parse.
     this.options = options
     this.isOpen = open
-    this.pendingMarks = []
     let topNode = options.topNode, topContext
     let topOptions = wsOptionsFor(options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
-      topContext = new NodeContext(topNode.type, topNode.attrs, Mark.none, true,
+      topContext = new NodeContext(topNode.type, topNode.attrs, Mark.none, Mark.none, true,
                                    options.topMatch || topNode.type.contentMatch, topOptions)
     else if (open)
-      topContext = new NodeContext(null, null, Mark.none, true, null, topOptions)
+      topContext = new NodeContext(null, null, Mark.none, Mark.none, true, null, topOptions)
     else
-      topContext = new NodeContext(parser.schema.topNodeType, null, Mark.none, true, null, topOptions)
+      topContext = new NodeContext(parser.schema.topNodeType, null, Mark.none, Mark.none, true, null, topOptions)
     this.nodes = [topContext]
     // : [Mark] The current set of marks
     this.open = 0
@@ -361,10 +375,10 @@ class ParseContext {
       this.addTextNode(dom)
     } else if (dom.nodeType == 1) {
       let style = dom.getAttribute("style")
-      let marks = style ? this.readStyles(parseStyles(style)) : null
+      let marks = style ? this.readStyles(parseStyles(style)) : null, top = this.top
       if (marks != null) for (let i = 0; i < marks.length; i++) this.addPendingMark(marks[i])
       this.addElement(dom)
-      if (marks != null) for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i])
+      if (marks != null) for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i], top)
     }
   }
 
@@ -476,7 +490,7 @@ class ParseContext {
       this.addAll(contentDOM, sync)
     }
     if (sync) { this.sync(startIn); this.open-- }
-    if (mark) this.removePendingMark(mark)
+    if (mark) this.removePendingMark(mark, startIn)
   }
 
   // : (dom.Node, ?NodeBuilder, ?number, ?number)
@@ -528,7 +542,7 @@ class ParseContext {
     if (this.findPlace(node)) {
       this.closeExtra()
       let top = this.top
-      this.applyPendingMarks(top, node.type)
+      top.applyPending(node.type)
       if (top.match) top.match = top.match.matchType(node.type)
       let marks = top.activeMarks
       for (let i = 0; i < node.marks.length; i++)
@@ -540,26 +554,12 @@ class ParseContext {
     return false
   }
 
-  applyPendingMarks(top, nextType) {
-    for (let i = 0; i < this.pendingMarks.length; i++) {
-      let mark = this.pendingMarks[i]
-      if ((top.type ? top.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
-          !mark.isInSet(top.activeMarks)) {
-        top.activeMarks = mark.addToSet(top.activeMarks)
-        this.pendingMarks.splice(i--, 1)
-      }
-    }
-  }
-
   // : (NodeType, ?Object) → bool
   // Try to start a node of the given type, adjusting the context when
   // necessary.
   enter(type, attrs, preserveWS) {
     let ok = this.findPlace(type.create(attrs))
-    if (ok) {
-      this.applyPendingMarks(this.top, type)
-      this.enterInner(type, attrs, true, preserveWS)
-    }
+    if (ok) this.enterInner(type, attrs, true, preserveWS)
     return ok
   }
 
@@ -567,10 +567,11 @@ class ParseContext {
   enterInner(type, attrs, solid, preserveWS) {
     this.closeExtra()
     let top = this.top
+    top.applyPending(type)
     top.match = top.match && top.match.matchType(type, attrs)
     let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(preserveWS)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
-    this.nodes.push(new NodeContext(type, attrs, top.activeMarks, solid, null, options))
+    this.nodes.push(new NodeContext(type, attrs, top.activeMarks, top.pendingMarks, solid, null, options))
     this.open++
   }
 
@@ -594,20 +595,6 @@ class ParseContext {
     for (let i = this.open; i >= 0; i--) if (this.nodes[i] == to) {
       this.open = i
       return
-    }
-  }
-
-  addPendingMark(mark) {
-    this.pendingMarks.push(mark)
-  }
-
-  removePendingMark(mark) {
-    let found = this.pendingMarks.lastIndexOf(mark)
-    if (found > -1) {
-      this.pendingMarks.splice(found, 1)
-    } else {
-      let top = this.top
-      top.activeMarks = mark.removeFromSet(top.activeMarks)
     }
   }
 
@@ -696,6 +683,20 @@ class ParseContext {
     for (let name in this.parser.schema.nodes) {
       let type = this.parser.schema.nodes[name]
       if (type.isTextblock && type.defaultAttrs) return type
+    }
+  }
+
+  addPendingMark(mark) {
+    this.top.pendingMarks = mark.addToSet(this.top.pendingMarks)
+  }
+
+  removePendingMark(mark, upto) {
+    for (let depth = this.open; depth >= 0; depth--) {
+      let level = this.nodes[depth]
+      let found = level.pendingMarks.lastIndexOf(mark)
+      if (found > -1) level.pendingMarks = mark.removeFromSet(level.pendingMarks)
+      else level.activeMarks = mark.removeFromSet(level.activeMarks)
+      if (level == upto) break
     }
   }
 }
