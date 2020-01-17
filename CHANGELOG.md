@@ -1,3 +1,9 @@
+## 1.9.1 (2020-01-17)
+
+### Bug fixes
+
+Marks found in the DOM at the wrong level (for example, a bold style on a block node) are now properly moved to the node content.
+
 ## 1.9.0 (2020-01-07)
 
 ### New features
