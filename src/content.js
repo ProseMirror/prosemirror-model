@@ -384,6 +384,6 @@ function checkForDeadEnds(match, stream) {
       if (dead && !(node.isText || node.hasRequiredAttrs())) dead = false
       if (work.indexOf(next) == -1) work.push(next)
     }
-    if (dead) stream.err("Only non-generatable nodes (" + nodes.join(", ") + ") in a required position")
+    if (dead) stream.err("Only non-generatable nodes (" + nodes.join(", ") + ") in a required position (see https://prosemirror.net/docs/guide/#generatable)")
   }
 }
