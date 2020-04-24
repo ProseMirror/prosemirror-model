@@ -222,8 +222,8 @@ export class Node {
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
-  // :: (number, number, MarkType) → bool
-  // Test whether a mark of the given type occurs in this document
+  // :: (number, number, Mark | MarkType) → bool
+  // Test whether a given mark or mark type occurs in this document
   // between the two given positions.
   rangeHasMark(from, to, type) {
     let found = false
