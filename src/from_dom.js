@@ -95,6 +95,10 @@ import {Mark} from "./mark"
 //   ignore:: ?bool
 //   When true, ignore content that matches this rule.
 //
+//   closeParent:: ?bool
+//   When true, finding an element that matches this rule will close
+//   the current node.
+//
 //   skip:: ?bool
 //   When true, ignore the node that matches this rule, but do parse
 //   its content.
@@ -418,8 +422,9 @@ class ParseContext {
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
-    } else if (!rule || rule.skip) {
-      if (rule && rule.skip.nodeType) dom = rule.skip
+    } else if (!rule || rule.skip || rule.closeParent) {
+      if (rule && rule.closeParent) this.open = Math.max(0, this.open - 1)
+      else if (rule && rule.skip.nodeType) dom = rule.skip
       let sync, top = this.top, oldNeedsBlock = this.needsBlock
       if (blockTags.hasOwnProperty(name)) {
         sync = true

@@ -434,6 +434,11 @@ describe("DOMParser", () => {
         context: cxDoc.resolve(cxDoc.tag.a)
       }), new Slice(blockquote(hr).content, 0, 0), eq)
     })
+
+    it("can close parent nodes from a rule", () => {
+      let closeParser = new DOMParser(schema, [{tag: "br", closeParent: true}].concat(DOMParser.schemaRules(schema)))
+      ist(closeParser.parse(domFrom("<p>one<br>two</p>")), doc(p("one"), p("two")), eq)
+    })
   })
 
   describe("schemaRules", () => {
