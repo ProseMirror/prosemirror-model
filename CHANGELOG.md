@@ -1,3 +1,13 @@
+## 1.10.0 (2020-05-25)
+
+### Bug fixes
+
+Avoid fixing directly nested list nodes during DOM parsing when it looks like the schema allows those.
+
+### New features
+
+DOM parser rules can now specify `closeParent: true` to have the effect of closing their parent node when matched.
+
 ## 1.9.1 (2020-01-17)
 
 ### Bug fixes
