@@ -159,6 +159,13 @@ export class DOMParser {
       if (rule.tag) this.tags.push(rule)
       else if (rule.style) this.styles.push(rule)
     })
+
+    // Only normalize list elements when lists in the schema can't directly contain themselves
+    this.normalizeLists = !this.tags.some(r => {
+      if (!/^(ul|ol)\b/.test(r.tag) || !r.node) return false
+      let node = schema.nodes[r.node]
+      return node.contentMatch.matchType(node)
+    })
   }
 
   // :: (dom.Node, ?ParseOptions) → Node
@@ -418,7 +425,7 @@ class ParseContext {
   // none is found, the element's content nodes are added directly.
   addElement(dom) {
     let name = dom.nodeName.toLowerCase()
-    if (listTags.hasOwnProperty(name)) normalizeList(dom)
+    if (listTags.hasOwnProperty(name) && this.normalizeLists) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
