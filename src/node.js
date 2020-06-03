@@ -222,7 +222,7 @@ export class Node {
 
   resolveNoCache(pos) { return ResolvedPos.resolve(this, pos) }
 
-  // :: (number, number, Mark | MarkType) → bool
+  // :: (number, number, union<Mark, MarkType>) → bool
   // Test whether a given mark or mark type occurs in this document
   // between the two given positions.
   rangeHasMark(from, to, type) {
