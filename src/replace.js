@@ -79,7 +79,7 @@ export class Slice {
     let openStart = json.openStart || 0, openEnd = json.openEnd || 0
     if (typeof openStart != "number" || typeof openEnd != "number")
       throw new RangeError("Invalid input for Slice.fromJSON")
-    return new Slice(Fragment.fromJSON(schema, json.content), json.openStart || 0, json.openEnd || 0)
+    return new Slice(Fragment.fromJSON(schema, json.content), openStart, openEnd)
   }
 
   // :: (Fragment, ?bool) → Slice
