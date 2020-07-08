@@ -45,5 +45,21 @@ describe("Node", () => {
         ist(typeof eAfter == "string" ? after.textContent : after, eAfter)
       }
     })
+
+    it("has a working posAtIndex method", () => {
+      let d = doc(blockquote(p("one"), blockquote(p("two ", em("three")), p("four"))))
+      let pThree = d.resolve(12) // Start of em("three")
+      ist(pThree.posAtIndex(0), 8)
+      ist(pThree.posAtIndex(1), 12)
+      ist(pThree.posAtIndex(2), 17)
+      ist(pThree.posAtIndex(0, 2), 7)
+      ist(pThree.posAtIndex(1, 2), 18)
+      ist(pThree.posAtIndex(2, 2), 24)
+      ist(pThree.posAtIndex(0, 1), 1)
+      ist(pThree.posAtIndex(1, 1), 6)
+      ist(pThree.posAtIndex(2, 1), 25)
+      ist(pThree.posAtIndex(0, 0), 0)
+      ist(pThree.posAtIndex(1, 0), 26)
+    })
   })
 })

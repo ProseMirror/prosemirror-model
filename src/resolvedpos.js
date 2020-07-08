@@ -120,6 +120,16 @@ export class ResolvedPos {
     return index == 0 ? null : this.parent.child(index - 1)
   }
 
+  // :: (number, ?number) → number
+  // Get the position at the given index in the parent node at the
+  // given depth (which defaults to `this.depth`).
+  posAtIndex(index, depth) {
+    depth = this.resolveDepth(depth)
+    let node = this.path[depth * 3], pos = depth == 0 ? 0 : this.path[depth * 3 - 1] + 1
+    for (let i = 0; i < index; i++) pos += node.child(i).nodeSize
+    return pos
+  }
+
   // :: () → [Mark]
   // Get the marks at this position, factoring in the surrounding
   // marks' [`inclusive`](#model.MarkSpec.inclusive) property. If the
