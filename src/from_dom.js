@@ -425,7 +425,7 @@ class ParseContext {
   // none is found, the element's content nodes are added directly.
   addElement(dom) {
     let name = dom.nodeName.toLowerCase()
-    if (listTags.hasOwnProperty(name) && this.normalizeLists) normalizeList(dom)
+    if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
