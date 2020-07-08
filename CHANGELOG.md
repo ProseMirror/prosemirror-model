@@ -1,3 +1,9 @@
+## 1.10.1 (2020-07-08)
+
+### Bug fixes
+
+Fix a bug that prevented non-canonical list structure from being normalized.
+
 ## 1.10.0 (2020-05-25)
 
 ### Bug fixes
