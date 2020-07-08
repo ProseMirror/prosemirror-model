@@ -1,3 +1,9 @@
+## 1.11.0 (2020-07-08)
+
+### New features
+
+Resolved positions have a new convenience method, `posAtIndex`, which can resolve a depth and index to a position.
+
 ## 1.10.1 (2020-07-08)
 
 ### Bug fixes
