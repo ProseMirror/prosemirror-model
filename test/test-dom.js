@@ -327,6 +327,10 @@ describe("DOMParser", () => {
        open("<div>foo</div><div><em>bar</em></div>",
             [p("foo"), p(em("bar"))], 1, 1))
 
+    it("can parse nested mark with same type",
+      open("<p style='font-weight: bold'>foo<strong style='font-weight: bold;'>bar</strong>baz</p>",
+          [p(strong("foobarbaz"))], 1, 1))
+
     it("will not apply invalid marks to nodes",
        open("<ul style='font-weight: bold'><li>foo</li></ul>", [ul(li(p(strong("foo"))))], 3, 3))
 
