@@ -1,3 +1,9 @@
+## 1.11.1 (2020-09-11)
+
+### Bug fixes
+
+Fix an issue where an inner node's mark information could reset the same mark provided by an outer node in the DOM parser.
+
 ## 1.11.0 (2020-07-08)
 
 ### New features
