@@ -349,6 +349,8 @@ class NodeContext {
       let mark = pending[i]
       if ((this.type ? this.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
           !mark.isInSet(this.activeMarks)) {
+        let found = this.activeMarks.findIndex(_mark => _mark.type == mark.type)
+        if (found > -1) this.stashMarks.push(this.activeMarks[found])
         this.activeMarks = mark.addToSet(this.activeMarks)
         this.pendingMarks = mark.removeFromSet(this.pendingMarks)
       }
@@ -707,7 +709,7 @@ class ParseContext {
 
   addPendingMark(mark) {
     let found = this.top.pendingMarks.findIndex(_mark => _mark.type == mark.type)
-    if (found > -1) this.top.stashMarks.push(mark)
+    if (found > -1) this.top.stashMarks.push(this.top.pendingMarks[found])
     this.top.pendingMarks = mark.addToSet(this.top.pendingMarks)
   }
 

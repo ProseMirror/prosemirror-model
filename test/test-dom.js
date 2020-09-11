@@ -327,15 +327,50 @@ describe("DOMParser", () => {
        open("<div>foo</div><div><em>bar</em></div>",
             [p("foo"), p(em("bar"))], 1, 1))
 
-    it("can parse nested mark with same type",
-      open("<p style='font-weight: bold'>foo<strong style='font-weight: bold;'>bar</strong>baz</p>",
-          [p(strong("foobarbaz"))], 1, 1))
-
     it("will not apply invalid marks to nodes",
        open("<ul style='font-weight: bold'><li>foo</li></ul>", [ul(li(p(strong("foo"))))], 3, 3))
 
     it("will apply pending marks from parents to all children",
        open("<ul style='font-weight: bold'><li>foo</li><li>bar</li></ul>", [ul(li(p(strong("foo"))), li(p(strong("bar"))))], 3, 3))
+
+    it("can parse nested mark with same type",
+       open("<p style='font-weight: bold'>foo<strong style='font-weight: bold;'>bar</strong>baz</p>",
+           [p(strong("foobarbaz"))], 1, 1))
+
+    it("can parse nested mark with same type but different attrs", () => {
+      let markSchema = new Schema({
+        nodes: schema.spec.nodes,
+        marks: schema.spec.marks.update("s", {
+          attrs: {
+            'data-s': { default: 'tag' }
+          },
+          parseDOM: [{
+            tag: "s",
+          }, {
+            style: "text-decoration",
+            getAttrs() {
+              return {
+                'data-s': 'style'
+              }
+          }
+          }]
+        })
+      })
+      let b = builders(markSchema);
+      let dom = document.createElement("div")
+      dom.innerHTML = "<p style='text-decoration: line-through;'>f<s style='text-decoration: line-through;'>o</s>o</p>"
+      let result = DOMParser.fromSchema(markSchema).parseSlice(dom)
+      ist(result, new Slice(Fragment.from(
+        b.schema.nodes.paragraph.create(
+          undefined,
+          [
+            b.schema.text('f', [b.schema.marks.s.create({ 'data-s': 'style' })]),
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'tag' })]),
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' })])
+          ]
+        ),
+      ), 1, 1), eq)
+    })
 
     function find(html, doc) {
       return () => {
