@@ -302,8 +302,8 @@ class NodeContext {
     this.activeMarks = Mark.none
     // Marks that can't apply here, but will be used in children if possible
     this.pendingMarks = pendingMarks
-    // Nested Marks with same type  
-    this.stashMarks = [];
+    // Nested Marks with same type
+    this.stashMarks = []
   }
 
   findWrapping(node) {
@@ -340,12 +340,8 @@ class NodeContext {
   }
 
   popFromStashMark(markType) {
-    for (let i = this.stashMarks.length - 1; i >= 0; i--) {
-      if (this.stashMarks[i].type == markType) {
-        return this.stashMarks.splice(i, 1)[0];
-      }
-    }
-    return undefined
+    for (let i = this.stashMarks.length - 1; i >= 0; i--)
+      if (this.stashMarks[i].type == markType) return this.stashMarks.splice(i, 1)[0]
   }
 
   applyPending(nextType) {
@@ -710,7 +706,7 @@ class ParseContext {
   }
 
   addPendingMark(mark) {
-    const found = this.top.pendingMarks.findIndex(_mark => _mark.type == mark.type)
+    let found = this.top.pendingMarks.findIndex(_mark => _mark.type == mark.type)
     if (found > -1) this.top.stashMarks.push(mark)
     this.top.pendingMarks = mark.addToSet(this.top.pendingMarks)
   }
@@ -722,12 +718,9 @@ class ParseContext {
       if (found > -1) {
         level.pendingMarks = mark.removeFromSet(level.pendingMarks)
       } else {
-        const stashMark = level.popFromStashMark(mark.type);
-        if (stashMark) {
-          level.activeMarks = stashMark.addToSet(level.activeMarks);
-        } else {
-          level.activeMarks = mark.removeFromSet(level.activeMarks);
-        }
+        level.activeMarks = mark.removeFromSet(level.activeMarks)
+        let stashMark = level.popFromStashMark(mark.type)
+        if (stashMark) level.activeMarks = stashMark.addToSet(level.activeMarks)
       }
       if (level == upto) break
     }
