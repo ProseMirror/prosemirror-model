@@ -1,3 +1,9 @@
+## 1.11.2 (2020-09-12)
+
+### Bug fixes
+
+Fix issue where 1.11.1 uses an array method not available on Internet Explorer.
+
 ## 1.11.1 (2020-09-11)
 
 ### Bug fixes
