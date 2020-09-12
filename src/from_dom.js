@@ -349,8 +349,8 @@ class NodeContext {
       let mark = pending[i]
       if ((this.type ? this.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
           !mark.isInSet(this.activeMarks)) {
-        let found = this.activeMarks.findIndex(_mark => _mark.type == mark.type)
-        if (found > -1) this.stashMarks.push(this.activeMarks[found])
+        let found = findSameTypeInSet(mark, this.activeMarks);
+        if (found) this.stashMarks.push(found)
         this.activeMarks = mark.addToSet(this.activeMarks)
         this.pendingMarks = mark.removeFromSet(this.pendingMarks)
       }
@@ -708,8 +708,8 @@ class ParseContext {
   }
 
   addPendingMark(mark) {
-    let found = this.top.pendingMarks.findIndex(_mark => _mark.type == mark.type)
-    if (found > -1) this.top.stashMarks.push(this.top.pendingMarks[found])
+    let found = findSameTypeInSet(mark, this.top.pendingMarks)
+    if (found) this.top.stashMarks.push(found)
     this.top.pendingMarks = mark.addToSet(this.top.pendingMarks)
   }
 
@@ -782,5 +782,11 @@ function markMayApply(markType, nodeType) {
       }
     }
     if (scan(parent.contentMatch)) return true
+  }
+}
+
+function findSameTypeInSet(mark, set) {
+  for (let i = 0; i < set.length; i++) {
+    if (mark.type == set[i].type) return set[i]
   }
 }
