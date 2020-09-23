@@ -57,7 +57,7 @@ import {Mark} from "./mark"
 //   A CSS property name to match. When given, this rule matches
 //   inline styles that list that property. May also have the form
 //   `"property=value"`, in which case the rule only matches if the
-//   propery's value exactly matches the given value. (For more
+//   property's value exactly matches the given value. (For more
 //   complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
 //   and return false to indicate that the match failed.)
 //
