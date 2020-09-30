@@ -349,7 +349,7 @@ class NodeContext {
       let mark = pending[i]
       if ((this.type ? this.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
           !mark.isInSet(this.activeMarks)) {
-        let found = findSameTypeInSet(mark, this.activeMarks);
+        let found = findSameTypeInSet(mark, this.activeMarks)
         if (found) this.stashMarks.push(found)
         this.activeMarks = mark.addToSet(this.activeMarks)
         this.pendingMarks = mark.removeFromSet(this.pendingMarks)

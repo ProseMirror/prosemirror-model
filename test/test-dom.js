@@ -356,7 +356,7 @@ describe("DOMParser", () => {
           }]
         })
       })
-      let b = builders(markSchema);
+      let b = builders(markSchema)
       let dom = document.createElement("div")
       dom.innerHTML = "<p style='text-decoration: line-through;'>f<s style='text-decoration: line-through;'>o</s>o</p>"
       let result = DOMParser.fromSchema(markSchema).parseSlice(dom)
@@ -368,7 +368,7 @@ describe("DOMParser", () => {
             b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'tag' })]),
             b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' })])
           ]
-        ),
+        )
       ), 1, 1), eq)
     })
 
