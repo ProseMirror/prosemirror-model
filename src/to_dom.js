@@ -1,7 +1,7 @@
 // DOMOutputSpec:: interface
 // A description of a DOM structure. Can be either a string, which is
 // interpreted as a text node, a DOM node, which is interpreted as
-// itself, or an array.
+// itself, a `{dom: Node, contentDOM: ?Node}` object, or an array.
 //
 // An array describes a DOM element. The first value in the array
 // should be a string—the name of the DOM element, optionally prefixed
@@ -121,6 +121,8 @@ export class DOMSerializer {
       return {dom: doc.createTextNode(structure)}
     if (structure.nodeType != null)
       return {dom: structure}
+    if (structure.dom && structure.dom.nodeType != null)
+      return structure
     let tagName = structure[0], space = tagName.indexOf(" ")
     if (space > 0) {
       xmlNS = tagName.slice(0, space)
