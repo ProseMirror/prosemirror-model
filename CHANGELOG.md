@@ -1,3 +1,9 @@
+## 1.12.0 (2020-10-11)
+
+### New features
+
+The output of `toDOM` functions can now be a `{dom, contentDOM}` object specifying the precise parent and content DOM elements.
+
 ## 1.11.2 (2020-09-12)
 
 ### Bug fixes
