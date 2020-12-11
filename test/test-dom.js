@@ -478,6 +478,18 @@ describe("DOMParser", () => {
       let closeParser = new DOMParser(schema, [{tag: "br", closeParent: true}].concat(DOMParser.schemaRules(schema)))
       ist(closeParser.parse(domFrom("<p>one<br>two</p>")), doc(p("one"), p("two")), eq)
     })
+
+    it("supports non-consuming node rules", () => {
+      let parser = new DOMParser(schema, [{tag: "ol", consuming: false, node: "blockquote"}]
+                                 .concat(DOMParser.schemaRules(schema)))
+      ist(parser.parse(domFrom("<ol><p>one</p></ol>")), doc(blockquote(ol(li(p("one"))))), eq)
+    })
+
+    it("supports non-consuming style rules", () => {
+      let parser = new DOMParser(schema, [{style: "font-weight", consuming: false, mark: "em"}]
+                                 .concat(DOMParser.schemaRules(schema)))
+      ist(parser.parse(domFrom("<p><span style='font-weight: 800'>one</span></p>")), doc(p(em(strong("one")))), eq)
+    })
   })
 
   describe("schemaRules", () => {

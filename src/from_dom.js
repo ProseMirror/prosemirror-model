@@ -68,6 +68,12 @@ import {Mark} from "./mark"
 //   property is only meaningful in a schema—when directly
 //   constructing a parser, the order of the rule array is used.
 //
+//   consuming:: ?boolean
+//   By default, when a rule matches an element or style, no further
+//   rules get a chance to match it. By setting this to `false`, you
+//   indicate that even when this rule matches, other rules that come
+//   after it should also run.
+//
 //   context:: ?string
 //   When given, restricts this rule to only match when the current
 //   context—the parent nodes into which the content is being
@@ -189,8 +195,8 @@ export class DOMParser {
     return Slice.maxOpen(context.finish())
   }
 
-  matchTag(dom, context) {
-    for (let i = 0; i < this.tags.length; i++) {
+  matchTag(dom, context, after) {
+    for (let i = after ? this.tags.indexOf(after) + 1 : 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
       if (matches(dom, rule.tag) &&
           (rule.namespace === undefined || dom.namespaceURI == rule.namespace) &&
@@ -205,8 +211,8 @@ export class DOMParser {
     }
   }
 
-  matchStyle(prop, value, context) {
-    for (let i = 0; i < this.styles.length; i++) {
+  matchStyle(prop, value, context, after) {
+    for (let i = after ? this.styles.indexOf(after) + 1 : 0; i < this.styles.length; i++) {
       let rule = this.styles[i]
       if (rule.style.indexOf(prop) != 0 ||
           rule.context && !context.matchesContext(rule.context) ||
@@ -429,13 +435,14 @@ class ParseContext {
     }
   }
 
-  // : (dom.Element)
+  // : (dom.Element, ?ParseRule)
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
-  addElement(dom) {
-    let name = dom.nodeName.toLowerCase()
+  addElement(dom, matchAfter) {
+    let name = dom.nodeName.toLowerCase(), ruleID
     if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
-    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) || this.parser.matchTag(dom, this)
+    let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
+        (ruleID = this.parser.matchTag(dom, this, matchAfter))
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
     } else if (!rule || rule.skip || rule.closeParent) {
@@ -453,7 +460,7 @@ class ParseContext {
       if (sync) this.sync(top)
       this.needsBlock = oldNeedsBlock
     } else {
-      this.addElementByRule(dom, rule)
+      this.addElementByRule(dom, rule, rule.consuming === false ? ruleID : null)
     }
   }
 
@@ -468,11 +475,15 @@ class ParseContext {
   // had a rule with `ignore` set.
   readStyles(styles) {
     let marks = Mark.none
-    for (let i = 0; i < styles.length; i += 2) {
-      let rule = this.parser.matchStyle(styles[i], styles[i + 1], this)
-      if (!rule) continue
-      if (rule.ignore) return null
-      marks = this.parser.schema.marks[rule.mark].create(rule.attrs).addToSet(marks)
+    style: for (let i = 0; i < styles.length; i += 2) {
+      for (let after = null;;) {
+        let rule = this.parser.matchStyle(styles[i], styles[i + 1], this, after)
+        if (!rule) continue style
+        if (rule.ignore) return null
+        marks = this.parser.schema.marks[rule.mark].create(rule.attrs).addToSet(marks)
+        if (rule.consuming === false) after = rule
+        else break
+      }
     }
     return marks
   }
@@ -481,7 +492,7 @@ class ParseContext {
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
-  addElementByRule(dom, rule) {
+  addElementByRule(dom, rule, continueAfter) {
     let sync, nodeType, markType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]
@@ -499,6 +510,8 @@ class ParseContext {
 
     if (nodeType && nodeType.isLeaf) {
       this.findInside(dom)
+    } else if (continueAfter) {
+      this.addElement(dom, continueAfter)
     } else if (rule.getContent) {
       this.findInside(dom)
       rule.getContent(dom, this.parser.schema).forEach(node => this.insertNode(node))
