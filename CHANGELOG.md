@@ -1,3 +1,9 @@
+## 1.13.0 (2020-12-11)
+
+### New features
+
+Parse rules can now have a `consuming: false` property which allows other rules to match their tag or style even when they apply.
+
 ## 1.12.0 (2020-10-11)
 
 ### New features
