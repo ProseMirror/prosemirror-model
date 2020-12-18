@@ -167,7 +167,7 @@ class TokenStream {
     this.pos = 0
     this.tokens = string.split(/\s*(?=\b|\W|$)/)
     if (this.tokens[this.tokens.length - 1] == "") this.tokens.pop()
-    if (this.tokens[0] == "") this.tokens.unshift()
+    if (this.tokens[0] == "") this.tokens.shift()
   }
 
   get next() { return this.tokens[this.pos] }
