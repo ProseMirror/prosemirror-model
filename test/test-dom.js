@@ -344,6 +344,7 @@ describe("DOMParser", () => {
           attrs: {
             'data-s': { default: 'tag' }
           },
+          excludes: '',
           parseDOM: [{
             tag: "s",
           }, {
@@ -358,15 +359,28 @@ describe("DOMParser", () => {
       })
       let b = builders(markSchema)
       let dom = document.createElement("div")
-      dom.innerHTML = "<p style='text-decoration: line-through;'>f<s style='text-decoration: line-through;'>o</s>o</p>"
+      dom.innerHTML = "<p style='text-decoration: line-through;'>o<s style='text-decoration: line-through;'>o</s>o</p>"
       let result = DOMParser.fromSchema(markSchema).parseSlice(dom)
       ist(result, new Slice(Fragment.from(
         b.schema.nodes.paragraph.create(
           undefined,
           [
-            b.schema.text('f', [b.schema.marks.s.create({ 'data-s': 'style' })]),
-            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'tag' })]),
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' })]),
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' }), b.schema.marks.s.create({ 'data-s': 'tag' })]),
             b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' })])
+          ]
+        )
+      ), 1, 1), eq)
+
+      dom.innerHTML = "<p><span style='text-decoration: line-through;'><s style='text-decoration: line-through;'>o</s>o</span>o</p>"
+      result = DOMParser.fromSchema(markSchema).parseSlice(dom)
+      ist(result, new Slice(Fragment.from(
+        b.schema.nodes.paragraph.create(
+          undefined,
+          [
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' }), b.schema.marks.s.create({ 'data-s': 'tag' })]),
+            b.schema.text('o', [b.schema.marks.s.create({ 'data-s': 'style' })]),
+            b.schema.text('o')
           ]
         )
       ), 1, 1), eq)

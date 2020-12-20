@@ -345,9 +345,9 @@ class NodeContext {
     return this.type ? this.type.create(this.attrs, content, this.marks) : content
   }
 
-  popFromStashMark(markType) {
+  popFromStashMark(mark) {
     for (let i = this.stashMarks.length - 1; i >= 0; i--)
-      if (this.stashMarks[i].type == markType) return this.stashMarks.splice(i, 1)[0]
+      if (mark.eq(this.stashMarks[i])) return this.stashMarks.splice(i, 1)[0]
   }
 
   applyPending(nextType) {
@@ -355,8 +355,6 @@ class NodeContext {
       let mark = pending[i]
       if ((this.type ? this.type.allowsMarkType(mark.type) : markMayApply(mark.type, nextType)) &&
           !mark.isInSet(this.activeMarks)) {
-        let found = findSameTypeInSet(mark, this.activeMarks)
-        if (found) this.stashMarks.push(found)
         this.activeMarks = mark.addToSet(this.activeMarks)
         this.pendingMarks = mark.removeFromSet(this.pendingMarks)
       }
@@ -721,7 +719,7 @@ class ParseContext {
   }
 
   addPendingMark(mark) {
-    let found = findSameTypeInSet(mark, this.top.pendingMarks)
+    let found = findSameMarkInSet(mark, this.top.pendingMarks)
     if (found) this.top.stashMarks.push(found)
     this.top.pendingMarks = mark.addToSet(this.top.pendingMarks)
   }
@@ -734,7 +732,7 @@ class ParseContext {
         level.pendingMarks = mark.removeFromSet(level.pendingMarks)
       } else {
         level.activeMarks = mark.removeFromSet(level.activeMarks)
-        let stashMark = level.popFromStashMark(mark.type)
+        let stashMark = level.popFromStashMark(mark)
         if (stashMark) level.activeMarks = stashMark.addToSet(level.activeMarks)
       }
       if (level == upto) break
@@ -798,8 +796,8 @@ function markMayApply(markType, nodeType) {
   }
 }
 
-function findSameTypeInSet(mark, set) {
+function findSameMarkInSet(mark, set) {
   for (let i = 0; i < set.length; i++) {
-    if (mark.type == set[i].type) return set[i]
+    if (mark.eq(set[i])) return set[i]
   }
 }
