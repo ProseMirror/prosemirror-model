@@ -1,3 +1,9 @@
+## 1.13.1 (2020-12-20)
+
+### Bug fixes
+
+Fix a bug where nested marks of the same type would be applied to the wrong node when parsing from DOM.
+
 ## 1.13.0 (2020-12-11)
 
 ### New features
