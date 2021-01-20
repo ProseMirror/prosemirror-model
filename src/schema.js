@@ -299,7 +299,7 @@ export class MarkType {
 // An object describing a schema, as passed to the [`Schema`](#model.Schema)
 // constructor.
 //
-//   nodes:: union<Object<NodeSpec>, OrderedMap<NodeSpec>>
+//   nodes:: OrderedMap<NodeSpec>>
 //   The node types in this schema. Maps names to
 //   [`NodeSpec`](#model.NodeSpec) objects that describe the node type
 //   associated with that name. Their order is significant—it
@@ -307,7 +307,7 @@ export class MarkType {
 //   precedence by default, and which nodes come first in a given
 //   [group](#model.NodeSpec.group).
 //
-//   marks:: ?union<Object<MarkSpec>, OrderedMap<MarkSpec>>
+//   marks:: OrderedMap<MarkSpec>>
 //   The mark types that exist in this schema. The order in which they
 //   are provided determines the order in which [mark
 //   sets](#model.Mark.addToSet) are sorted and in which [parse
