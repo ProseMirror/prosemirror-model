@@ -1,3 +1,9 @@
+## 1.13.2 (2021-02-04)
+
+### Bug fixes
+
+`MarkType.removeFromSet` now removes all instances of the mark, not just the first one.
+
 ## 1.13.1 (2020-12-20)
 
 ### Bug fixes
