@@ -274,9 +274,10 @@ export class MarkType {
   // When there is a mark of this type in the given set, a new set
   // without it is returned. Otherwise, the input set is returned.
   removeFromSet(set) {
-    for (var i = 0; i < set.length; i++)
-      if (set[i].type == this)
-        return set.slice(0, i).concat(set.slice(i + 1))
+    for (var i = 0; i < set.length; i++) if (set[i].type == this) {
+      set = set.slice(0, i).concat(set.slice(i + 1))
+      i--
+    }
     return set
   }
 
