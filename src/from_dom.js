@@ -735,7 +735,8 @@ class ParseContext {
       } else {
         level.activeMarks = mark.removeFromSet(level.activeMarks)
         let stashMark = level.popFromStashMark(mark)
-        if (stashMark) level.activeMarks = stashMark.addToSet(level.activeMarks)
+        if (stashMark && level.type && level.type.allowsMarkType(stashMark.type))
+          level.activeMarks = stashMark.addToSet(level.activeMarks)
       }
       if (level == upto) break
     }

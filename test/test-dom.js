@@ -504,6 +504,10 @@ describe("DOMParser", () => {
                                  .concat(DOMParser.schemaRules(schema)))
       ist(parser.parse(domFrom("<p><span style='font-weight: 800'>one</span></p>")), doc(p(em(strong("one")))), eq)
     })
+
+    it("doesn't get confused by nested mark tags",
+       recover("<div><strong><strong>A</strong></strong>B</div><span>C</span>",
+               doc(p(strong("A"), "B"), p("C"))))
   })
 
   describe("schemaRules", () => {
