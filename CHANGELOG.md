@@ -1,3 +1,9 @@
+## 1.13.3 (2021-02-04)
+
+### Bug fixes
+
+Fix an issue where nested tags that match mark parser rules could cause the parser to apply marks in invalid places.
+
 ## 1.13.2 (2021-02-04)
 
 ### Bug fixes
