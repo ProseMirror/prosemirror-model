@@ -327,6 +327,10 @@ export class Node {
   check() {
     if (!this.type.validContent(this.content))
       throw new RangeError(`Invalid content for node ${this.type.name}: ${this.content.toString().slice(0, 50)}`)
+    let copy = Mark.none
+    for (let i = 0; i < this.marks.length; i++) copy = this.marks[i].addToSet(copy)
+    if (!Mark.sameSet(copy, this.marks))
+      throw new RangeError(`Invalid collection of marks for node ${this.type.name}: ${this.marks.map(m => m.type.name)}`)
     this.content.forEach(node => node.check())
   }
 
