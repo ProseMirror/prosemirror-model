@@ -158,9 +158,11 @@ export class Node {
     return this.copy(this.content.cut(from, to))
   }
 
-  // :: (number, ?number) → Slice
+  // :: (number, ?number, ?bool) → Slice
   // Cut out the part of the document between the given positions, and
   // return it as a `Slice` object.
+  // `includeParents` if true will also include the parents of nodes
+  // between these positions. Defaults to false.
   slice(from, to = this.content.size, includeParents = false) {
     if (from == to) return Slice.empty
 
