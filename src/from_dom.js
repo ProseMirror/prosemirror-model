@@ -427,6 +427,8 @@ class ParseContext {
         }
       } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
         value = value.replace(/\r?\n|\r/g, " ")
+      } else {
+        value = value.replace(/\r\n?/g, "\n")
       }
       if (value) this.insertNode(this.parser.schema.text(value))
       this.findInText(dom)
