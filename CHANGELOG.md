@@ -1,3 +1,15 @@
+## 1.14.0 (2021-04-06)
+
+### Bug fixes
+
+`Node.check` will now error if a node has an invalid combination of marks.
+
+Don't leave carriage return characters in parsed DOM content, since they confuse Chrome's cursor motion.
+
+### New features
+
+`Fragment.textBetween` is now public.
+
 ## 1.13.3 (2021-02-04)
 
 ### Bug fixes
