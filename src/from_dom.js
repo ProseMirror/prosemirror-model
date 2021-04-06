@@ -447,6 +447,7 @@ class ParseContext {
         (ruleID = this.parser.matchTag(dom, this, matchAfter))
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
+      this.ignoreFallback(dom)
     } else if (!rule || rule.skip || rule.closeParent) {
       if (rule && rule.closeParent) this.open = Math.max(0, this.open - 1)
       else if (rule && rule.skip.nodeType) dom = rule.skip
@@ -470,6 +471,13 @@ class ParseContext {
   leafFallback(dom) {
     if (dom.nodeName == "BR" && this.top.type && this.top.type.inlineContent)
       this.addTextNode(dom.ownerDocument.createTextNode("\n"))
+  }
+
+  // Called for ignored nodes
+  ignoreFallback(dom) {
+    // Ignored BR nodes should at least create an inline context
+    if (dom.nodeName == "BR" && (!this.top.type || !this.top.type.inlineContent))
+      this.findPlace(this.parser.schema.text("-"))
   }
 
   // Run any style parser associated with the node's styles. Either
