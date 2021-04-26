@@ -1,3 +1,9 @@
+## 1.14.1 (2021-04-26)
+
+### Bug fixes
+
+DOM parsing with `preserveWhitespace: "full"` will no longer ignore whitespace-only nodes.
+
 ## 1.14.0 (2021-04-06)
 
 ### Bug fixes
