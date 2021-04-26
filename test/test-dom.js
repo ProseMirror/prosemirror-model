@@ -270,6 +270,9 @@ describe("DOMParser", () => {
        recover("<p><strong><span>xx</span>bar</strong></p>",
                doc(p(strong("xxbar")))))
 
+    it("doesn't ignore whitespace-only nodes in preserveWhitespace full mode",
+       recover("<span> </span>x", doc(p(" x")), {preserveWhitespace: "full"}))
+
     function parse(html, options, doc) {
       return () => {
         let dom = document.createElement("div")
