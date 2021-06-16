@@ -299,11 +299,11 @@ describe("DOMParser", () => {
        parse("foo   bar", {preserveWhitespace: true},
              doc(p("foo   bar"))))
 
-    function open(html, nodes, openStart, openEnd) {
+    function open(html, nodes, openStart, openEnd, options) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
-        let result = parser.parseSlice(dom)
+        let result = parser.parseSlice(dom, options)
         ist(result, new Slice(Fragment.from(nodes.map(n => typeof n == "string" ? schema.text(n) : n)), openStart, openEnd), eq)
       }
     }
@@ -339,6 +339,12 @@ describe("DOMParser", () => {
     it("can parse nested mark with same type",
        open("<p style='font-weight: bold'>foo<strong style='font-weight: bold;'>bar</strong>baz</p>",
            [p(strong("foobarbaz"))], 1, 1))
+
+    it("drops block-level whitespace",
+       open("<div> </div>", [], 0, 0, {preserveWhitespace: true}))
+
+    it("keeps whitespace in inline elements",
+       open("<b> </b>", [p(strong(" ")).child(0)], 0, 0, {preserveWhitespace: true}))
 
     it("can parse nested mark with same type but different attrs", () => {
       let markSchema = new Schema({

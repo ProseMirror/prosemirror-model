@@ -362,6 +362,12 @@ class NodeContext {
       }
     }
   }
+
+  inlineContext(node) {
+    if (this.type) return this.type.inlineContent
+    if (this.content.length) return this.content[0].isInline
+    return node.parentNode && !blockTags.hasOwnProperty(node.parentNode.nodeName.toLowerCase())
+  }
 }
 
 class ParseContext {
@@ -412,7 +418,7 @@ class ParseContext {
     let value = dom.nodeValue
     let top = this.top
     if (top.options & OPT_PRESERVE_WS_FULL ||
-        (top.type ? top.type.inlineContent : top.content.length && top.content[0].isInline) ||
+        top.inlineContext(dom) ||
         /[^ \t\r\n\u000c]/.test(value)) {
       if (!(top.options & OPT_PRESERVE_WS)) {
         value = value.replace(/[ \t\r\n\u000c]+/g, " ")
