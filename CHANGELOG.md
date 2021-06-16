@@ -1,3 +1,9 @@
+## 1.14.2 (2021-06-16)
+
+### Bug fixes
+
+Be less agressive about dropping whitespace when the context isn't know in `DOMParser.parseSlice`.
+
 ## 1.14.1 (2021-04-26)
 
 ### Bug fixes
