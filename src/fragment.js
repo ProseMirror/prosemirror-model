@@ -22,14 +22,19 @@ export class Fragment {
   // into a node when the callback returns `false`.
   nodesBetween(from, to, f, nodeStart = 0, parent) {
     for (let i = 0, pos = 0; pos < to; i++) {
-      let child = this.content[i], end = pos + child.nodeSize
-      if (end > from && f(child, nodeStart + pos, parent, i) !== false && child.content.size) {
-        let start = pos + 1
-        child.nodesBetween(Math.max(0, from - start),
-                           Math.min(child.content.size, to - start),
-                           f, nodeStart + start)
+      let child = this.content[i]
+      if (child) {
+        let end = pos + child.nodeSize
+        if (end > from && f(child, nodeStart + pos, parent, i) !== false && child.content.size) {
+          let start = pos + 1
+          child.nodesBetween(Math.max(0, from - start),
+                             Math.min(child.content.size, to - start),
+                             f, nodeStart + start)
+        }
+        pos = end
+      } else {
+        pos = to
       }
-      pos = end
     }
   }
 
