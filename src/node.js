@@ -37,7 +37,11 @@ export class Node {
     // :: [Mark]
     // The marks (things like whether it is emphasized or part of a
     // link) applied to this node.
-    this.marks = marks || Mark.none
+    if (marks) {
+      this.marks = type.allowedMarks(marks) || Mark.none;
+    } else {
+      this.marks = Mark.none;
+    }
   }
 
   // text:: ?string
