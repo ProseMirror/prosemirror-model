@@ -1,3 +1,9 @@
+## 1.14.3 (2021-07-22)
+
+### Bug fixes
+
+`DOMSerializer.serializeNode` will no longer ignore the node's marks.
+
 ## 1.14.2 (2021-06-16)
 
 ### Bug fixes
