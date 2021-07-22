@@ -69,19 +69,13 @@ export class DOMSerializer {
           }
         }
       }
-      top.appendChild(this.serializeNode(node, options))
+      top.appendChild(this.serializeNodeInner(node, options))
     })
 
     return target
   }
 
-  // :: (Node, ?Object) → dom.Node
-  // Serialize this node to a DOM node. This can be useful when you
-  // need to serialize a part of a document, as opposed to the whole
-  // document. To serialize a whole document, use
-  // [`serializeFragment`](#model.DOMSerializer.serializeFragment) on
-  // its [content](#model.Node.content).
-  serializeNode(node, options = {}) {
+  serializeNodeInner(node, options = {}) {
     let {dom, contentDOM} =
         DOMSerializer.renderSpec(doc(options), this.nodes[node.type.name](node))
     if (contentDOM) {
@@ -95,8 +89,14 @@ export class DOMSerializer {
     return dom
   }
 
-  serializeNodeAndMarks(node, options = {}) {
-    let dom = this.serializeNode(node, options)
+  // :: (Node, ?Object) → dom.Node
+  // Serialize this node to a DOM node. This can be useful when you
+  // need to serialize a part of a document, as opposed to the whole
+  // document. To serialize a whole document, use
+  // [`serializeFragment`](#model.DOMSerializer.serializeFragment) on
+  // its [content](#model.Node.content).
+  serializeNode(node, options = {}) {
+    let dom = this.serializeNodeInner(node, options)
     for (let i = node.marks.length - 1; i >= 0; i--) {
       let wrap = this.serializeMark(node.marks[i], node.isInline, options)
       if (wrap) {
