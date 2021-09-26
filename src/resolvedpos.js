@@ -227,7 +227,10 @@ export class ResolvedPos {
   }
 
   static resolve(doc, pos) {
-    if (!(pos >= 0 && pos <= doc.content.size)) throw new RangeError("Position " + pos + " out of range")
+    if (!(pos >= 0 && pos <= doc.content.size)) {
+      console.warn("Position " + pos + " out of range - resetting to 0")
+      pos = 0
+    }
     let path = []
     let start = 0, parentOffset = pos
     for (let node = doc;;) {
