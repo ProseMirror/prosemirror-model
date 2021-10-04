@@ -40,7 +40,7 @@ export class Fragment {
     this.nodesBetween(0, this.size, f)
   }
 
-  // :: (number, number, ?string, ?string) → string
+  // :: (number, number, ?string, ?string | ?(leafNode: Node) -> string) → string
   // Extract the text between `from` and `to`. See the same method on
   // [`Node`](#model.Node.textBetween).
   textBetween(from, to, blockSeparator, leafText) {
@@ -50,7 +50,7 @@ export class Fragment {
         text += node.text.slice(Math.max(from, pos) - pos, to - pos)
         separated = !blockSeparator
       } else if (node.isLeaf && leafText) {
-        text += leafText
+        text += typeof leafText === 'function' ? leafText(node): leafText
         separated = !blockSeparator
       } else if (!separated && node.isBlock) {
         text += blockSeparator
