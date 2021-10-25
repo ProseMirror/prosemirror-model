@@ -1,3 +1,9 @@
+## 1.15.0 (2021-10-25)
+
+### New features
+
+`textBetween` now allows its leaf text argument to be a function.
+
 ## 1.14.3 (2021-07-22)
 
 ### Bug fixes
