@@ -86,6 +86,20 @@ describe("Node", () => {
                "paragraph", "foo", "bar", "image", "baz", "hard_break", "quux", "xyz"))
   })
 
+  describe("textBetween", () => {
+    it("works when passing a custom function as leafText", () => {
+      const d = doc(p("foo", img, br))
+      ist(d.textBetween(0, d.content.size, '', (node) => {
+        if (node.type.name === 'image') {
+          return '<image>'
+        }
+        if (node.type.name === 'hard_break') {
+          return '<break>'
+        }
+      }), 'foo<image><break>')
+    })
+  })
+
   describe("textContent", () => {
     it("works on a whole doc", () => {
       ist(doc(p("foo")).textContent, "foo")
