@@ -81,7 +81,7 @@ export class Node {
     this.content.nodesBetween(from, to, f, startPos, this)
   }
 
-  // :: ((node: Node, pos: number, parent: Node) → ?bool)
+  // :: ((node: Node, pos: number, parent: Node, index: number) → ?bool)
   // Call the given callback for every descendant node. Doesn't
   // descend into a node when the callback returns `false`.
   descendants(f) {
