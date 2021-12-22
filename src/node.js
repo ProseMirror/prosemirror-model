@@ -95,8 +95,8 @@ export class Node {
 
   // :: (number, number, ?string, ?union<string, ?(leafNode: Node) -> string>) → string
   // Get all text between positions `from` and `to`. When
-  // `blockSeparator` is given, it will be inserted whenever a new
-  // block node is started. When `leafText` is given, it'll be
+  // `blockSeparator` is given, it will be inserted to separate text
+  // from different block nodes. When `leafText` is given, it'll be
   // inserted for every non-text leaf node encountered.
   textBetween(from, to, blockSeparator, leafText) {
     return this.content.textBetween(from, to, blockSeparator, leafText)
