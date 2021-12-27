@@ -102,6 +102,10 @@ export class NodeType {
   // directly editable content.
   get isAtom() { return this.isLeaf || this.spec.atom }
 
+  // :: union<"pre", "normal">
+  // The node type's [whitespace](#view.NodeSpec.whitespace) option.
+  get whitespace() { return this.spec.whitespace || (this.spec.code ? "pre" : "normal") }
+
   // :: () → bool
   // Tells you whether this node type has any required attributes.
   hasRequiredAttrs() {
@@ -360,6 +364,17 @@ export class MarkType {
 //   code:: ?bool
 //   Can be used to indicate that this node contains code, which
 //   causes some commands to behave differently.
+//
+//   whitespace:: ?union<"pre", "normal">
+//   Controls way whitespace in this a node is parsed. The default is
+//   `"normal"`, which causes the [DOM parser](#model.DOMParser) to
+//   collapse whitespace in normal mode, and normalize it (replacing
+//   newlines and such with spaces) otherwise. `"pre"` causes the
+//   parser to preserve spaces inside the node. When this option isn't
+//   given, but [`code`](#model.NodeSpec.code) is true, `whitespace`
+//   will default to `"pre"`. Note that this option doesn't influence
+//   the way the node is rendered—that should be handled by `toDOM`
+//   and/or styling.
 //
 //   defining:: ?bool
 //   Determines whether this node is considered an important parent
