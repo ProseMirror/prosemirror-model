@@ -1,3 +1,9 @@
+## 1.16.0 (2021-12-27)
+
+### New features
+
+A new `NodeSpec` property, `whitespace`, allows more control over the way whitespace in the content of the node is parsed.
+
 ## 1.15.0 (2021-10-25)
 
 ### New features
