@@ -292,9 +292,10 @@ const listTags = {ol: true, ul: true}
 // Using a bitfield for node context options
 const OPT_PRESERVE_WS = 1, OPT_PRESERVE_WS_FULL = 2, OPT_OPEN_LEFT = 4
 
-function wsOptionsFor(type, preserveWhitespace) {
-  return (preserveWhitespace ? OPT_PRESERVE_WS : 0) |
-    (preserveWhitespace === "full" || (preserveWhitespace == null && type && type.whitespace == "pre") ? OPT_PRESERVE_WS_FULL : 0)
+function wsOptionsFor(type, preserveWhitespace, base) {
+  if (preserveWhitespace != null) return (preserveWhitespace ? OPT_PRESERVE_WS : 0) |
+    (preserveWhitespace === "full" ? OPT_PRESERVE_WS_FULL : 0)
+  return type && type.whitespace == "pre" ? OPT_PRESERVE_WS | OPT_PRESERVE_WS_FULL : base & ~OPT_OPEN_LEFT
 }
 
 class NodeContext {
@@ -380,7 +381,7 @@ class ParseContext {
     this.options = options
     this.isOpen = open
     let topNode = options.topNode, topContext
-    let topOptions = wsOptionsFor(null, options.preserveWhitespace) | (open ? OPT_OPEN_LEFT : 0)
+    let topOptions = wsOptionsFor(null, options.preserveWhitespace, 0) | (open ? OPT_OPEN_LEFT : 0)
     if (topNode)
       topContext = new NodeContext(topNode.type, topNode.attrs, Mark.none, Mark.none, true,
                                    options.topMatch || topNode.type.contentMatch, topOptions)
@@ -622,7 +623,7 @@ class ParseContext {
     let top = this.top
     top.applyPending(type)
     top.match = top.match && top.match.matchType(type, attrs)
-    let options = preserveWS == null ? top.options & ~OPT_OPEN_LEFT : wsOptionsFor(type, preserveWS)
+    let options = wsOptionsFor(type, preserveWS, top.options)
     if ((top.options & OPT_OPEN_LEFT) && top.content.length == 0) options |= OPT_OPEN_LEFT
     this.nodes.push(new NodeContext(type, attrs, top.activeMarks, top.pendingMarks, solid, null, options))
     this.open++
