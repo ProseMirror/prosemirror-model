@@ -1,3 +1,9 @@
+## 1.16.1 (2021-12-29)
+
+### Bug fixes
+
+Fix a bug in the way whitespace-preservation options were handled in `DOMParser`.
+
 ## 1.16.0 (2021-12-27)
 
 ### New features
