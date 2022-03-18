@@ -376,15 +376,21 @@ export class MarkType {
 //   the way the node is rendered—that should be handled by `toDOM`
 //   and/or styling.
 //
-//   defining:: ?bool
+//   definingAsContext:: ?bool
 //   Determines whether this node is considered an important parent
 //   node during replace operations (such as paste). Non-defining (the
 //   default) nodes get dropped when their entire content is replaced,
 //   whereas defining nodes persist and wrap the inserted content.
-//   Likewise, in _inserted_ content the defining parents of the
-//   content are preserved when possible. Typically,
-//   non-default-paragraph textblock types, and possibly list items,
-//   are marked as defining.
+//
+//   definingForContent:: ?bool
+//   In inserted content the defining parents of the content are
+//   preserved when possible. Typically, non-default-paragraph
+//   textblock types, and possibly list items, are marked as defining.
+//
+//   defining:: ?bool
+//   When enabled, enables both
+//   [`definingAsContext`](#model.NodeSpec.definingAsContext) and
+//   [`definingForContent`](#model.NodeSpec.definingForContent).
 //
 //   isolating:: ?bool
 //   When enabled (default is false), the sides of nodes of this type
