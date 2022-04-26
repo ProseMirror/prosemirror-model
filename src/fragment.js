@@ -34,8 +34,9 @@ export class Fragment {
   }
 
   // :: ((node: Node, pos: number, parent: Node) → ?bool)
-  // Call the given callback for every descendant node. The callback
-  // may return `false` to prevent traversal of a given node's children.
+  // Call the given callback for every descendant node. `pos` will be
+  // relative to the start of the fragment. The callback may return
+  // `false` to prevent traversal of a given node's children.
   descendants(f) {
     this.nodesBetween(0, this.size, f)
   }
