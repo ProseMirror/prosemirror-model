@@ -1,4 +1,6 @@
-export function findDiffStart(a, b, pos) {
+import {Fragment} from "./fragment"
+
+export function findDiffStart(a: Fragment, b: Fragment, pos: number): number | null {
   for (let i = 0;; i++) {
     if (i == a.childCount || i == b.childCount)
       return a.childCount == b.childCount ? null : pos
@@ -9,7 +11,7 @@ export function findDiffStart(a, b, pos) {
     if (!childA.sameMarkup(childB)) return pos
 
     if (childA.isText && childA.text != childB.text) {
-      for (let j = 0; childA.text[j] == childB.text[j]; j++)
+      for (let j = 0; childA.text![j] == childB.text![j]; j++)
         pos++
       return pos
     }
@@ -21,7 +23,7 @@ export function findDiffStart(a, b, pos) {
   }
 }
 
-export function findDiffEnd(a, b, posA, posB) {
+export function findDiffEnd(a: Fragment, b: Fragment, posA: number, posB: number): {a: number, b: number} | null {
   for (let iA = a.childCount, iB = b.childCount;;) {
     if (iA == 0 || iB == 0)
       return iA == iB ? null : {a: posA, b: posB}
@@ -35,8 +37,8 @@ export function findDiffEnd(a, b, posA, posB) {
     if (!childA.sameMarkup(childB)) return {a: posA, b: posB}
 
     if (childA.isText && childA.text != childB.text) {
-      let same = 0, minSize = Math.min(childA.text.length, childB.text.length)
-      while (same < minSize && childA.text[childA.text.length - same - 1] == childB.text[childB.text.length - same - 1]) {
+      let same = 0, minSize = Math.min(childA.text!.length, childB.text!.length)
+      while (same < minSize && childA.text![childA.text!.length - same - 1] == childB.text![childB.text!.length - same - 1]) {
         same++; posA--; posB--
       }
       return {a: posA, b: posB}

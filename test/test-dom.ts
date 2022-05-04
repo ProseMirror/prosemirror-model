@@ -1,26 +1,26 @@
-const {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr,
-       builders} = require("prosemirror-test-builder")
-const ist = require("ist")
-const {DOMParser, DOMSerializer, Slice, Fragment, Schema} = require("..")
+import {schema, eq, doc, blockquote, pre, h1, h2, p, li, ol, ul, em, strong, code, a, br, img, hr,
+        builders} from "prosemirror-test-builder"
+import ist from "ist"
+import {DOMParser, DOMSerializer, Slice, Fragment, Schema, Node as PMNode, Mark,
+        ParseOptions, ParseRule} from "prosemirror-model"
 
-// declare global: window
-let document = typeof window == "undefined" ? (new (require("jsdom").JSDOM)).window.document : window.document
-const xmlDocument = typeof window == "undefined"
-      ? (new (require("jsdom").JSDOM)("<tag/>", {contentType: "application/xml"})).window.document
-      : window.document
+// @ts-ignore
+import {JSDOM} from "jsdom"
+const document = new JSDOM().window.document
+const xmlDocument = new JSDOM("<tag/>", {contentType: "application/xml"}).window.document
 
 const parser = DOMParser.fromSchema(schema)
 const serializer = DOMSerializer.fromSchema(schema)
 
 describe("DOMParser", () => {
   describe("parse", () => {
-    function domFrom(html, document_ = document) {
+    function domFrom(html: string, document_ = document) {
       let dom = document_.createElement("div")
       dom.innerHTML = html
       return dom
     }
 
-    function test(doc, html, document_ = document) {
+    function test(doc: PMNode, html: string, document_ = document) {
       return () => {
         let derivedDOM = document_.createElement("div"), schema = doc.type.schema
         derivedDOM.appendChild(DOMSerializer.fromSchema(schema).serializeFragment(doc.content, {document: document_}))
@@ -36,7 +36,7 @@ describe("DOMParser", () => {
             "<p>hello</p>"))
 
     it("can represent a line break",
-       test(doc(p("hi", br, "there")),
+       test(doc(p("hi", br(), "there")),
             "<p>hi<br/>there</p>"))
 
     it("can represent an image",
@@ -80,7 +80,7 @@ describe("DOMParser", () => {
             "<blockquote><pre><code>some code</code></pre></blockquote><p>and</p>"))
 
     it("supports leaf nodes in marks",
-       test(doc(p(em("hi", br, "x"))),
+       test(doc(p(em("hi", br(), "x"))),
             "<p><em>hi<br>x</em></p>"))
 
     it("doesn't collapse non-breaking spaces",
@@ -95,7 +95,7 @@ describe("DOMParser", () => {
           toDOM() { return ["div", {class: "comment"}, 0] }
         })
       })
-      let b = builders(commentSchema)
+      let b = builders(commentSchema) as any
       test(b.doc(b.paragraph("one"), b.comment(b.paragraph("two"), b.paragraph(b.strong("three"))), b.paragraph("four")),
            "<p>one</p><div class=\"comment\"><p>two</p><p><strong>three</strong></p></div><p>four</p>")()
     })
@@ -107,21 +107,21 @@ describe("DOMParser", () => {
           attrs: { id: { default: null }},
           parseDOM: [{
             tag: "span.comment",
-            getAttrs(dom) { return { id: parseInt(dom.getAttribute('data-id'), 10) } }
+            getAttrs(dom) { return { id: parseInt((dom as HTMLElement).getAttribute('data-id')!, 10) } }
           }],
           excludes: '',
-          toDOM(mark) { return ["span", {class: "comment", "data-id": mark.attrs.id }, 0] }
+          toDOM(mark: Mark) { return ["span", {class: "comment", "data-id": mark.attrs.id }, 0] }
         })
       })
       let b = builders(commentSchema)
       test(b.schema.nodes.doc.createAndFill(undefined, [
-          b.schema.nodes.paragraph.createAndFill(undefined, [
-            b.schema.text('double comment', [
-                b.schema.marks.comment.create({ id: 1 }),
-                b.schema.marks.comment.create({ id: 2 })
-              ])
-          ])
-        ]),
+        b.schema.nodes.paragraph.createAndFill(undefined, [
+          b.schema.text('double comment', [
+            b.schema.marks.comment.create({ id: 1 }),
+            b.schema.marks.comment.create({ id: 2 })
+          ])!
+        ])!
+      ])!,
            "<p><span class=\"comment\" data-id=\"1\"><span class=\"comment\" data-id=\"2\">double comment</span></span></p>")()
     })
 
@@ -134,7 +134,7 @@ describe("DOMParser", () => {
           spanning: false
         })
       })
-      let b = builders(markSchema)
+      let b = builders(markSchema) as any
       test(b.doc(b.paragraph(b.test("a", b.image({src: "x"}), "b"))),
            "<p><test>a</test><test><img src=\"x\"></test><test>b</test></p>")()
     })
@@ -151,7 +151,7 @@ describe("DOMParser", () => {
         },
       })
 
-      let b = builders(xmlnsSchema)
+      let b = builders(xmlnsSchema) as any
       let d = b.doc(b.svg())
       test(d, "<svg><use href=\"#svg-id\"></use></svg>", xmlDocument)()
 
@@ -162,7 +162,7 @@ describe("DOMParser", () => {
       ist(dom.querySelector('use').attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink')
     })
 
-    function recover(html, doc, options) {
+    function recover(html: string, doc: PMNode, options?: ParseOptions) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
@@ -200,7 +200,7 @@ describe("DOMParser", () => {
 
     it("removes whitespace after a hard break",
        recover("<p>hello<br>\n  world</p>",
-               doc(p("hello", br, "world"))))
+               doc(p("hello", br(), "world"))))
 
     it("converts br nodes to newlines when they would otherwise be ignored",
        recover("<pre>foo<br>bar</pre>",
@@ -212,7 +212,7 @@ describe("DOMParser", () => {
 
     it("moves nodes up when they don't fit the current context",
        recover("<div>hello<hr/>bye</div>",
-               doc(p("hello"), hr, p("bye"))))
+               doc(p("hello"), hr(), p("bye"))))
 
     it("doesn't ignore whitespace-only text nodes",
        recover("<p><em>one</em> <strong>two</strong></p>",
@@ -273,7 +273,7 @@ describe("DOMParser", () => {
     it("doesn't ignore whitespace-only nodes in preserveWhitespace full mode",
        recover("<span> </span>x", doc(p(" x")), {preserveWhitespace: "full"}))
 
-    function parse(html, options, doc) {
+    function parse(html: string, options: ParseOptions, doc: PMNode) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
@@ -283,12 +283,12 @@ describe("DOMParser", () => {
     }
 
     it("accepts the topNode option",
-       parse("<li>wow</li><li>such</li>", {topNode: schema.nodes.bullet_list.createAndFill()},
+       parse("<li>wow</li><li>such</li>", {topNode: schema.nodes.bullet_list.createAndFill()!},
              ul(li(p("wow")), li(p("such")))))
 
-    let item = schema.nodes.list_item.createAndFill()
+    let item = schema.nodes.list_item.createAndFill()!
     it("accepts the topMatch option",
-       parse("<ul><li>x</li></ul>", {topNode: item, topMatch: item.contentMatchAt(1)},
+       parse("<ul><li>x</li></ul>", {topNode: item, topMatch: item.contentMatchAt(1)!},
              li(ul(li(p("x"))))))
 
     it("accepts from and to options",
@@ -299,7 +299,7 @@ describe("DOMParser", () => {
        parse("foo   bar", {preserveWhitespace: true},
              doc(p("foo   bar"))))
 
-    function open(html, nodes, openStart, openEnd, options) {
+    function open(html: string, nodes: (string | PMNode)[], openStart: number, openEnd: number, options?: ParseOptions) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
@@ -315,7 +315,7 @@ describe("DOMParser", () => {
        open("foo<p>bar</p>", ["foo", p("bar")], 0, 1))
 
     it("will open all the way to the inner nodes",
-       open("<ul><li>foo</li><li>bar<br></li></ul>", [ul(li(p("foo")), li(p("bar", br)))], 3, 3))
+       open("<ul><li>foo</li><li>bar<br></li></ul>", [ul(li(p("foo")), li(p("bar", br())))], 3, 3))
 
     it("accepts content open to the left",
        open("<li><ul><li>a</li></ul></li>", [li(ul(li(p("a"))))], 4, 4))
@@ -395,11 +395,11 @@ describe("DOMParser", () => {
       ), 1, 1), eq)
     })
 
-    function find(html, doc) {
+    function find(html: string, doc: PMNode) {
       return () => {
         let dom = document.createElement("div")
         dom.innerHTML = html
-        let tag = dom.querySelector("var"), prev = tag.previousSibling, next = tag.nextSibling, pos
+        let tag = dom.querySelector("var"), prev = tag.previousSibling!, next = tag.nextSibling, pos
         if (prev && next && prev.nodeType == 3 && next.nodeType == 3) {
           pos = {node: prev, offset: prev.nodeValue.length}
           prev.nodeValue += next.nodeValue
@@ -412,7 +412,7 @@ describe("DOMParser", () => {
           findPositions: [pos]
         })
         ist(result, doc, eq)
-        ist(pos.pos, doc.tag.a)
+        ist((pos as any).pos, (doc as any).tag.a)
       }
     }
 
@@ -450,66 +450,68 @@ describe("DOMParser", () => {
        test(quoteSchema.node("blockquote", null, quoteSchema.node("paragraph", null, quoteSchema.text("hello"))),
             "<p>hello</p>"))
 
-    function contextParser(context) {
-      return new DOMParser(schema, [{tag: "foo", node: "horizontal_rule", context}].concat(DOMParser.schemaRules(schema)))
+    function contextParser(context: string) {
+      return new DOMParser(schema, [{tag: "foo", node: "horizontal_rule", context} as ParseRule]
+                                     .concat(DOMParser.schemaRules(schema) as ParseRule[]))
     }
 
     it("recognizes context restrictions", () => {
       ist(contextParser("blockquote/").parse(domFrom("<foo></foo><blockquote><foo></foo><p><foo></foo></p></blockquote>")),
-          doc(blockquote(hr, p())), eq)
+          doc(blockquote(hr(), p())), eq)
     })
 
     it("accepts group names in contexts", () => {
       ist(contextParser("block/").parse(domFrom("<foo></foo><blockquote><foo></foo><p></p></blockquote>")),
-          doc(blockquote(hr, p())), eq)
+          doc(blockquote(hr(), p())), eq)
     })
 
     it("understands nested context restrictions", () => {
       ist(contextParser("blockquote/ordered_list//")
           .parse(domFrom("<foo></foo><blockquote><foo></foo><ol><li><p>a</p><foo></foo></li></ol></blockquote>")),
-          doc(blockquote(ol(li(p("a"), hr)))), eq)
+          doc(blockquote(ol(li(p("a"), hr())))), eq)
     })
 
     it("understands double slashes in context restrictions", () => {
       ist(contextParser("blockquote//list_item/")
           .parse(domFrom("<foo></foo><blockquote><foo></foo><ol><foo></foo><li><p>a</p><foo></foo></li></ol></blockquote>")),
-          doc(blockquote(ol(li(p("a"), hr)))), eq)
+          doc(blockquote(ol(li(p("a"), hr())))), eq)
     })
 
     it("understands pipes in context restrictions", () => {
       ist(contextParser("list_item/|blockquote/")
           .parse(domFrom("<foo></foo><blockquote><p></p><foo></foo></blockquote><ol><li><p>a</p><foo></foo></li></ol>")),
-          doc(blockquote(p(), hr), ol(li(p("a"), hr))), eq)
+          doc(blockquote(p(), hr()), ol(li(p("a"), hr()))), eq)
     })
 
     it("uses the passed context", () => {
-      let cxDoc = doc(blockquote("<a>", hr))
+      let cxDoc = doc(blockquote("<a>", hr()))
       ist(contextParser("doc//blockquote/").parse(domFrom("<blockquote><foo></foo></blockquote>"), {
         topNode: blockquote(),
-        context: cxDoc.resolve(cxDoc.tag.a)
-      }), blockquote(blockquote(hr)), eq)
+        context: cxDoc.resolve((cxDoc as any).tag.a)
+      }), blockquote(blockquote(hr())), eq)
     })
 
     it("uses the passed context when parsing a slice", () => {
-      let cxDoc = doc(blockquote("<a>", hr))
+      let cxDoc = doc(blockquote("<a>", hr()))
       ist(contextParser("doc//blockquote/").parseSlice(domFrom("<foo></foo>"), {
-        context: cxDoc.resolve(cxDoc.tag.a)
-      }), new Slice(blockquote(hr).content, 0, 0), eq)
+        context: cxDoc.resolve((cxDoc as any).tag.a)
+      }), new Slice(blockquote(hr()).content, 0, 0), eq)
     })
 
     it("can close parent nodes from a rule", () => {
-      let closeParser = new DOMParser(schema, [{tag: "br", closeParent: true}].concat(DOMParser.schemaRules(schema)))
+      let closeParser = new DOMParser(schema, [{tag: "br", closeParent: true} as ParseRule]
+                                                .concat(DOMParser.schemaRules(schema)))
       ist(closeParser.parse(domFrom("<p>one<br>two</p>")), doc(p("one"), p("two")), eq)
     })
 
     it("supports non-consuming node rules", () => {
-      let parser = new DOMParser(schema, [{tag: "ol", consuming: false, node: "blockquote"}]
+      let parser = new DOMParser(schema, [{tag: "ol", consuming: false, node: "blockquote"} as ParseRule]
                                  .concat(DOMParser.schemaRules(schema)))
       ist(parser.parse(domFrom("<ol><p>one</p></ol>")), doc(blockquote(ol(li(p("one"))))), eq)
     })
 
     it("supports non-consuming style rules", () => {
-      let parser = new DOMParser(schema, [{style: "font-weight", consuming: false, mark: "em"}]
+      let parser = new DOMParser(schema, [{style: "font-weight", consuming: false, mark: "em"} as ParseRule]
                                  .concat(DOMParser.schemaRules(schema)))
       ist(parser.parse(domFrom("<p><span style='font-weight: 800'>one</span></p>")), doc(p(em(strong("one")))), eq)
     })
@@ -542,7 +544,7 @@ describe("DOMParser", () => {
       ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
     })
 
-    function nsParse(doc, namespace) {
+    function nsParse(doc: Node, namespace?: string) {
       let schema = new Schema({
         nodes: {doc: {content: "h*"}, text: {},
                 h: {parseDOM: [{tag: "h", namespace}]}}
@@ -591,7 +593,7 @@ describe("DOMParser", () => {
       let doc = xmlDocument.createElement("doc")
       let h = xmlDocument.createElementNS(null, "h")
       doc.appendChild(h)
-      ist(nsParse(doc, null).childCount, 1)
+      ist(nsParse(doc).childCount, 1)
     })
   })
 })
@@ -600,12 +602,12 @@ describe("DOMSerializer", () => {
   let noEm = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {em: null}))
 
   it("can omit a mark", () => {
-    ist(noEm.serializeNode(p("foo", em("bar"), strong("baz")), {document}).innerHTML,
+    ist((noEm.serializeNode(p("foo", em("bar"), strong("baz")), {document}) as HTMLElement).innerHTML,
         "foobar<strong>baz</strong>")
   })
 
   it("doesn't split other marks for omitted marks", () => {
-    ist(noEm.serializeNode(p("foo", code("bar"), em(code("baz"), "quux"), "xyz"), {document}).innerHTML,
+    ist((noEm.serializeNode(p("foo", code("bar"), em(code("baz"), "quux"), "xyz"), {document}) as HTMLElement).innerHTML,
         "foo<code>barbaz</code>quuxxyz")
   })
 
@@ -613,7 +615,8 @@ describe("DOMSerializer", () => {
     let deepEm = new DOMSerializer(serializer.nodes, Object.assign({}, serializer.marks, {
       em() { return ["em", ["i", {"data-emphasis": true}, 0]] }
     }))
-    ist(deepEm.serializeNode(p(strong("foo", code("bar"), em(code("baz"))), em("quux"), "xyz"), {document}).innerHTML,
+    let node = deepEm.serializeNode(p(strong("foo", code("bar"), em(code("baz"))), em("quux"), "xyz"), {document})
+    ist((node as HTMLElement).innerHTML,
         "<strong>foo<code>bar</code></strong><em><i data-emphasis=\"true\"><strong><code>baz</code></strong>quux</i></em>xyz")
   })
 })

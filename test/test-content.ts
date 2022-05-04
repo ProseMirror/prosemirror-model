@@ -1,31 +1,31 @@
-const {ContentMatch} = require("..")
-const {schema, eq, doc, p, pre, img, br, h1, hr} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {ContentMatch, Node} from "prosemirror-model"
+import {schema, eq, doc, p, pre, img, br, h1, hr} from "prosemirror-test-builder"
+import ist from "ist"
 
-function get(expr) { return ContentMatch.parse(expr, schema.nodes) }
+function get(expr: string) { return ContentMatch.parse(expr, schema.nodes) }
 
-function match(expr, types) {
+function match(expr: string, types: string) {
   let m = get(expr), ts = types ? types.split(" ").map(t => schema.nodes[t]) : []
-  for (let i = 0; m && i < ts.length; i++) m = m.matchType(ts[i])
+  for (let i = 0; m && i < ts.length; i++) m = m.matchType(ts[i])!
   return m && m.validEnd
 }
 
-function valid(expr, types) { ist(match(expr, types)) }
-function invalid(expr, types) { ist(!match(expr, types)) }
+function valid(expr: string, types: string) { ist(match(expr, types)) }
+function invalid(expr: string, types: string) { ist(!match(expr, types)) }
 
-function fill(expr, before, after, result) {
-  let filled = get(expr).matchFragment(before.content).fillBefore(after.content, true)
+function fill(expr: string, before: Node, after: Node, result: Node | null) {
+  let filled = get(expr).matchFragment(before.content)!.fillBefore(after.content, true)
   if (result) ist(filled, result.content, eq)
   else ist(!filled)
 }
 
-function fill3(expr, before, mid, after, left, right) {
+function fill3(expr: string, before: Node, mid: Node, after: Node, left: Node | null, right?: Node) {
   let content = get(expr)
-  let a = content.matchFragment(before.content).fillBefore(mid.content)
-  let b = a && content.matchFragment(before.content.append(a).append(mid.content)).fillBefore(after.content, true)
+  let a = content.matchFragment(before.content)!.fillBefore(mid.content)
+  let b = a && content.matchFragment(before.content.append(a).append(mid.content))!.fillBefore(after.content, true)
   if (left) {
     ist(a, left.content, eq)
-    ist(b, right.content, eq)
+    ist(b, right!.content, eq)
   } else {
     ist(!b)
   }
@@ -85,24 +85,24 @@ describe("ContentMatch", () => {
 
   describe("fillBefore", () => {
     it("returns the empty fragment when things match", () =>
-       fill("paragraph horizontal_rule paragraph", doc(p(), hr), doc(p()), doc()))
+       fill("paragraph horizontal_rule paragraph", doc(p(), hr()), doc(p()), doc()))
 
     it("adds a node when necessary", () =>
-       fill("paragraph horizontal_rule paragraph", doc(p()), doc(p()), doc(hr)))
+       fill("paragraph horizontal_rule paragraph", doc(p()), doc(p()), doc(hr())))
 
-    it("accepts an asterisk across the bound", () => fill("hard_break*", p(br), p(br), p()))
+    it("accepts an asterisk across the bound", () => fill("hard_break*", p(br()), p(br()), p()))
 
-    it("accepts an asterisk only on the left", () => fill("hard_break*", p(br), p(), p()))
+    it("accepts an asterisk only on the left", () => fill("hard_break*", p(br()), p(), p()))
 
-    it("accepts an asterisk only on the right", () => fill("hard_break*", p(), p(br), p()))
+    it("accepts an asterisk only on the right", () => fill("hard_break*", p(), p(br()), p()))
 
     it("accepts an asterisk with no elements", () => fill("hard_break*", p(), p(), p()))
 
-    it("accepts a plus across the bound", () => fill("hard_break+", p(br), p(br), p()))
+    it("accepts a plus across the bound", () => fill("hard_break+", p(br()), p(br()), p()))
 
-    it("adds an element for a content-less plus", () => fill("hard_break+", p(), p(), p(br)))
+    it("adds an element for a content-less plus", () => fill("hard_break+", p(), p(), p(br())))
 
-    it("fails for a mismatched plus", () => fill("hard_break+", p(), p(img), null))
+    it("fails for a mismatched plus", () => fill("hard_break+", p(), p(img()), null))
 
     it("accepts asterisk with content on both sides", () => fill("heading* paragraph*", doc(h1()), doc(p()), doc()))
 
@@ -112,17 +112,17 @@ describe("ContentMatch", () => {
 
     it("accepts plus with no content after", () => fill("heading+ paragraph+", doc(h1()), doc(), doc(p())))
 
-    it("adds elements to match a count", () => fill("hard_break{3}", p(br), p(br), p(br)))
+    it("adds elements to match a count", () => fill("hard_break{3}", p(br()), p(br()), p(br())))
 
-    it("fails when there are too many elements", () => fill("hard_break{3}", p(br, br), p(br, br), null))
+    it("fails when there are too many elements", () => fill("hard_break{3}", p(br(), br()), p(br(), br()), null))
 
     it("adds elements for two counted groups", () => fill("code_block{2} paragraph{2}", doc(pre()), doc(p()), doc(pre(), p())))
 
-    it("doesn't include optional elements", () => fill("heading paragraph? horizontal_rule", doc(h1()), doc(), doc(hr)))
+    it("doesn't include optional elements", () => fill("heading paragraph? horizontal_rule", doc(h1()), doc(), doc(hr())))
 
     it("completes a sequence", () =>
        fill3("paragraph horizontal_rule paragraph horizontal_rule paragraph",
-             doc(p()), doc(p()), doc(p()), doc(hr), doc(hr)))
+             doc(p()), doc(p()), doc(p()), doc(hr()), doc(hr())))
 
     it("accepts plus across two bounds", () =>
        fill3("code_block+ paragraph+",

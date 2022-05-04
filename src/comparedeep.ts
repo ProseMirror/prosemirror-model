@@ -1,4 +1,4 @@
-export function compareDeep(a, b) {
+export function compareDeep(a: any, b: any) {
   if (a === b) return true
   if (!(a && typeof a == "object") ||
       !(b && typeof b == "object")) return false

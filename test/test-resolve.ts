@@ -1,5 +1,5 @@
-const {doc, p, em, blockquote} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {doc, p, em, blockquote} from "prosemirror-test-builder"
+import ist from "ist"
 
 const testDoc = doc(p("ab"), blockquote(p(em("cd"), "ef")))
 const _doc = {node: testDoc, start: 0, end: 12}
@@ -10,7 +10,7 @@ const _p2 = {node: _blk.node.child(0), start: 6, end: 10}
 describe("Node", () => {
   describe("resolve", () => {
     it("should reflect the document structure", () => {
-      let expected = {
+      let expected: {[pos: number]: any} = {
         0: [_doc, 0, null, _p1.node],
         1: [_doc, _p1, 0, null, "ab"],
         2: [_doc, _p1, 1, "a", "b"],
@@ -39,9 +39,9 @@ describe("Node", () => {
           }
         }
         ist($pos.parentOffset, exp[exp.length - 3])
-        let before = $pos.nodeBefore, eBefore = exp[exp.length - 2]
+        let before = $pos.nodeBefore!, eBefore = exp[exp.length - 2]
         ist(typeof eBefore == "string" ? before.textContent : before, eBefore)
-        let after = $pos.nodeAfter, eAfter = exp[exp.length - 1]
+        let after = $pos.nodeAfter!, eAfter = exp[exp.length - 1]
         ist(typeof eAfter == "string" ? after.textContent : after, eAfter)
       }
     })

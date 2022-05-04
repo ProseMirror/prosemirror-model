@@ -1,10 +1,11 @@
-const {doc, blockquote, h1, h2, p, em, strong} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {doc, blockquote, h1, h2, p, em, strong} from "prosemirror-test-builder"
+import {Node} from "prosemirror-model"
+import ist from "ist"
 
 describe("Fragment", () => {
   describe("findDiffStart", () => {
-    function start(a, b) {
-      ist(a.content.findDiffStart(b.content), a.tag.a)
+    function start(a: Node, b: Node) {
+      ist(a.content.findDiffStart(b.content), (a as any).tag.a)
     }
 
     it("returns null for identical nodes", () =>
@@ -45,9 +46,9 @@ describe("Fragment", () => {
   })
 
   describe("findDiffEnd", () => {
-    function end(a, b) {
+    function end(a: Node, b: Node) {
       let found = a.content.findDiffEnd(b.content)
-      ist(found && found.a, a.tag.a)
+      ist(found && found.a, (a as any).tag.a)
     }
 
     it("returns null when there is no difference", () =>

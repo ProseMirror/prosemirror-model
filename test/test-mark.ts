@@ -1,10 +1,10 @@
-const {Mark, Schema} = require("..")
-const {schema, doc, p, em, a} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {Mark, Schema, Node} from "prosemirror-model"
+import {schema, doc, p, em, a} from "prosemirror-test-builder"
+import ist from "ist"
 
 let em_ = schema.mark("em")
 let strong = schema.mark("strong")
-let link = (href, title) => schema.mark("link", {href, title})
+let link = (href: string, title?: string) => schema.mark("link", {href, title})
 let code = schema.mark("code")
 
 let customSchema = new Schema({
@@ -120,8 +120,8 @@ describe("Mark", () => {
   })
 
   describe("ResolvedPos.marks", () => {
-    function isAt(doc, mark, result) {
-      ist(mark.isInSet(doc.resolve(doc.tag.a).marks()), result)
+    function isAt(doc: Node, mark: Mark, result: boolean) {
+      ist(mark.isInSet(doc.resolve((doc as any).tag.a).marks()), result)
     }
 
     it("recognizes a mark exists inside marked text", () =>

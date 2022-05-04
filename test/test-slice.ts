@@ -1,10 +1,11 @@
-const {doc, p, li, ul, em, a, blockquote} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {doc, p, li, ul, em, a, blockquote} from "prosemirror-test-builder"
+import {Node} from "prosemirror-model"
+import ist from "ist"
 
 describe("Node", () => {
   describe("slice", () => {
-    function t(doc, expect, openStart, openEnd) {
-      let slice = doc.slice(doc.tag.a || 0, doc.tag.b)
+    function t(doc: Node, expect: Node, openStart: number, openEnd: number) {
+      let slice = doc.slice((doc as any).tag.a || 0, (doc as any).tag.b)
       ist(slice.content.eq(expect.content))
       ist(slice.openStart, openStart)
       ist(slice.openEnd, openEnd)
@@ -76,7 +77,7 @@ describe("Node", () => {
 
     it("can include parents", () => {
       let d = doc(blockquote(p("fo<a>o"), p("bar<b>")))
-      let slice = d.slice(d.tag.a, d.tag.b, true)
+      let slice = d.slice((d as any).tag.a, (d as any).tag.b, true)
       ist(slice.toString(), '<blockquote(paragraph("o"), paragraph("bar"))>(2,2)')
     })
   })

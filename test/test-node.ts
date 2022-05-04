@@ -1,6 +1,6 @@
-const ist = require("ist")
-const {Fragment, Schema} = require("..")
-const {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} = require("prosemirror-test-builder")
+import ist from "ist"
+import {Fragment, Schema, Node} from "prosemirror-model"
+import {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} from "prosemirror-test-builder"
 
 let customSchema = new Schema({
   nodes: {
@@ -19,7 +19,7 @@ describe("Node", () => {
     })
 
     it("shows inline children", () => {
-      ist(doc(p("foo", img, br, "bar")).toString(),
+      ist(doc(p("foo", img(), br(), "bar")).toString(),
           'doc(paragraph("foo", image, hard_break, "bar"))')
     })
 
@@ -30,8 +30,8 @@ describe("Node", () => {
   })
 
   describe("cut", () => {
-    function cut(doc, cut) {
-      ist(doc.cut(doc.tag.a || 0, doc.tag.b), cut, eq)
+    function cut(doc: Node, cut: Node) {
+      ist(doc.cut((doc as any).tag.a || 0, (doc as any).tag.b), cut, eq)
     }
 
     it("extracts a full block", () =>
@@ -55,17 +55,17 @@ describe("Node", () => {
            doc(blockquote(p("bar")))))
 
     it("preserves marks", () =>
-       cut(doc(p("foo", em("ba<a>r", img, strong("baz"), br), "qu<b>ux", code("xyz"))),
-           doc(p(em("r", img, strong("baz"), br), "qu"))))
+       cut(doc(p("foo", em("ba<a>r", img(), strong("baz"), br()), "qu<b>ux", code("xyz"))),
+           doc(p(em("r", img(), strong("baz"), br()), "qu"))))
   })
 
   describe("between", () => {
-    function between(doc, ...nodes) {
+    function between(doc: Node, ...nodes: string[]) {
       let i = 0
-      doc.nodesBetween(doc.tag.a, doc.tag.b, (node, pos) => {
+      doc.nodesBetween((doc as any).tag.a, (doc as any).tag.b, (node, pos) => {
         if (i == nodes.length)
           throw new Error("More nodes iterated than listed (" + node.type.name + ")")
-        let compare = node.isText ? node.text : node.type.name
+        let compare = node.isText ? node.text! : node.type.name
         if (compare != nodes[i++])
           throw new Error("Expected " + JSON.stringify(nodes[i - 1]) + ", got " + JSON.stringify(compare))
         if (!node.isText && doc.nodeAt(pos) != node)
@@ -82,20 +82,17 @@ describe("Node", () => {
                "blockquote", "bullet_list", "list_item", "paragraph", "foo", "paragraph", "b"))
 
     it("iterates over inline nodes", () =>
-       between(doc(p(em("x"), "f<a>oo", em("bar", img, strong("baz"), br), "quux", code("xy<b>z"))),
+       between(doc(p(em("x"), "f<a>oo", em("bar", img(), strong("baz"), br()), "quux", code("xy<b>z"))),
                "paragraph", "foo", "bar", "image", "baz", "hard_break", "quux", "xyz"))
   })
 
   describe("textBetween", () => {
     it("works when passing a custom function as leafText", () => {
-      const d = doc(p("foo", img, br))
+      const d = doc(p("foo", img(), br()))
       ist(d.textBetween(0, d.content.size, '', (node) => {
-        if (node.type.name === 'image') {
-          return '<image>'
-        }
-        if (node.type.name === 'hard_break') {
-          return '<break>'
-        }
+        if (node.type.name === 'image') return '<image>'
+        if (node.type.name === 'hard_break') return '<break>'
+        return ""
       }), 'foo<image><break>')
     })
   })
@@ -116,7 +113,7 @@ describe("Node", () => {
   })
 
   describe("from", () => {
-    function from(arg, expect) {
+    function from(arg: Node | Node[] | Fragment | null, expect: Node) {
       ist(expect.copy(Fragment.from(arg)), expect, eq)
     }
 
@@ -137,7 +134,7 @@ describe("Node", () => {
   })
 
   describe("toJSON", () => {
-    function roundTrip(doc) {
+    function roundTrip(doc: Node) {
       ist(schema.nodeFromJSON(doc.toJSON()), doc, eq)
     }
 
@@ -145,11 +142,11 @@ describe("Node", () => {
 
     it("can serialize marks", () => roundTrip(doc(p("foo", em("bar", strong("baz")), " ", a("x")))))
 
-    it("can serialize inline leaf nodes", () => roundTrip(doc(p("foo", em(img, "bar")))))
+    it("can serialize inline leaf nodes", () => roundTrip(doc(p("foo", em(img(), "bar")))))
 
-    it("can serialize block leaf nodes", () => roundTrip(doc(p("a"), hr, p("b"), p())))
+    it("can serialize block leaf nodes", () => roundTrip(doc(p("a"), hr(), p("b"), p())))
 
-    it("can serialize nested nodes", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img))), p("c")), p("d"))))
+    it("can serialize nested nodes", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img()))), p("c")), p("d"))))
   })
 
   describe("toString", () => {

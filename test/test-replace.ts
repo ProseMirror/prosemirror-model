@@ -1,12 +1,12 @@
-const {Slice} = require("..")
-const {eq, doc, blockquote, h1, p, ul, li} = require("prosemirror-test-builder")
-const ist = require("ist")
+import {Slice, Node} from "prosemirror-model"
+import {eq, doc, blockquote, h1, p, ul, li} from "prosemirror-test-builder"
+import ist from "ist"
 
 describe("Node", () => {
   describe("replace", () => {
-    function rpl(doc, insert, expected) {
-      let slice = insert ? insert.slice(insert.tag.a, insert.tag.b) : Slice.empty
-      ist(doc.replace(doc.tag.a, doc.tag.b, slice), expected, eq)
+    function rpl(doc: Node, insert: Node | null, expected: Node) {
+      let slice = insert ? insert.slice((insert as any).tag.a, (insert as any).tag.b) : Slice.empty
+      ist(doc.replace((doc as any).tag.a, (doc as any).tag.b, slice), expected, eq)
     }
 
     it("joins on delete", () =>
@@ -85,9 +85,9 @@ describe("Node", () => {
            doc(p("foo<a>baz"), "<b>"),
            doc(h1("baz"))))
 
-    function bad(doc, insert, pattern) {
-      let slice = insert ? insert.slice(insert.tag.a, insert.tag.b) : Slice.empty
-      ist.throws(() => doc.replace(doc.tag.a, doc.tag.b, slice), new RegExp(pattern, "i"))
+    function bad(doc: Node, insert: Node | null, pattern: string) {
+      let slice = insert ? insert.slice((insert as any).tag.a, (insert as any).tag.b) : Slice.empty
+      ist.throws(() => doc.replace((doc as any).tag.a, (doc as any).tag.b, slice), new RegExp(pattern, "i"))
     }
 
     it("doesn't allow the left side to be too deep", () =>
