@@ -202,7 +202,8 @@ export class DOMParser {
       let rule = this.tags[i]
       if (matches(dom, rule.tag) &&
           (rule.namespace === undefined || dom.namespaceURI == rule.namespace) &&
-          (!rule.context || context.matchesContext(rule.context))) {
+          (!rule.context || context.matchesContext(rule.context)) &&
+          (!rule.node || context.matchesType(this.schema.nodes[rule.node]))) {
         if (rule.getAttrs) {
           let result = rule.getAttrs(dom)
           if (result === false) continue
@@ -726,6 +727,24 @@ class ParseContext {
       return true
     }
     return match(parts.length - 1, this.open)
+  }
+  
+  // : (NodeType) → bool
+  // Determines whether the given node type
+  // matches this context.
+  matchesType(type) {
+    let option = this.options.context
+    let useRoot = !this.isOpen && (!option || option.parent.type == this.nodes[0].type)
+    let minDepth = -(option ? option.depth + 1 : 0) + (useRoot ? 0 : 1)
+    let match = (depth) => {
+      let next = depth > 0 || (depth == 0 && useRoot) ? this.nodes[depth]
+          : option && depth >= minDepth ? option.node(depth - minDepth)
+          : null
+      if (!next) return false
+      if (next.match ? next.match.matchType(type) : next.type.contentMatch.matchType(type)) return true;
+      return match(depth - 1)
+    }
+    return match(this.open)
   }
 
   textblockFromContext() {
