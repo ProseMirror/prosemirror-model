@@ -1,1 +1,1 @@
-export type DOMNode = Node
+export type DOMNode = InstanceType<typeof window.Node>
