@@ -557,7 +557,7 @@ class ParseContext {
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM)
     }
-    if (sync) { this.sync(startIn); this.open-- }
+    if (sync && this.sync(startIn)) this.open--
     if (mark) this.removePendingMark(mark, startIn)
   }
 
@@ -657,8 +657,9 @@ class ParseContext {
   sync(to: NodeContext) {
     for (let i = this.open; i >= 0; i--) if (this.nodes[i] == to) {
       this.open = i
-      return
+      return true
     }
+    return false
   }
 
   get currentPos() {
