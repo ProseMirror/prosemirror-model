@@ -1,3 +1,13 @@
+## 1.17.0 (2022-05-30)
+
+### Bug fixes
+
+Fix a crash in DOM parsing.
+
+### New features
+
+Include TypeScript type declarations.
+
 ## 1.16.1 (2021-12-29)
 
 ### Bug fixes
