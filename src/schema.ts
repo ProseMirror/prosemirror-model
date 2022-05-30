@@ -222,11 +222,15 @@ export class NodeType {
 
 class Attribute {
   hasDefault: boolean
-  default: any
+  _default: any
+
+  get default() {
+    return typeof this._default === 'function' ? this._default() : this._default
+  }
 
   constructor(options: AttributeSpec) {
     this.hasDefault = Object.prototype.hasOwnProperty.call(options, "default")
-    this.default = options.default
+    this._default = options.default
   }
 
   get isRequired() {
