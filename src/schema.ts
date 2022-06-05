@@ -205,7 +205,7 @@ export class NodeType {
   }
 
   /// @internal
-  static compile(nodes: OrderedMap<NodeSpec>, schema: Schema): {readonly [name: string]: NodeType} {
+  static compile<N extends string = any>(nodes: OrderedMap<NodeSpec>, schema: Schema<N>): {readonly [name in N]: NodeType} {
     let result = Object.create(null)
     nodes.forEach((name, spec) => result[name] = new NodeType(name, schema, spec))
 
@@ -305,20 +305,20 @@ export class MarkType {
 
 /// An object describing a schema, as passed to the [`Schema`](#model.Schema)
 /// constructor.
-export interface SchemaSpec {
+export interface SchemaSpec<N extends string = any, M extends string = any> {
   /// The node types in this schema. Maps names to
   /// [`NodeSpec`](#model.NodeSpec) objects that describe the node type
   /// associated with that name. Their order is significant—it
   /// determines which [parse rules](#model.NodeSpec.parseDOM) take
   /// precedence by default, and which nodes come first in a given
   /// [group](#model.NodeSpec.group).
-  nodes: {[name: string]: NodeSpec} | OrderedMap<NodeSpec>,
+  nodes: {[name in N]: NodeSpec} | OrderedMap<NodeSpec>,
 
   /// The mark types that exist in this schema. The order in which they
   /// are provided determines the order in which [mark
   /// sets](#model.Mark.addToSet) are sorted and in which [parse
   /// rules](#model.MarkSpec.parseDOM) are tried.
-  marks?: {[name: string]: MarkSpec} | OrderedMap<MarkSpec>
+  marks?: {[name in M]: MarkSpec} | OrderedMap<MarkSpec>
 
   /// The name of the default top-level node for the schema. Defaults
   /// to `"doc"`.
@@ -495,7 +495,7 @@ export interface AttributeSpec {
 /// type](#model.MarkType) objects for the nodes and marks that may
 /// occur in conforming documents, and provides functionality for
 /// creating and deserializing such documents.
-export class Schema {
+export class Schema<N extends string = any, M extends string = any> {
   /// The [spec](#model.SchemaSpec) on which the schema is based,
   /// with the added guarantee that its `nodes` and `marks`
   /// properties are
@@ -508,13 +508,13 @@ export class Schema {
   }
 
   /// An object mapping the schema's node names to node type objects.
-  nodes: {readonly [name: string]: NodeType}
+  nodes: {readonly [name in N]: NodeType} & {readonly [key: string]: NodeType}
 
   /// A map from mark names to mark type objects.
-  marks: {readonly [name: string]: MarkType}
+  marks: {readonly [name in M]: MarkType} & {readonly [key: string]: MarkType}
 
   /// Construct a schema from a schema [specification](#model.SchemaSpec).
-  constructor(spec: SchemaSpec) {
+  constructor(spec: SchemaSpec<N, M>) {
     this.spec = {
       nodes: OrderedMap.from(spec.nodes),
       marks: OrderedMap.from(spec.marks || {}),
