@@ -85,12 +85,17 @@ export class Node {
 
   /// Concatenates all the text nodes found in this fragment and its
   /// children.
-  get textContent() { return this.textBetween(0, this.content.size, "") }
+  get textContent() {
+    return (this.isLeaf && this.type.spec.toText)
+      ? this.type.spec.toText(this)
+      : this.textBetween(0, this.content.size, "")
+  }
 
   /// Get all text between positions `from` and `to`. When
   /// `blockSeparator` is given, it will be inserted to separate text
-  /// from different block nodes. When `leafText` is given, it'll be
-  /// inserted for every non-text leaf node encountered.
+  /// from different block nodes. If `leafText` is given, it'll be
+  /// inserted for every non-text leaf node encountered, otherwise
+  /// [`toText`](#model.NodeSpec^toText) will be used.
   textBetween(from: number, to: number, blockSeparator?: string | null,
               leafText?: null | string | ((leafNode: Node) => string)) {
     return this.content.textBetween(from, to, blockSeparator, leafText)

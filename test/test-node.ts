@@ -5,8 +5,13 @@ import {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img
 let customSchema = new Schema({
   nodes: {
     doc: {content: "paragraph+"},
-    paragraph: {content: "text*"},
+    paragraph: {content: "(text|contact)*"},
     text: { toDebugString() { return 'custom_text' } },
+    contact: {
+      inline: true,
+      attrs: { name: {}, email: {} },
+      toText(node: Node) { return `${node.attrs.name} <${node.attrs.email}>` }
+    },
     hard_break: { toDebugString() { return 'custom_hard_break' } }
   },
 })
@@ -95,6 +100,26 @@ describe("Node", () => {
         return ""
       }), 'foo<image><break>')
     })
+
+    it("works with toText", () => {
+      const d = customSchema.nodes.doc.createChecked({}, [
+        customSchema.nodes.paragraph.createChecked({}, [
+          customSchema.text("Hello "),
+          customSchema.nodes.contact.createChecked({ name: "Alice", email: "alice@example.com" })
+        ])
+      ])
+      ist(d.textBetween(0, d.content.size), 'Hello Alice <alice@example.com>')
+    })
+
+    it("should ignore toText when passing a custom leafText", () => {
+      const d = customSchema.nodes.doc.createChecked({}, [
+        customSchema.nodes.paragraph.createChecked({}, [
+          customSchema.text("Hello "),
+          customSchema.nodes.contact.createChecked({ name: "Alice", email: "alice@example.com" })
+        ])
+      ])
+      ist(d.textBetween(0, d.content.size, '', '<anonymous>'), 'Hello <anonymous>')
+    })
   })
 
   describe("textContent", () => {
@@ -164,5 +189,15 @@ describe("Node", () => {
         "<custom_text, custom_hard_break, custom_text>"
       )
     )
+  })
+
+  describe("toText", () => {
+    it("should custom the textContent of a leaf node", () => {
+      let contact = customSchema.nodes.contact.createChecked({ name: "Bob", email: "bob@example.com" })
+      let paragraph = customSchema.nodes.paragraph.createChecked({}, [customSchema.text('Hello '), contact])
+
+      ist(contact.textContent, "Bob <bob@example.com>")
+      ist(paragraph.textContent, "Hello Bob <bob@example.com>")
+    })
   })
 })
