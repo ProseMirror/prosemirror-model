@@ -431,7 +431,7 @@ export interface NodeSpec {
   /// this type should be serialized to a string (as used by
   /// [`Node.textBetween`](#model.Node^textBetween) and
   /// [`Node.textContent`](#model.Node^textContent)).
-  toText?: (node: Node) => string
+  leafText?: (node: Node) => string
 
   /// Node specs may include arbitrary properties that can be read by
   /// other code via [`NodeType.spec`](#model.NodeType.spec).

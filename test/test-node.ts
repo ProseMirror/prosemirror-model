@@ -10,7 +10,7 @@ let customSchema = new Schema({
     contact: {
       inline: true,
       attrs: { name: {}, email: {} },
-      toText(node: Node) { return `${node.attrs.name} <${node.attrs.email}>` }
+      leafText(node: Node) { return `${node.attrs.name} <${node.attrs.email}>` }
     },
     hard_break: { toDebugString() { return 'custom_hard_break' } }
   },
@@ -101,7 +101,7 @@ describe("Node", () => {
       }), 'foo<image><break>')
     })
 
-    it("works with toText", () => {
+    it("works with leafText", () => {
       const d = customSchema.nodes.doc.createChecked({}, [
         customSchema.nodes.paragraph.createChecked({}, [
           customSchema.text("Hello "),
@@ -111,7 +111,7 @@ describe("Node", () => {
       ist(d.textBetween(0, d.content.size), 'Hello Alice <alice@example.com>')
     })
 
-    it("should ignore toText when passing a custom leafText", () => {
+    it("should ignore leafText when passing a custom leafText", () => {
       const d = customSchema.nodes.doc.createChecked({}, [
         customSchema.nodes.paragraph.createChecked({}, [
           customSchema.text("Hello "),
@@ -191,7 +191,7 @@ describe("Node", () => {
     )
   })
 
-  describe("toText", () => {
+  describe("leafText", () => {
     it("should custom the textContent of a leaf node", () => {
       let contact = customSchema.nodes.contact.createChecked({ name: "Bob", email: "bob@example.com" })
       let paragraph = customSchema.nodes.paragraph.createChecked({}, [customSchema.text('Hello '), contact])

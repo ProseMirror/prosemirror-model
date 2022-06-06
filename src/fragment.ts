@@ -60,8 +60,8 @@ export class Fragment {
       } else if (node.isLeaf) {
         if (leafText) {
           text += typeof leafText === "function" ? leafText(node) : leafText;
-        } else if (node.type.spec.toText) {
-          text += node.type.spec.toText(node);
+        } else if (node.type.spec.leafText) {
+          text += node.type.spec.leafText(node);
         }
         separated = !blockSeparator;
       } else if (!separated && node.isBlock) {
