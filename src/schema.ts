@@ -427,6 +427,12 @@ export interface NodeSpec {
   /// to a string representation for debugging (e.g. in error messages).
   toDebugString?: (node: Node) => string
 
+  /// Defines the default way a [leaf node](#model.NodeType.isLeaf) of
+  /// this type should be serialized to a string (as used by
+  /// [`Node.textBetween`](#model.Node^textBetween) and
+  /// [`Node.textContent`](#model.Node^textContent)).
+  leafText?: (node: Node) => string
+
   /// Node specs may include arbitrary properties that can be read by
   /// other code via [`NodeType.spec`](#model.NodeType.spec).
   [key: string]: any
