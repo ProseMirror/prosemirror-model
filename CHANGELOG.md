@@ -1,3 +1,11 @@
+## 1.18.0 (2022-06-07)
+
+### New features
+
+Node specs for leaf nodes now support a property `leafText` which, when given, will be used by `textContent` and `textBetween` to serialize the node.
+
+Add optional type parameters to `Schema` for the node and mark names. Clarify Schema type parameters
+
 ## 1.17.0 (2022-05-30)
 
 ### Bug fixes
