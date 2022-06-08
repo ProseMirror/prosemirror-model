@@ -598,13 +598,13 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
 
   /// Deserialize a node from its JSON representation. This method is
   /// bound.
-  nodeFromJSON(json: any) {
+  nodeFromJSON(json: any): Node {
     return Node.fromJSON(this, json)
   }
 
   /// Deserialize a mark from its JSON representation. This method is
   /// bound.
-  markFromJSON(json: any) {
+  markFromJSON(json: any): Mark {
     return Mark.fromJSON(this, json)
   }
 
