@@ -116,7 +116,8 @@ export class NodeType {
     return false
   }
 
-  /// @internal
+  /// Indicates whether this node allows some of the same content as
+  /// the given node type.
   compatibleContent(other: NodeType) {
     return this == other || this.contentMatch.compatible(other.contentMatch)
   }
