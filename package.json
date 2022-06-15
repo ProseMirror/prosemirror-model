@@ -24,7 +24,7 @@
     "url": "git://github.com/prosemirror/prosemirror-model.git"
   },
   "dependencies": {
-    "orderedmap": "^1.1.0"
+    "orderedmap": "^2.0.0"
   },
   "devDependencies": {
     "@prosemirror/buildhelper": "^0.1.5",
