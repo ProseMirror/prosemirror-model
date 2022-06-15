@@ -1,3 +1,9 @@
+## 1.18.1 (2022-06-15)
+
+### Bug fixes
+
+Upgrade to orderedmap 2.0.0 to avoid around a TypeScript compilation issue.
+
 ## 1.18.0 (2022-06-07)
 
 ### New features
