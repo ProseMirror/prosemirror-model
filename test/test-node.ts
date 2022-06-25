@@ -183,7 +183,7 @@ describe("Node", () => {
 
     it("should be respected by Fragment", () =>
       ist(
-        Fragment.fromArray(
+        new Fragment(
           [customSchema.text("hello"), customSchema.nodes.hard_break.createChecked(), customSchema.text("world")]
         ),
         "<custom_text, custom_hard_break, custom_text>"

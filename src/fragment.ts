@@ -3,6 +3,7 @@ import {Node, TextNode} from "./node"
 import {Schema} from "./schema"
 
 /// A fragment represents a node's collection of child nodes.
+/// Text nodes with the same marks are joined together.
 ///
 /// Like nodes, fragments are persistent data structures, and you
 /// should not mutate them or their content. Rather, you create new
@@ -18,9 +19,20 @@ export class Fragment {
     readonly content: readonly Node[],
     size?: number
   ) {
-    this.size = size || 0
-    if (size == null) for (let i = 0; i < content.length; i++)
-      this.size += content[i].nodeSize
+    let joined: Node[] | undefined, contentSize = 0
+    for (let i = 0; i < content.length; i++) {
+      let node = content[i]
+      contentSize += node.nodeSize
+      if (i && node.isText && content[i - 1].sameMarkup(node)) {
+        if (!joined) joined = content.slice(0, i)
+        joined[joined.length - 1] = (node as TextNode)
+                                      .withText((joined[joined.length - 1] as TextNode).text + (node as TextNode).text)
+      } else if (joined) {
+        joined.push(node)
+      }
+    }
+    this.content = joined || content
+    this.size = size || contentSize
   }
 
   /// Invoke a callback for all descendant nodes between the given two
@@ -77,13 +89,7 @@ export class Fragment {
   append(other: Fragment) {
     if (!other.size) return this
     if (!this.size) return other
-    let last = this.lastChild!, first = other.firstChild!, content = this.content.slice(), i = 0
-    if (last.isText && last.sameMarkup(first)) {
-      content[content.length - 1] = (last as TextNode).withText(last.text! + first.text!)
-      i = 1
-    }
-    for (; i < other.content.length; i++) content.push(other.content[i])
-    return new Fragment(content, this.size + other.size)
+    return new Fragment(this.content.concat(other.content), this.size + other.size)
   }
 
   /// Cut out the sub-fragment between the two given positions.
@@ -226,25 +232,6 @@ export class Fragment {
     return new Fragment(value.map(schema.nodeFromJSON))
   }
 
-  /// Build a fragment from an array of nodes. Ensures that adjacent
-  /// text nodes with the same marks are joined together.
-  static fromArray(array: readonly Node[]) {
-    if (!array.length) return Fragment.empty
-    let joined: Node[] | undefined, size = 0
-    for (let i = 0; i < array.length; i++) {
-      let node = array[i]
-      size += node.nodeSize
-      if (i && node.isText && array[i - 1].sameMarkup(node)) {
-        if (!joined) joined = array.slice(0, i)
-        joined[joined.length - 1] = (node as TextNode)
-                                      .withText((joined[joined.length - 1] as TextNode).text + (node as TextNode).text)
-      } else if (joined) {
-        joined.push(node)
-      }
-    }
-    return new Fragment(joined || array, size)
-  }
-
   /// Create a fragment from something that can be interpreted as a
   /// set of nodes. For `null`, it returns the empty fragment. For a
   /// fragment, the fragment itself. For a node or array of nodes, a
@@ -252,7 +239,7 @@ export class Fragment {
   static from(nodes?: Fragment | Node | readonly Node[] | null) {
     if (!nodes) return Fragment.empty
     if (nodes instanceof Fragment) return nodes
-    if (Array.isArray(nodes)) return this.fromArray(nodes)
+    if (Array.isArray(nodes)) return new Fragment(array)
     if ((nodes as Node).attrs) return new Fragment([nodes as Node], (nodes as Node).nodeSize)
     throw new RangeError("Can not convert " + nodes + " to a Fragment" +
       ((nodes as any).nodesBetween ? " (looks like multiple versions of prosemirror-model were loaded)" : ""))
