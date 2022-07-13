@@ -180,8 +180,7 @@ function addRange($start: ResolvedPos | null, $end: ResolvedPos | null, depth: n
 }
 
 function close(node: Node, content: Fragment) {
-  if (!node.type.validContent(content))
-    throw new ReplaceError("Invalid content for node " + node.type.name)
+  node.type.checkContent(content)
   return node.copy(content)
 }
 

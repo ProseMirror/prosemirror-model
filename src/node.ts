@@ -297,8 +297,7 @@ export class Node {
   /// Check whether this node and its descendants conform to the
   /// schema, and raise error when they do not.
   check() {
-    if (!this.type.validContent(this.content))
-      throw new RangeError(`Invalid content for node ${this.type.name}: ${this.content.toString().slice(0, 50)}`)
+    this.type.checkContent(this.content)
     let copy = Mark.none
     for (let i = 0; i < this.marks.length; i++) copy = this.marks[i].addToSet(copy)
     if (!Mark.sameSet(copy, this.marks))
