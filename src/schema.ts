@@ -144,8 +144,7 @@ export class NodeType {
   /// if it doesn't match.
   createChecked(attrs: Attrs | null = null, content?: Fragment | Node | readonly Node[] | null, marks?: readonly Mark[]) {
     content = Fragment.from(content)
-    if (!this.validContent(content))
-      throw new RangeError("Invalid content for node " + this.name)
+    this.checkContent(content)
     return new Node(this, this.computeAttrs(attrs), content, Mark.setFrom(marks))
   }
 
@@ -177,6 +176,14 @@ export class NodeType {
     for (let i = 0; i < content.childCount; i++)
       if (!this.allowsMarks(content.child(i).marks)) return false
     return true
+  }
+
+  /// Throws a RangeError if the given fragment is not valid content for this
+  /// node type.
+  /// @internal
+  checkContent(content: Fragment) {
+    if (!this.validContent(content))
+      throw new RangeError(`Invalid content for node ${this.name}: ${content.toString().slice(0, 50)}`)
   }
 
   /// Check whether the given mark type is allowed in this node.
