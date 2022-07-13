@@ -20,7 +20,7 @@ import {DOMNode} from "./dom"
 /// where a node's child nodes should be inserted. If it occurs in an
 /// output spec, it should be the only child element in its parent
 /// node.
-export type DOMOutputSpec = string | DOMNode | {dom: DOMNode, contentDOM?: HTMLElement} | [string, ...any]
+export type DOMOutputSpec = string | DOMNode | {dom: DOMNode, contentDOM?: HTMLElement} | [string, ...any[]]
 
 /// A DOM serializer knows how to convert ProseMirror nodes and
 /// marks of various types to DOM nodes.
