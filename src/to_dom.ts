@@ -137,10 +137,10 @@ export class DOMSerializer {
         else dom.setAttribute(name, attrs[name])
       }
     }
-    for (let i = start; i < (structure as any[]).length; i++) {
+    for (let i = start; i < (structure as readonly any[]).length; i++) {
       let child = (structure as any)[i] as DOMOutputSpec | 0
       if (child === 0) {
-        if (i < (structure as any[]).length - 1 || i > start)
+        if (i < (structure as readonly any[]).length - 1 || i > start)
           throw new RangeError("Content hole must be the only child of its parent node")
         return {dom, contentDOM: dom}
       } else {
