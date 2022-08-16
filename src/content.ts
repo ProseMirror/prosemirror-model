@@ -49,7 +49,7 @@ export class ContentMatch {
 
   /// @internal
   get inlineContent() {
-    return this.next.length && this.next[0].type.isInline
+    return this.next.length != 0 && this.next[0].type.isInline
   }
 
   /// Get the first matching node type at this match position that can
