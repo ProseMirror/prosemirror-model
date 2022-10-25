@@ -26,18 +26,31 @@ export class Fragment {
   /// Invoke a callback for all descendant nodes between the given two
   /// positions (relative to start of this fragment). Doesn't descend
   /// into a node when the callback returns `false`.
-  nodesBetween(from: number, to: number,
-               f: (node: Node, start: number, parent: Node | null, index: number) => boolean | void,
+  nodesBetween<TResult>(from: number, to: number,
+               f: (node: Node, start: number, parent: Node | null, index: number) => boolean | void | TResult,
                nodeStart = 0,
-               parent?: Node) {
+               parent?: Node): void | TResult {
     for (let i = 0, pos = 0; pos < to; i++) {
-      let child = this.content[i], end = pos + child.nodeSize
-      if (end > from && f(child, nodeStart + pos, parent || null, i) !== false && child.content.size) {
+      let child = this.content[i], end = pos + child.nodeSize;
+      // res === undefined || res === null || res === true; then; search children
+      // res === false; then; keep searching siblings, skip children
+      // res === Anything Else; then; stop searching immediately, and return Anything as TResult
+      const res = f(child, nodeStart + pos, parent || null, i);
+
+      if (end > from && child.content.size && (res === undefined || res === null || res === true)) {
         let start = pos + 1
-        child.nodesBetween(Math.max(0, from - start),
+        const cr = child.nodesBetween<TResult>(Math.max(0, from - start),
                            Math.min(child.content.size, to - start),
-                           f, nodeStart + start)
+                           f, nodeStart + start);
+        if (!!cr) {
+          return cr as TResult;
+        }
+      } else if (res !== false) {
+        // If false is returned then skip children and keep searching siblings. If anything else is returned,
+        // then the search will end and the result will be returned.
+        return res as TResult;
       }
+
       pos = end
     }
   }
@@ -45,8 +58,8 @@ export class Fragment {
   /// Call the given callback for every descendant node. `pos` will be
   /// relative to the start of the fragment. The callback may return
   /// `false` to prevent traversal of a given node's children.
-  descendants(f: (node: Node, pos: number, parent: Node | null) => boolean | void) {
-    this.nodesBetween(0, this.size, f)
+  descendants<TResult>(f: (node: Node, pos: number, parent: Node | null) => boolean | void | TResult): void | TResult {
+    return this.nodesBetween(0, this.size, f);
   }
 
   /// Extract the text between `from` and `to`. See the same method on
