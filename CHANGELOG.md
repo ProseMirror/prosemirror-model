@@ -1,3 +1,9 @@
+## 1.18.2 (2022-11-14)
+
+### Bug fixes
+
+Improve DOM parsing of nested block elements mixing block and inline children.
+
 ## 1.18.1 (2022-06-15)
 
 ### Bug fixes
