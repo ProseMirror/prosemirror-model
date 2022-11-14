@@ -478,6 +478,10 @@ class ParseContext {
       else if (rule && (rule.skip as any).nodeType) dom = rule.skip as any as HTMLElement
       let sync, top = this.top, oldNeedsBlock = this.needsBlock
       if (blockTags.hasOwnProperty(name)) {
+        if (top.content.length && top.content[0].isInline && this.open) {
+          this.open--
+          top = this.top
+        }
         sync = true
         if (!top.type) this.needsBlock = true
       } else if (!dom.firstChild) {

@@ -273,6 +273,10 @@ describe("DOMParser", () => {
     it("doesn't ignore whitespace-only nodes in preserveWhitespace full mode",
        recover("<span> </span>x", doc(p(" x")), {preserveWhitespace: "full"}))
 
+    it("closes block with inline content on seeing block-level children",
+       recover("<div><br><div>CCC</div><div>DDD</div><br></div>",
+               doc(p(br()), p("CCC"), p("DDD"), p(br()))))
+
     function parse(html: string, options: ParseOptions, doc: PMNode) {
       return () => {
         let dom = document.createElement("div")
