@@ -532,11 +532,10 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
 
   /// Construct a schema from a schema [specification](#model.SchemaSpec).
   constructor(spec: SchemaSpec<Nodes, Marks>) {
-    this.spec = {
-      nodes: OrderedMap.from(spec.nodes),
-      marks: OrderedMap.from(spec.marks || {}),
-      topNode: spec.topNode
-    }
+    let instanceSpec = this.spec = {} as any
+    for (let prop in spec) instanceSpec[prop] = (spec as any)[prop]
+    instanceSpec.nodes = OrderedMap.from(spec.nodes),
+    instanceSpec.marks = OrderedMap.from(spec.marks || {}),
 
     this.nodes = NodeType.compile(this.spec.nodes, this)
     this.marks = MarkType.compile(this.spec.marks, this)
