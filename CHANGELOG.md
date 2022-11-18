@@ -1,3 +1,9 @@
+## 1.18.3 (2022-11-18)
+
+### Bug fixes
+
+Copy all properties from the input spec to `Schema.spec`.
+
 ## 1.18.2 (2022-11-14)
 
 ### Bug fixes
