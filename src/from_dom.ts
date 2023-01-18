@@ -529,10 +529,10 @@ class ParseContext {
   // had a rule with `ignore` set.
   readStyles(styles: readonly string[]) {
     let add = Mark.none, remove = Mark.none
-    style: for (let i = 0; i < styles.length; i += 2) {
+    for (let i = 0; i < styles.length; i += 2) {
       for (let after = undefined;;) {
         let rule = this.parser.matchStyle(styles[i], styles[i + 1], this, after)
-        if (!rule) continue style
+        if (!rule) break
         if (rule.ignore) return null
         if (rule.clearMark) {
           this.top.pendingMarks.forEach(m => {
