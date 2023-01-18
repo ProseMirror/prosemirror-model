@@ -1,3 +1,9 @@
+## 1.19.0 (2023-01-18)
+
+### New features
+
+Parse rules for styles can now provide a `clearMark` property to remove pending marks (for example for `font-style: normal`).
+
 ## 1.18.3 (2022-11-18)
 
 ### Bug fixes
