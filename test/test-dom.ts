@@ -258,6 +258,10 @@ describe("DOMParser", () => {
        recover("<p style='font-weight: bold'>Hello</p>",
                doc(p(strong("Hello")))))
 
+    it("allows clearing of styles",
+       recover("<blockquote style='font-style: italic'><p style='font-style: normal'>One</p><p>Two</p></blockquote",
+               doc(blockquote(p("One"), p(em("Two"))))))
+
     it("ignores unknown inline tags",
        recover("<p><u>a</u>bc</p>",
                doc(p("abc"))))

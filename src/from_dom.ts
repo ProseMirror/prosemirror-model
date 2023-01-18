@@ -100,14 +100,19 @@ export interface ParseRule {
 
   /// The name of the node type to create when this rule matches. Only
   /// valid for rules with a `tag` property, not for style rules. Each
-  /// rule should have one of a `node`, `mark`, or `ignore` property
-  /// (except when it appears in a [node](#model.NodeSpec.parseDOM) or
-  /// [mark spec](#model.MarkSpec.parseDOM), in which case the `node`
-  /// or `mark` property will be derived from its position).
+  /// rule should have one of a `node`, `mark`, `clearMark`, or
+  /// `ignore` property (except when it appears in a
+  /// [node](#model.NodeSpec.parseDOM) or [mark
+  /// spec](#model.MarkSpec.parseDOM), in which case the `node` or
+  /// `mark` property will be derived from its position).
   node?: string
 
   /// The name of the mark type to wrap the matched content in.
   mark?: string
+
+  /// [Style](#model.ParseRule.style) rules can remove marks from the
+  /// set of active marks.
+  clearMark?: (mark: Mark) => boolean
 
   /// When true, ignore content that matches this rule.
   ignore?: boolean
@@ -261,14 +266,16 @@ export class DOMParser {
       let rules = schema.marks[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
         insert(rule = copy(rule))
-        rule.mark = name
+        if (!(rule.mark || rule.ignore || rule.clearMark))
+          rule.mark = name
       })
     }
     for (let name in schema.nodes) {
       let rules = schema.nodes[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
         insert(rule = copy(rule))
-        rule.node = name
+        if (!(rule.node || rule.ignore || rule.mark))
+          rule.node = name
       })
     }
     return result
@@ -425,10 +432,18 @@ class ParseContext {
       this.addTextNode(dom as Text)
     } else if (dom.nodeType == 1) {
       let style = (dom as HTMLElement).getAttribute("style")
-      let marks = style ? this.readStyles(parseStyles(style)) : null, top = this.top
-      if (marks != null) for (let i = 0; i < marks.length; i++) this.addPendingMark(marks[i])
-      this.addElement(dom as HTMLElement)
-      if (marks != null) for (let i = 0; i < marks.length; i++) this.removePendingMark(marks[i], top)
+      if (!style) {
+        this.addElement(dom as HTMLElement)
+      } else {
+        let marks = this.readStyles(parseStyles(style))
+        if (!marks) return // A style with ignore: true
+        let [addMarks, removeMarks] = marks, top = this.top
+        for (let i = 0; i < removeMarks.length; i++) this.removePendingMark(removeMarks[i], top)
+        for (let i = 0; i < addMarks.length; i++) this.addPendingMark(addMarks[i])
+        this.addElement(dom as HTMLElement)
+        for (let i = 0; i < addMarks.length; i++) this.removePendingMark(addMarks[i], top)
+        for (let i = 0; i < removeMarks.length; i++) this.addPendingMark(removeMarks[i])
+      }
     }
   }
 
@@ -513,18 +528,24 @@ class ParseContext {
   // return an array of marks, or null to indicate some of the styles
   // had a rule with `ignore` set.
   readStyles(styles: readonly string[]) {
-    let marks = Mark.none
+    let add = Mark.none, remove = Mark.none
     style: for (let i = 0; i < styles.length; i += 2) {
       for (let after = undefined;;) {
         let rule = this.parser.matchStyle(styles[i], styles[i + 1], this, after)
         if (!rule) continue style
         if (rule.ignore) return null
-        marks = this.parser.schema.marks[rule.mark!].create(rule.attrs).addToSet(marks)
+        if (rule.clearMark) {
+          this.top.pendingMarks.forEach(m => {
+            if (rule!.clearMark!(m)) remove = m.addToSet(remove)
+          })
+        } else {
+          add = this.parser.schema.marks[rule.mark!].create(rule.attrs).addToSet(add)
+        }
         if (rule.consuming === false) after = rule
         else break
       }
     }
-    return marks
+    return [add, remove]
   }
 
   // Look up a handler for the given node. If none are found, return
