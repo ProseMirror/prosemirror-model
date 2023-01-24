@@ -71,16 +71,16 @@ export class Node {
   /// When the callback returns false for a given node, that node's
   /// children will not be recursed over. The last parameter can be
   /// used to specify a starting position to count from.
-  nodesBetween(from: number, to: number,
-               f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean,
-               startPos = 0) {
-    this.content.nodesBetween(from, to, f, startPos, this)
+  nodesBetween<TResult>(from: number, to: number,
+               f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean | TResult,
+               startPos = 0): void | TResult {
+    return this.content.nodesBetween<TResult>(from, to, f, startPos, this);
   }
 
   /// Call the given callback for every descendant node. Doesn't
   /// descend into a node when the callback returns `false`.
-  descendants(f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean) {
-    this.nodesBetween(0, this.content.size, f)
+  descendants<TResult>(f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean | TResult): void | TResult {
+    return this.nodesBetween<TResult>(0, this.content.size, f);
   }
 
   /// Concatenates all the text nodes found in this fragment and its
