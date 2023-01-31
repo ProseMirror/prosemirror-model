@@ -67,10 +67,11 @@ export class Node {
   /// Invoke a callback for all descendant nodes recursively between
   /// the given two positions that are relative to start of this
   /// node's content. The callback is invoked with the node, its
-  /// parent-relative position, its parent node, and its child index.
-  /// When the callback returns false for a given node, that node's
-  /// children will not be recursed over. The last parameter can be
-  /// used to specify a starting position to count from.
+  /// position relative to the original node (method receiver), 
+  /// its parent node, and its child index. When the callback returns
+  /// false for a given node, that node's children will not be
+  /// recursed over. The last parameter can be used to specify a 
+  /// starting position to count from.
   nodesBetween(from: number, to: number,
                f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean,
                startPos = 0) {
