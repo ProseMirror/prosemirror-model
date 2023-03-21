@@ -45,7 +45,7 @@ export class Fragment {
   /// Call the given callback for every descendant node. `pos` will be
   /// relative to the start of the fragment. The callback may return
   /// `false` to prevent traversal of a given node's children.
-  descendants(f: (node: Node, pos: number, parent: Node | null) => boolean | void) {
+  descendants(f: (node: Node, pos: number, parent: Node | null, index: number) => boolean | void) {
     this.nodesBetween(0, this.size, f)
   }
 
