@@ -1,3 +1,11 @@
+## 1.19.1 (2023-05-17)
+
+### Bug fixes
+
+Fix the types of `Fragment.desendants` to include the index parameter to the callback. Add release note
+
+Include CommonJS type declarations in the package to please new TypeScript resolution settings.
+
 ## 1.19.0 (2023-01-18)
 
 ### New features
