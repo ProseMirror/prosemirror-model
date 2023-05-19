@@ -535,7 +535,7 @@ class ParseContext {
         if (!rule) break
         if (rule.ignore) return null
         if (rule.clearMark) {
-          this.top.pendingMarks.forEach(m => {
+          this.top.pendingMarks.concat(this.top.activeMarks).forEach(m => {
             if (rule!.clearMark!(m)) remove = m.addToSet(remove)
           })
         } else {
