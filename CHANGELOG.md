@@ -1,3 +1,9 @@
+## 1.19.2 (2023-05-23)
+
+### Bug fixes
+
+Allow parse rules with a `clearMark` directive to clear marks that have already been applied.
+
 ## 1.19.1 (2023-05-17)
 
 ### Bug fixes
