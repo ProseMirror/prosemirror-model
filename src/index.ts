@@ -1,4 +1,4 @@
-export {Node} from "./node"
+export {Node, TextNode} from "./node"
 export {ResolvedPos, NodeRange} from "./resolvedpos"
 export {Fragment} from "./fragment"
 export {Slice, ReplaceError} from "./replace"
