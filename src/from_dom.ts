@@ -428,23 +428,21 @@ class ParseContext {
   // otherwise, the node is passed to `addElement` or, if it has a
   // `style` attribute, `addElementWithStyles`.
   addDOM(dom: DOMNode) {
-    if (dom.nodeType == 3) {
-      this.addTextNode(dom as Text)
-    } else if (dom.nodeType == 1) {
-      let style = (dom as HTMLElement).getAttribute("style")
-      if (!style) {
-        this.addElement(dom as HTMLElement)
-      } else {
-        let marks = this.readStyles(parseStyles(style))
-        if (!marks) return // A style with ignore: true
-        let [addMarks, removeMarks] = marks, top = this.top
-        for (let i = 0; i < removeMarks.length; i++) this.removePendingMark(removeMarks[i], top)
-        for (let i = 0; i < addMarks.length; i++) this.addPendingMark(addMarks[i])
-        this.addElement(dom as HTMLElement)
-        for (let i = 0; i < addMarks.length; i++) this.removePendingMark(addMarks[i], top)
-        for (let i = 0; i < removeMarks.length; i++) this.addPendingMark(removeMarks[i])
-      }
-    }
+    if (dom.nodeType == 3) this.addTextNode(dom as Text)
+    else if (dom.nodeType == 1) this.addElement(dom as HTMLElement)
+  }
+
+  withStyleRules(dom: HTMLElement, f: () => void) {
+    let style = dom.getAttribute("style")
+    if (!style) return f()
+    let marks = this.readStyles(parseStyles(style))
+    if (!marks) return // A style with ignore: true
+    let [addMarks, removeMarks] = marks, top = this.top
+    for (let i = 0; i < removeMarks.length; i++) this.removePendingMark(removeMarks[i], top)
+    for (let i = 0; i < addMarks.length; i++) this.addPendingMark(addMarks[i])
+    f()
+    for (let i = 0; i < addMarks.length; i++) this.removePendingMark(addMarks[i], top)
+    for (let i = 0; i < removeMarks.length; i++) this.addPendingMark(removeMarks[i])
   }
 
   addTextNode(dom: Text) {
@@ -481,7 +479,7 @@ class ParseContext {
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
   addElement(dom: HTMLElement, matchAfter?: ParseRule) {
-    let name = dom.nodeName.toLowerCase(), ruleID
+    let name = dom.nodeName.toLowerCase(), ruleID: ParseRule | undefined
     if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
         (ruleID = this.parser.matchTag(dom, this, matchAfter))
@@ -503,11 +501,14 @@ class ParseContext {
         this.leafFallback(dom)
         return
       }
-      this.addAll(dom)
+      if (rule && rule.skip) this.addAll(dom)
+      else this.withStyleRules(dom, () => this.addAll(dom))
       if (sync) this.sync(top)
       this.needsBlock = oldNeedsBlock
     } else {
-      this.addElementByRule(dom, rule, rule.consuming === false ? ruleID : undefined)
+      this.withStyleRules(dom, () => {
+        this.addElementByRule(dom, rule!, rule!.consuming === false ? ruleID : undefined)
+      })
     }
   }
 

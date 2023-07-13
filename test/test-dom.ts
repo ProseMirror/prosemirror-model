@@ -532,6 +532,17 @@ describe("DOMParser", () => {
     it("doesn't get confused by nested mark tags",
        recover("<div><strong><strong>A</strong></strong>B</div><span>C</span>",
                doc(p(strong("A"), "B"), p("C"))))
+
+    it("ignores styles on skipped nodes", () => {
+      let dom = document.createElement("div")
+      dom.innerHTML = "<p>abc <span style='font-weight: strong'>def</span></p>"
+      ist(parser.parse(dom, {
+        ruleFromNode: node => {
+          return node.nodeType == 1 && (node as HTMLElement).tagName == "SPAN" ? {skip: node as any} : null
+        }
+      }), doc(p("abc def")), eq)
+
+    })
   })
 
   describe("schemaRules", () => {
