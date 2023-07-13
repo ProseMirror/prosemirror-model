@@ -1,3 +1,9 @@
+## 1.19.3 (2023-07-13)
+
+### Bug fixes
+
+Don't apply style parse rules for nodes that are skipped by other parse rules.
+
 ## 1.19.2 (2023-05-23)
 
 ### Bug fixes
