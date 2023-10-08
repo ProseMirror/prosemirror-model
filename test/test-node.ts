@@ -120,6 +120,18 @@ describe("Node", () => {
       ])
       ist(d.textBetween(0, d.content.size, '', '<anonymous>'), 'Hello <anonymous>')
     })
+
+    it("adds block separator around empty paragraphs", () => {
+      ist(doc(p("one"), p(), p("two")).textBetween(0, 12, "\n"), "one\n\ntwo")
+    })
+
+    it("adds block separator around leaf nodes", () => {
+      ist(doc(p("one"), hr(), hr(), p("two")).textBetween(0, 12, "\n", "---"), "one\n---\n---\ntwo")
+    })
+
+    it("doesn't add block separator around non-rendered leaf nodes", () => {
+      ist(doc(p("one"), hr(), hr(), p("two")).textBetween(0, 12, "\n"), "one\ntwo")
+    })
   })
 
   describe("textContent", () => {
