@@ -153,7 +153,7 @@ describe("DOMParser", () => {
 
       let b = builders(xmlnsSchema) as any
       let d = b.doc(b.svg())
-      test(d, "<svg><use href=\"#svg-id\"></use></svg>", xmlDocument)()
+      test(d, '<svg xmlns="http://www.w3.org/2000/svg"><use xmlns:ns1="http://www.w3.org/1999/xlink" ns1:href="#svg-id"/></svg>', xmlDocument)()
 
       let dom = xmlDocument.createElement('div')
       dom.appendChild(DOMSerializer.fromSchema(xmlnsSchema).serializeFragment(d.content, {document: xmlDocument}))
