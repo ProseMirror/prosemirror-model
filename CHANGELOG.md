@@ -1,3 +1,9 @@
+## 1.19.4 (2023-12-11)
+
+### Bug fixes
+
+Make `textBetween` emit block separators for empty textblocks.
+
 ## 1.19.3 (2023-07-13)
 
 ### Bug fixes
