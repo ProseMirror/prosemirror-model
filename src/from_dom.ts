@@ -810,11 +810,12 @@ class ParseContext {
   generateMatchers(dom: HTMLElement, rules: ParseRule[]) {
     for (const rule of rules) {
       if (!rule.tag) continue
-      if (blockTags[rule.tag] || listTags[rule.tag])
+      if (blockTags[rule.tag] || listTags[rule.tag]) {
+        const upperCaseTag = rule.tag.toUpperCase()
         // for simple selectors like li, p etc. we can just do a simple
         // tag name check.
-        this.matchers[rule.tag] = (node) => node.tagName === rule.tag
-      else {
+        this.matchers[rule.tag] = (node) => node.tagName === upperCaseTag
+      } else {
         // for more complex selectors, we collect all the matching nodes
         // just once instead of calling `matches` over and over again for
         // each node.
