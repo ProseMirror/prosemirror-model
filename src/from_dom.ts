@@ -45,33 +45,14 @@ export interface ParseOptions {
   context?: ResolvedPos
 
   /// @internal
-  ruleFromNode?: (node: DOMNode) => ParseRule | null
+  ruleFromNode?: (node: DOMNode) => Omit<TagParseRule, "tag"> | null
   /// @internal
   topOpen?: boolean
 }
 
-/// A value that describes how to parse a given DOM node or inline
-/// style as a ProseMirror node or mark.
-export interface ParseRule {
-  /// A CSS selector describing the kind of DOM elements to match. A
-  /// single rule should have _either_ a `tag` or a `style` property.
-  tag?: string
-
-  /// The namespace to match. This should be used with `tag`.
-  /// Nodes are only matched when the namespace matches or this property
-  /// is null.
-  namespace?: string
-
-  /// A CSS property name to match. When given, this rule matches
-  /// inline styles that list that property. May also have the form
-  /// `"property=value"`, in which case the rule only matches if the
-  /// property's value exactly matches the given value. (For more
-  /// complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
-  /// and return false to indicate that the match failed.) Rules
-  /// matching styles may only produce [marks](#model.ParseRule.mark),
-  /// not nodes.
-  style?: string
-
+/// Fields that may be present in both [tag](#model.TagParseRule) and
+/// [style](#model.StyleParseRule) parse rules.
+export interface GenericParseRule {
   /// Can be used to change the order in which the parse rules in a
   /// schema are tried. Those with higher priority come first. Rules
   /// without a priority are counted as having priority 50. This
@@ -98,21 +79,8 @@ export interface ParseRule {
   /// character, as in `"blockquote/|list_item/"`.
   context?: string
 
-  /// The name of the node type to create when this rule matches. Only
-  /// valid for rules with a `tag` property, not for style rules. Each
-  /// rule should have one of a `node`, `mark`, `clearMark`, or
-  /// `ignore` property (except when it appears in a
-  /// [node](#model.NodeSpec.parseDOM) or [mark
-  /// spec](#model.MarkSpec.parseDOM), in which case the `node` or
-  /// `mark` property will be derived from its position).
-  node?: string
-
   /// The name of the mark type to wrap the matched content in.
   mark?: string
-
-  /// [Style](#model.ParseRule.style) rules can remove marks from the
-  /// set of active marks.
-  clearMark?: (mark: Mark) => boolean
 
   /// When true, ignore content that matches this rule.
   ignore?: boolean
@@ -128,23 +96,37 @@ export interface ParseRule {
   /// Attributes for the node or mark created by this rule. When
   /// `getAttrs` is provided, it takes precedence.
   attrs?: Attrs
+}
+
+/// Parse rule targeting a DOM element.
+export interface TagParseRule extends GenericParseRule {
+  /// A CSS selector describing the kind of DOM elements to match.
+  tag: string
+
+  /// The namespace to match. Nodes are only matched when the
+  /// namespace matches or this property is null.
+  namespace?: string
+
+  /// The name of the node type to create when this rule matches. Each
+  /// rule should have either a `node`, `mark`, or `ignore` property
+  /// (except when it appears in a [node](#model.NodeSpec.parseDOM) or
+  /// [mark spec](#model.MarkSpec.parseDOM), in which case the `node`
+  /// or `mark` property will be derived from its position).
+  node?: string
 
   /// A function used to compute the attributes for the node or mark
   /// created by this rule. Can also be used to describe further
   /// conditions the DOM element or style must match. When it returns
   /// `false`, the rule won't match. When it returns null or undefined,
   /// that is interpreted as an empty/default set of attributes.
-  ///
-  /// Called with a DOM Element for `tag` rules, and with a string (the
-  /// style's value) for `style` rules.
-  getAttrs?: (node: HTMLElement | string) => Attrs | false | null
+  getAttrs?: (node: HTMLElement) => Attrs | false | null
 
-  /// For `tag` rules that produce non-leaf nodes or marks, by default
-  /// the content of the DOM element is parsed as content of the mark
-  /// or node. If the child nodes are in a descendent node, this may be
-  /// a CSS selector string that the parser must use to find the actual
-  /// content element, or a function that returns the actual content
-  /// element to the parser.
+  /// For rules that produce non-leaf nodes, by default the content of
+  /// the DOM element is parsed as content of the node. If the child
+  /// nodes are in a descendent node, this may be a CSS selector
+  /// string that the parser must use to find the actual content
+  /// element, or a function that returns the actual content element
+  /// to the parser.
   contentElement?: string | HTMLElement | ((node: DOMNode) => HTMLElement)
 
   /// Can be used to override the content of a matched node. When
@@ -160,14 +142,44 @@ export interface ParseRule {
   preserveWhitespace?: boolean | "full"
 }
 
+/// A parse rule targeting a style property.
+export interface StyleParseRule extends GenericParseRule {
+  /// A CSS property name to match. This rule will match inline styles
+  /// that list that property. May also have the form
+  /// `"property=value"`, in which case the rule only matches if the
+  /// property's value exactly matches the given value. (For more
+  /// complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
+  /// and return false to indicate that the match failed.) Rules
+  /// matching styles may only produce [marks](#model.ParseRule.mark),
+  /// not nodes.
+  style: string
+
+  /// Given to make TS see ParseRule as a tagged union @hide
+  tag?: undefined
+
+  /// Style rules can remove marks from the set of active marks.
+  clearMark?: (mark: Mark) => boolean
+
+  /// A function used to compute the attributes for the node or mark
+  /// created by this rule. Called with the style's value.
+  getAttrs?: (node: string) => Attrs | false | null
+}
+
+/// A value that describes how to parse a given DOM node or inline
+/// style as a ProseMirror node or mark.
+export type ParseRule = TagParseRule | StyleParseRule
+
+function isTagRule(rule: ParseRule): rule is TagParseRule { return (rule as TagParseRule).tag != null }
+function isStyleRule(rule: ParseRule): rule is StyleParseRule { return (rule as StyleParseRule).style != null }
+
 /// A DOM parser represents a strategy for parsing DOM content into a
 /// ProseMirror document conforming to a given schema. Its behavior is
 /// defined by an array of [rules](#model.ParseRule).
 export class DOMParser {
   /// @internal
-  tags: ParseRule[] = []
+  tags: TagParseRule[] = []
   /// @internal
-  styles: ParseRule[] = []
+  styles: StyleParseRule[] = []
   /// @internal
   normalizeLists: boolean
 
@@ -181,8 +193,8 @@ export class DOMParser {
     readonly rules: readonly ParseRule[]
   ) {
     rules.forEach(rule => {
-      if (rule.tag) this.tags.push(rule)
-      else if (rule.style) this.styles.push(rule)
+      if (isTagRule(rule)) this.tags.push(rule)
+      else if (isStyleRule(rule)) this.styles.push(rule)
     })
 
     // Only normalize list elements when lists in the schema can't directly contain themselves
@@ -213,7 +225,7 @@ export class DOMParser {
   }
 
   /// @internal
-  matchTag(dom: DOMNode, context: ParseContext, after?: ParseRule) {
+  matchTag(dom: DOMNode, context: ParseContext, after?: TagParseRule) {
     for (let i = after ? this.tags.indexOf(after) + 1 : 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
       if (matches(dom, rule.tag!) &&
@@ -230,7 +242,7 @@ export class DOMParser {
   }
 
   /// @internal
-  matchStyle(prop: string, value: string, context: ParseContext, after?: ParseRule) {
+  matchStyle(prop: string, value: string, context: ParseContext, after?: StyleParseRule) {
     for (let i = after ? this.styles.indexOf(after) + 1 : 0; i < this.styles.length; i++) {
       let rule = this.styles[i], style = rule.style!
       if (style.indexOf(prop) != 0 ||
@@ -265,16 +277,16 @@ export class DOMParser {
     for (let name in schema.marks) {
       let rules = schema.marks[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
-        insert(rule = copy(rule))
-        if (!(rule.mark || rule.ignore || rule.clearMark))
+        insert(rule = copy(rule) as ParseRule)
+        if (!(rule.mark || rule.ignore || (rule as StyleParseRule).clearMark))
           rule.mark = name
       })
     }
     for (let name in schema.nodes) {
       let rules = schema.nodes[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
-        insert(rule = copy(rule))
-        if (!(rule.node || rule.ignore || rule.mark))
+        insert(rule = copy(rule) as TagParseRule)
+        if (!((rule as TagParseRule).node || rule.ignore || rule.mark))
           rule.node = name
       })
     }
@@ -478,8 +490,8 @@ class ParseContext {
 
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
-  addElement(dom: HTMLElement, matchAfter?: ParseRule) {
-    let name = dom.nodeName.toLowerCase(), ruleID: ParseRule | undefined
+  addElement(dom: HTMLElement, matchAfter?: TagParseRule) {
+    let name = dom.nodeName.toLowerCase(), ruleID: TagParseRule | undefined
     if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
         (ruleID = this.parser.matchTag(dom, this, matchAfter))
@@ -507,7 +519,7 @@ class ParseContext {
       this.needsBlock = oldNeedsBlock
     } else {
       this.withStyleRules(dom, () => {
-        this.addElementByRule(dom, rule!, rule!.consuming === false ? ruleID : undefined)
+        this.addElementByRule(dom, rule as TagParseRule, rule!.consuming === false ? ruleID : undefined)
       })
     }
   }
@@ -552,7 +564,7 @@ class ParseContext {
   // Look up a handler for the given node. If none are found, return
   // false. Otherwise, apply it, use its return value to drive the way
   // the node's content is wrapped, and return true.
-  addElementByRule(dom: HTMLElement, rule: ParseRule, continueAfter?: ParseRule) {
+  addElementByRule(dom: HTMLElement, rule: TagParseRule, continueAfter?: TagParseRule) {
     let sync, nodeType, mark
     if (rule.node) {
       nodeType = this.parser.schema.nodes[rule.node]

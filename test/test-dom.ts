@@ -107,7 +107,7 @@ describe("DOMParser", () => {
           attrs: { id: { default: null }},
           parseDOM: [{
             tag: "span.comment",
-            getAttrs(dom) { return { id: parseInt((dom as HTMLElement).getAttribute('data-id')!, 10) } }
+            getAttrs(dom: HTMLElement) { return { id: parseInt(dom.getAttribute('data-id')!, 10) } }
           }],
           excludes: '',
           toDOM(mark: Mark) { return ["span", {class: "comment", "data-id": mark.attrs.id }, 0] }
@@ -554,7 +554,7 @@ describe("DOMParser", () => {
                 foo: {group: "inline", inline: true, parseDOM: [{tag: "foo"}]},
                 bar: {group: "inline", inline: true, parseDOM: [{tag: "bar"}]}}
       })
-      ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "i em foo bar")
+      ist(DOMParser.schemaRules(schema).map(r => (r as any).tag).join(" "), "i em foo bar")
     })
 
     it("understands priority", () => {
@@ -565,7 +565,7 @@ describe("DOMParser", () => {
                 foo: {group: "inline", inline: true, parseDOM: [{tag: "foo"}]},
                 bar: {group: "inline", inline: true, parseDOM: [{tag: "bar", priority: 60}]}}
       })
-      ist(DOMParser.schemaRules(schema).map(r => r.tag).join(" "), "em bar foo i")
+      ist(DOMParser.schemaRules(schema).map(r => (r as any).tag).join(" "), "em bar foo i")
     })
 
     function nsParse(doc: Node, namespace?: string) {

@@ -53,6 +53,9 @@ to use this module.)
 
 @DOMParser
 @ParseOptions
+@GenericParseRule
+@TagParseRule
+@StyleParseRule
 @ParseRule
 
 @DOMSerializer

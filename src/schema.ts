@@ -5,7 +5,7 @@ import {Fragment} from "./fragment"
 import {Mark} from "./mark"
 import {ContentMatch} from "./content"
 import {DOMOutputSpec} from "./to_dom"
-import {ParseRule} from "./from_dom"
+import {ParseRule, TagParseRule} from "./from_dom"
 
 /// An object holding the attributes of a node.
 export type Attrs = {readonly [attr: string]: any}
@@ -429,7 +429,7 @@ export interface NodeSpec {
   /// implied (the name of this node will be filled in automatically).
   /// If you supply your own parser, you do not need to also specify
   /// parsing rules in your schema.
-  parseDOM?: readonly ParseRule[]
+  parseDOM?: readonly TagParseRule[]
 
   /// Defines the default way a node of this type should be serialized
   /// to a string representation for debugging (e.g. in error messages).
