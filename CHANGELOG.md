@@ -1,3 +1,9 @@
+## 1.20.0 (2024-04-08)
+
+### New features
+
+The `ParseRule` type is now a union of `TagParseRule` and `StyleParseRule`, with more specific types being used when appropriate.
+
 ## 1.19.4 (2023-12-11)
 
 ### Bug fixes
