@@ -1,3 +1,9 @@
+## 1.21.0 (2024-05-06)
+
+### New features
+
+The new `linebreakReplacement` property on node specs makes it possible to configure a node type that `setBlockType` will convert to and from line breaks when appropriate.
+
 ## 1.20.0 (2024-04-08)
 
 ### New features
