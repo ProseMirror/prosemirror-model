@@ -441,6 +441,15 @@ export interface NodeSpec {
   /// [`Node.textContent`](#model.Node^textContent)).
   leafText?: (node: Node) => string
 
+  /// A single inline node in a schema can be set to be a linebreak
+  /// equivalent. When converting between block types that support the
+  /// node and block types that don't but have
+  /// [`whitespace`](#model.NodeSpec.whitespace) set to `"pre"`,
+  /// [`setBlockType`](#transform.Transform.setBlockType) will convert
+  /// between newline characters to or from linebreak nodes as
+  /// appropriate.
+  linebreakReplacement?: boolean
+
   /// Node specs may include arbitrary properties that can be read by
   /// other code via [`NodeType.spec`](#model.NodeType.spec).
   [key: string]: any
@@ -530,6 +539,11 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
   /// A map from mark names to mark type objects.
   marks: {readonly [name in Marks]: MarkType} & {readonly [key: string]: MarkType}
 
+  /// The [linebreak
+  /// replacement](#model.NodeSpec.linebreakReplacement) node defined
+  /// in this schema, if any.
+  linebreakReplacement: NodeType | null = null
+
   /// Construct a schema from a schema [specification](#model.SchemaSpec).
   constructor(spec: SchemaSpec<Nodes, Marks>) {
     let instanceSpec = this.spec = {} as any
@@ -548,6 +562,11 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
       type.contentMatch = contentExprCache[contentExpr] ||
         (contentExprCache[contentExpr] = ContentMatch.parse(contentExpr, this.nodes))
       ;(type as any).inlineContent = type.contentMatch.inlineContent
+      if (type.spec.linebreakReplacement) {
+        if (this.linebreakReplacement) throw new RangeError("Multiple linebreak nodes defined")
+        if (!type.isInline || !type.isLeaf) throw new RangeError("Linebreak replacement nodes must be inline leaf nodes")
+        this.linebreakReplacement = type
+      }
       type.markSet = markExpr == "_" ? null :
         markExpr ? gatherMarks(this, markExpr.split(" ")) :
         markExpr == "" || !type.inlineContent ? [] : null
