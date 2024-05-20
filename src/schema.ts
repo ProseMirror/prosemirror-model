@@ -14,7 +14,7 @@ export type Attrs = {readonly [attr: string]: any}
 // have any attributes), build up a single reusable default attribute
 // object, and use it for all nodes that don't specify specific
 // attributes.
-function defaultAttrs(attrs: Attrs) {
+function defaultAttrs(attrs: {[name: string]: Attribute}) {
   let defaults = Object.create(null)
   for (let attrName in attrs) {
     let attr = attrs[attrName]
@@ -24,7 +24,7 @@ function defaultAttrs(attrs: Attrs) {
   return defaults
 }
 
-function computeAttrs(attrs: Attrs, value: Attrs | null) {
+function computeAttrs(attrs: {[name: string]: Attribute}, value: Attrs | null) {
   let built = Object.create(null)
   for (let name in attrs) {
     let given = value && value[name]
@@ -643,7 +643,7 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
 }
 
 function gatherMarks(schema: Schema, marks: readonly string[]) {
-  let found = []
+  let found: MarkType[] = []
   for (let i = 0; i < marks.length; i++) {
     let name = marks[i], mark = schema.marks[name], ok = mark
     if (mark) {
