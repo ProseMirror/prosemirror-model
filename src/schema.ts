@@ -169,7 +169,7 @@ export class NodeType {
   }
 
   /// Returns true if the given fragment is valid content for this node
-  /// type with the given attributes.
+  /// type.
   validContent(content: Fragment) {
     let result = this.contentMatch.matchFragment(content)
     if (!result || !result.validEnd) return false
