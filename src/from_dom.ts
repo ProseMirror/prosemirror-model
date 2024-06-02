@@ -445,9 +445,9 @@ class ParseContext {
   }
 
   withStyleRules(dom: HTMLElement, f: () => void) {
-    let style = dom.getAttribute("style")
-    if (!style) return f()
-    let marks = this.readStyles(parseStyles(style))
+    let style = dom.style
+    if (!style || !style.length) return f()
+    let marks = this.readStyles(dom.style)
     if (!marks) return // A style with ignore: true
     let [addMarks, removeMarks] = marks, top = this.top
     for (let i = 0; i < removeMarks.length; i++) this.removePendingMark(removeMarks[i], top)
@@ -540,11 +540,12 @@ class ParseContext {
   // Run any style parser associated with the node's styles. Either
   // return an array of marks, or null to indicate some of the styles
   // had a rule with `ignore` set.
-  readStyles(styles: readonly string[]) {
+  readStyles(styles: CSSStyleDeclaration) {
     let add = Mark.none, remove = Mark.none
-    for (let i = 0; i < styles.length; i += 2) {
+    for (let i = 0, l = styles.length; i < l; i++) {
+      let name = styles.item(i)
       for (let after = undefined;;) {
-        let rule = this.parser.matchStyle(styles[i], styles[i + 1], this, after)
+        let rule = this.parser.matchStyle(name, styles[name as any], this, after)
         if (!rule) break
         if (rule.ignore) return null
         if (rule.clearMark) {
@@ -829,13 +830,6 @@ function normalizeList(dom: DOMNode) {
 // Apply a CSS selector.
 function matches(dom: any, selector: string): boolean {
   return (dom.matches || dom.msMatchesSelector || dom.webkitMatchesSelector || dom.mozMatchesSelector).call(dom, selector)
-}
-
-// Tokenize a style attribute into property/value pairs.
-function parseStyles(style: string): string[] {
-  let re = /\s*([\w-]+)\s*:\s*([^;]+)/g, m, result = []
-  while (m = re.exec(style)) result.push(m[1], m[2].trim())
-  return result
 }
 
 function copy(obj: {[prop: string]: any}) {
