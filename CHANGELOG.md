@@ -1,3 +1,9 @@
+## 1.21.1 (2024-06-03)
+
+### Bug fixes
+
+Improve performance and accuracy of `DOMParser` style matching by using the DOM's own `style` object.
+
 ## 1.21.0 (2024-05-06)
 
 ### New features
