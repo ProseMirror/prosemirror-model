@@ -545,7 +545,7 @@ class ParseContext {
     for (let i = 0, l = styles.length; i < l; i++) {
       let name = styles.item(i)
       for (let after = undefined;;) {
-        let rule = this.parser.matchStyle(name, styles[name as any], this, after)
+        let rule = this.parser.matchStyle(name, styles.getPropertyValue(name), this, after)
         if (!rule) break
         if (rule.ignore) return null
         if (rule.clearMark) {
