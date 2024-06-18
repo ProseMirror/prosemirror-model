@@ -189,7 +189,7 @@ export class Fragment {
 
   /// Find the index and inner offset corresponding to a given relative
   /// position in this fragment. The result object will be reused
-  /// (overwritten) the next time the function is called. (Not public.)
+  /// (overwritten) the next time the function is called. @internal
   findIndex(pos: number, round = -1): {index: number, offset: number} {
     if (pos == 0) return retIndex(0, pos)
     if (pos == this.size) return retIndex(this.content.length, pos)
