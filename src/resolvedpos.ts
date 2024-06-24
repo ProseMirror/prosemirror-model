@@ -232,6 +232,7 @@ export class ResolvedPos {
     return new ResolvedPos(pos, path, parentOffset)
   }
 
+  /// @internal
   static resolveCache = new WeakMap<Node, ResolvedPos[]>()
 
   /// @internal
@@ -243,7 +244,7 @@ export class ResolvedPos {
         return find
       }
     }
-    let result = ResolvedPos.resolve(doc, pos)
+    const result = ResolvedPos.resolve(doc, pos)
     ResolvedPos.resolveCache.set(doc, [...(ResolvedPos.resolveCache.get(doc) || []), result])
     return result
   }
