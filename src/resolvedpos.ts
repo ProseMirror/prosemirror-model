@@ -232,19 +232,22 @@ export class ResolvedPos {
     return new ResolvedPos(pos, path, parentOffset)
   }
 
+  static resolveCache = new WeakMap<Node, ResolvedPos[]>()
+
   /// @internal
   static resolveCached(doc: Node, pos: number): ResolvedPos {
-    for (let i = 0; i < resolveCache.length; i++) {
-      let cached = resolveCache[i]
-      if (cached.pos == pos && cached.doc == doc) return cached
+    const cached = ResolvedPos.resolveCache.get(doc)
+    if (cached) {
+      const find = cached.find((p) => p.pos === pos)
+      if (find) {
+        return find
+      }
     }
-    let result = resolveCache[resolveCachePos] = ResolvedPos.resolve(doc, pos)
-    resolveCachePos = (resolveCachePos + 1) % resolveCacheSize
+    let result = ResolvedPos.resolve(doc, pos)
+    ResolvedPos.resolveCache.set(doc, [...(ResolvedPos.resolveCache.get(doc) || []), result])
     return result
   }
 }
-
-let resolveCache: ResolvedPos[] = [], resolveCachePos = 0, resolveCacheSize = 12
 
 /// Represents a flat range of content, i.e. one that starts and
 /// ends in the same node.
