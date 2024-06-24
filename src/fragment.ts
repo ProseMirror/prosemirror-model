@@ -85,7 +85,7 @@ export class Fragment {
   /// Cut out the sub-fragment between the two given positions.
   cut(from: number, to = this.size) {
     if (from == 0 && to == this.size) return this
-    let result = [], size = 0
+    let result: Node[] = [], size = 0
     if (to > from) for (let i = 0, pos = 0; pos < to; i++) {
       let child = this.content[i], end = pos + child.nodeSize
       if (end > from) {

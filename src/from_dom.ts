@@ -544,7 +544,7 @@ class ParseContext {
     let add = Mark.none, remove = Mark.none
     for (let i = 0, l = styles.length; i < l; i++) {
       let name = styles.item(i)
-      for (let after = undefined;;) {
+      for (let after: StyleParseRule | undefined = undefined;;) {
         let rule = this.parser.matchStyle(name, styles.getPropertyValue(name), this, after)
         if (!rule) break
         if (rule.ignore) return null
@@ -814,7 +814,7 @@ class ParseContext {
 // tools and allowed by browsers to mean that the nested list is
 // actually part of the list item above it.
 function normalizeList(dom: DOMNode) {
-  for (let child = dom.firstChild, prevItem = null; child; child = child.nextSibling) {
+  for (let child = dom.firstChild, prevItem: ChildNode | null = null; child; child = child.nextSibling) {
     let name = child.nodeType == 1 ? child.nodeName.toLowerCase() : null
     if (name && listTags.hasOwnProperty(name) && prevItem) {
       prevItem.appendChild(child)
