@@ -217,7 +217,7 @@ export class ResolvedPos {
   /// @internal
   static resolve(doc: Node, pos: number): ResolvedPos {
     if (!(pos >= 0 && pos <= doc.content.size)) throw new RangeError("Position " + pos + " out of range")
-    let path = []
+    let path: Array<Node | number> = []
     let start = 0, parentOffset = pos
     for (let node = doc;;) {
       let {index, offset} = node.content.findIndex(parentOffset)

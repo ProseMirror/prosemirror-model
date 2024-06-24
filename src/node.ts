@@ -323,7 +323,7 @@ export class Node {
   /// Deserialize a node from its JSON representation.
   static fromJSON(schema: Schema, json: any): Node {
     if (!json) throw new RangeError("Invalid input for Node.fromJSON")
-    let marks = null
+    let marks: Mark[] | undefined = undefined
     if (json.marks) {
       if (!Array.isArray(json.marks)) throw new RangeError("Invalid mark data for Node.fromJSON")
       marks = json.marks.map(schema.markFromJSON)

@@ -197,14 +197,14 @@ type Expr =
   {type: "name", value: NodeType}
 
 function parseExpr(stream: TokenStream): Expr {
-  let exprs = []
+  let exprs: Expr[] = []
   do { exprs.push(parseExprSeq(stream)) }
   while (stream.eat("|"))
   return exprs.length == 1 ? exprs[0] : {type: "choice", exprs}
 }
 
 function parseExprSeq(stream: TokenStream): Expr {
-  let exprs = []
+  let exprs: Expr[] = []
   do { exprs.push(parseExprSubscript(stream)) }
   while (stream.next && stream.next != ")" && stream.next != "|")
   return exprs.length == 1 ? exprs[0] : {type: "seq", exprs}
@@ -246,7 +246,7 @@ function parseExprRange(stream: TokenStream, expr: Expr): Expr {
 function resolveName(stream: TokenStream, name: string): readonly NodeType[] {
   let types = stream.nodeTypes, type = types[name]
   if (type) return [type]
-  let result = []
+  let result: NodeType[] = []
   for (let typeName in types) {
     let type = types[typeName]
     if (type.groups.indexOf(name) > -1) result.push(type)
@@ -401,7 +401,7 @@ function dfa(nfa: Edge[][]): ContentMatch {
 
 function checkForDeadEnds(match: ContentMatch, stream: TokenStream) {
   for (let i = 0, work = [match]; i < work.length; i++) {
-    let state = work[i], dead = !state.validEnd, nodes = []
+    let state = work[i], dead = !state.validEnd, nodes: string[] = []
     for (let j = 0; j < state.next.length; j++) {
       let {type, next} = state.next[j]
       nodes.push(type.name)
