@@ -1,3 +1,9 @@
+## 1.21.2 (2024-06-25)
+
+### Bug fixes
+
+Make sure resolved positions (and thus the document and schema hanging off them) don't get kept in the cache when their document can be garbage-collected.
+
 ## 1.21.1 (2024-06-03)
 
 ### Bug fixes
