@@ -234,17 +234,27 @@ export class ResolvedPos {
 
   /// @internal
   static resolveCached(doc: Node, pos: number): ResolvedPos {
-    for (let i = 0; i < resolveCache.length; i++) {
-      let cached = resolveCache[i]
-      if (cached.pos == pos && cached.doc == doc) return cached
+    let cache = resolveCache.get(doc)
+    if (cache) {
+      for (let i = 0; i < cache.elts.length; i++) {
+        let elt = cache.elts[i]
+        if (elt.pos == pos) return elt
+      }
+    } else {
+      resolveCache.set(doc, cache = new ResolveCache)
     }
-    let result = resolveCache[resolveCachePos] = ResolvedPos.resolve(doc, pos)
-    resolveCachePos = (resolveCachePos + 1) % resolveCacheSize
+    let result = cache.elts[cache.i] = ResolvedPos.resolve(doc, pos)
+    cache.i = (cache.i + 1) % resolveCacheSize
     return result
   }
 }
 
-let resolveCache: ResolvedPos[] = [], resolveCachePos = 0, resolveCacheSize = 12
+class ResolveCache {
+  elts: ResolvedPos[] = []
+  i = 0
+}
+
+const resolveCacheSize = 12, resolveCache = new WeakMap<Node, ResolveCache>()
 
 /// Represents a flat range of content, i.e. one that starts and
 /// ends in the same node.
