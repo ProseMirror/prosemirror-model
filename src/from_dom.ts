@@ -216,6 +216,7 @@ export class DOMParser {
   /// Parse a document from the content of a DOM node.
   parse(dom: DOMNode, options: ParseOptions = {}): Node {
     let context = new ParseContext(this, options, false)
+    context.generateMatchers(dom as HTMLElement, this.tags)
     context.addAll(dom, options.from, options.to)
     return context.finish() as Node
   }
@@ -228,6 +229,7 @@ export class DOMParser {
   /// the left of the input and the end of nodes at the end.
   parseSlice(dom: DOMNode, options: ParseOptions = {}) {
     let context = new ParseContext(this, options, true)
+    context.generateMatchers(dom as HTMLElement, this.tags)
     context.addAll(dom, options.from, options.to)
     return Slice.maxOpen(context.finish() as Fragment)
   }
@@ -236,7 +238,7 @@ export class DOMParser {
   matchTag(dom: DOMNode, context: ParseContext, after?: TagParseRule) {
     for (let i = after ? this.tags.indexOf(after) + 1 : 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
-      if (matches(dom, rule.tag!) &&
+      if (context.matchesNode(dom, rule.tag!) &&
           (rule.namespace === undefined || (dom as HTMLElement).namespaceURI == rule.namespace) &&
           (!rule.context || context.matchesContext(rule.context))) {
         if (rule.getAttrs) {
@@ -418,6 +420,7 @@ class ParseContext {
   find: {node: DOMNode, offset: number, pos?: number}[] | undefined
   needsBlock: boolean
   nodes: NodeContext[]
+  matchers: Record<string, (node: HTMLElement) => boolean> = {};
 
   constructor(
     // The parser we are using.
@@ -701,6 +704,7 @@ class ParseContext {
   }
 
   finish() {
+    this.matchers = {}
     this.open = 0
     this.closeExtra(this.isOpen)
     return this.nodes[0].finish(this.isOpen || this.options.topOpen)
@@ -819,6 +823,31 @@ class ParseContext {
           level.activeMarks = stashMark.addToSet(level.activeMarks)
       }
       if (level == upto) break
+    }
+  }
+
+  /// Match a node against a CSS selector
+  matchesNode(node: DOMNode, selector: string) {
+    return this.matchers[selector] ? this.matchers[selector](node as HTMLElement) : matches(node, selector)
+  }
+
+  /// Generates matchers based on the given parse rules. This is much, much
+  /// faster than matching each node individually.
+  generateMatchers(dom: HTMLElement, rules: ParseRule[]) {
+    for (const rule of rules) {
+      if (!rule.tag) continue
+      if (blockTags[rule.tag] || listTags[rule.tag]) {
+        const upperCaseTag = rule.tag.toUpperCase()
+        // for simple selectors like li, p etc. we can just do a simple
+        // tag name check.
+        this.matchers[rule.tag] = (node) => node.tagName === upperCaseTag
+      } else {
+        // for more complex selectors, we collect all the matching nodes
+        // just once instead of calling `matches` over and over again for
+        // each node.
+        const nodes = new Set(dom.querySelectorAll(rule.tag).values())
+        this.matchers[rule.tag] = (node) => nodes.has(node)
+      }
     }
   }
 }
