@@ -1,3 +1,9 @@
+## 1.21.3 (2024-06-26)
+
+### Bug fixes
+
+Fix an issue where parse rules for CSS properties that were shorthands for a number of more detailed properties weren't matching properly.
+
 ## 1.21.2 (2024-06-25)
 
 ### Bug fixes
