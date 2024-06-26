@@ -181,6 +181,8 @@ export class DOMParser {
   /// @internal
   styles: StyleParseRule[] = []
   /// @internal
+  matchedStyles: readonly string[]
+  /// @internal
   normalizeLists: boolean
 
   /// Create a parser that targets the given schema, using the given
@@ -192,9 +194,15 @@ export class DOMParser {
     /// uses, in order of precedence.
     readonly rules: readonly ParseRule[]
   ) {
+    let matchedStyles: string[] = this.matchedStyles = []
     rules.forEach(rule => {
-      if (isTagRule(rule)) this.tags.push(rule)
-      else if (isStyleRule(rule)) this.styles.push(rule)
+      if (isTagRule(rule)) {
+        this.tags.push(rule)
+      } else if (isStyleRule(rule)) {
+        let prop = /[^=]*/.exec(rule.style)![0]
+        if (matchedStyles.indexOf(prop) < 0) matchedStyles.push(prop)
+        this.styles.push(rule)
+      }
     })
 
     // Only normalize list elements when lists in the schema can't directly contain themselves
@@ -542,10 +550,15 @@ class ParseContext {
   // had a rule with `ignore` set.
   readStyles(styles: CSSStyleDeclaration) {
     let add = Mark.none, remove = Mark.none
-    for (let i = 0, l = styles.length; i < l; i++) {
-      let name = styles.item(i)
-      for (let after: StyleParseRule | undefined = undefined;;) {
-        let rule = this.parser.matchStyle(name, styles.getPropertyValue(name), this, after)
+    // Because many properties will only show up in 'normalized' form
+    // in `style.item` (i.e. text-decoration becomes
+    // text-decoration-line, text-decoration-color, etc), we directly
+    // query the styles mentioned in our rules instead of iterating
+    // over the items.
+    if (styles.length) for (let i = 0; i < this.parser.matchedStyles.length; i++) {
+      let name = this.parser.matchedStyles[i], value = styles.getPropertyValue(name)
+      if (value) for (let after: StyleParseRule | undefined = undefined;;) {
+        let rule = this.parser.matchStyle(name, value, this, after)
         if (!rule) break
         if (rule.ignore) return null
         if (rule.clearMark) {
