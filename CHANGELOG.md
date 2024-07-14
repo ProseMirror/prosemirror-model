@@ -1,3 +1,9 @@
+## 1.22.1 (2024-07-14)
+
+### Bug fixes
+
+Add code to `DOMSerializer` that rejects DOM output specs when they originate from attribute values, to protect against XSS attacks that use corrupt attribute input.
+
 ## 1.22.0 (2024-07-14)
 
 ### New features
