@@ -149,6 +149,28 @@ describe("Node", () => {
     })
   })
 
+  describe("check", () => {
+    it("notices invalid content", () => {
+      ist.throws(() => doc(li("x")).check(),
+                 /Invalid content for node doc/)
+    })
+
+    it("notices marks in wrong places", () => {
+      ist.throws(() => doc(schema.nodes.paragraph.create(null, [], [schema.marks.em.create()])).check(),
+                 /Invalid content for node doc/)
+    })
+
+    it("notices incorrect sets of marks", () => {
+      ist.throws(() => schema.text("a", [schema.marks.em.create(), schema.marks.em.create()]).check(),
+                 /Invalid collection of marks/)
+    })
+
+    it("notices wrong attribute types", () => {
+      ist.throws(() => schema.nodes.image.create({src: true}).check(),
+                 /Expected value of type string, got boolean/)
+    })
+  })
+
   describe("from", () => {
     function from(arg: Node | Node[] | Fragment | null, expect: Node) {
       ist(expect.copy(Fragment.from(arg)), expect, eq)

@@ -38,6 +38,15 @@ function computeAttrs(attrs: {[name: string]: Attribute}, value: Attrs | null) {
   return built
 }
 
+export function checkAttrs(attrs: {[name: string]: Attribute}, values: Attrs, type: string, name: string) {
+  for (let name in values)
+    if (!(name in attrs)) throw new RangeError(`Unsupported attribute ${name} for ${type} of type ${name}`)
+  for (let name in attrs) {
+    let attr = attrs[name]
+    if (attr.validate) attr.validate(values[name])
+  }
+}
+
 function initAttrs(attrs?: {[name: string]: AttributeSpec}) {
   let result: {[name: string]: Attribute} = Object.create(null)
   if (attrs) for (let name in attrs) result[name] = new Attribute(attrs[name])
@@ -186,6 +195,11 @@ export class NodeType {
       throw new RangeError(`Invalid content for node ${this.name}: ${content.toString().slice(0, 50)}`)
   }
 
+  /// @internal
+  checkAttrs(attrs: Attrs) {
+    checkAttrs(this.attrs, attrs, "node", this.name)
+  }
+
   /// Check whether the given mark type is allowed in this node.
   allowsMarkType(markType: MarkType) {
     return this.markSet == null || this.markSet.indexOf(markType) > -1
@@ -226,15 +240,25 @@ export class NodeType {
   }
 }
 
+function validateType(type: string) {
+  let types = type.split("|")
+  return (value: any) => {
+    let name = value === null ? "null" : typeof value
+    if (types.indexOf(name) < 0) throw new RangeError(`Expected value of type ${types}, got ${name}`)
+  }
+}
+
 // Attribute descriptors
 
 class Attribute {
   hasDefault: boolean
   default: any
+  validate: undefined | ((value: any) => void)
 
   constructor(options: AttributeSpec) {
     this.hasDefault = Object.prototype.hasOwnProperty.call(options, "default")
     this.default = options.default
+    this.validate = typeof options.validate == "string" ? validateType(options.validate) : options.validate
   }
 
   get isRequired() {
@@ -302,6 +326,11 @@ export class MarkType {
   isInSet(set: readonly Mark[]): Mark | undefined {
     for (let i = 0; i < set.length; i++)
       if (set[i].type == this) return set[i]
+  }
+
+  /// @internal
+  checkAttrs(attrs: Attrs) {
+    checkAttrs(this.attrs, attrs, "mark", this.name)
   }
 
   /// Queries whether a given mark type is
@@ -512,6 +541,15 @@ export interface AttributeSpec {
   /// provided whenever a node or mark of a type that has them is
   /// created.
   default?: any
+  /// A function or type name used to validate values of this
+  /// attibute. This will be used when deserializing the attribute
+  /// from JSON, and when running [`Node.check`](#model.Node.check).
+  /// When a function, it should raise an exception if the value isn't
+  /// of the expected type or shape. When a string, it should be a
+  /// `|`-separated string of primitive types (`"number"`, `"string"`,
+  /// `"boolean"`, `"null"`, and `"undefined"`), and the library will
+  /// raise an error when the value is not one of those types.
+  validate?: string | ((value: any) => void)
 }
 
 /// A document schema. Holds [node](#model.NodeType) and [mark
