@@ -643,4 +643,13 @@ describe("DOMSerializer", () => {
     ist((node as HTMLElement).innerHTML,
         "<strong>foo<code>bar</code></strong><em><i data-emphasis=\"true\"><strong><code>baz</code></strong>quux</i></em>xyz")
   })
+
+  it("refuses to use values from attributes as DOM specs", () => {
+    let weird = new DOMSerializer(Object.assign({}, serializer.nodes, {
+      image: (node: PMNode) => ["span", ["img", {src: node.attrs.src}], node.attrs.alt]
+    }), serializer.marks)
+    ist.throws(() => weird.serializeNode(img({src: "x.png", alt: ["script", {src: "http://evil.com/inject.js"}]}),
+                                         {document}),
+               /Using an array from an attribute object as a DOM spec/)
+  })
 })

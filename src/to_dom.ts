@@ -76,7 +76,7 @@ export class DOMSerializer {
   /// @internal
   serializeNodeInner(node: Node, options: {document?: Document}) {
     let {dom, contentDOM} =
-        DOMSerializer.renderSpec(doc(options), this.nodes[node.type.name](node))
+      renderSpec(doc(options), this.nodes[node.type.name](node), null, node.attrs)
     if (contentDOM) {
       if (node.isLeaf)
         throw new RangeError("Content hole not allowed in a leaf node spec")
@@ -105,7 +105,7 @@ export class DOMSerializer {
   /// @internal
   serializeMark(mark: Mark, inline: boolean, options: {document?: Document} = {}) {
     let toDOM = this.marks[mark.type.name]
-    return toDOM && DOMSerializer.renderSpec(doc(options), toDOM(mark, inline))
+    return toDOM && renderSpec(doc(options), toDOM(mark, inline), null, mark.attrs)
   }
 
   /// Render an [output spec](#model.DOMOutputSpec) to a DOM node. If
@@ -115,44 +115,7 @@ export class DOMSerializer {
     dom: DOMNode,
     contentDOM?: HTMLElement
   } {
-    if (typeof structure == "string")
-      return {dom: doc.createTextNode(structure)}
-    if ((structure as DOMNode).nodeType != null)
-      return {dom: structure as DOMNode}
-    if ((structure as any).dom && (structure as any).dom.nodeType != null)
-      return structure as {dom: DOMNode, contentDOM?: HTMLElement}
-    let tagName = (structure as [string])[0], space = tagName.indexOf(" ")
-    if (space > 0) {
-      xmlNS = tagName.slice(0, space)
-      tagName = tagName.slice(space + 1)
-    }
-    let contentDOM: HTMLElement | undefined
-    let dom = (xmlNS ? doc.createElementNS(xmlNS, tagName) : doc.createElement(tagName)) as HTMLElement
-    let attrs = (structure as any)[1], start = 1
-    if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
-      start = 2
-      for (let name in attrs) if (attrs[name] != null) {
-        let space = name.indexOf(" ")
-        if (space > 0) dom.setAttributeNS(name.slice(0, space), name.slice(space + 1), attrs[name])
-        else dom.setAttribute(name, attrs[name])
-      }
-    }
-    for (let i = start; i < (structure as readonly any[]).length; i++) {
-      let child = (structure as any)[i] as DOMOutputSpec | 0
-      if (child === 0) {
-        if (i < (structure as readonly any[]).length - 1 || i > start)
-          throw new RangeError("Content hole must be the only child of its parent node")
-        return {dom, contentDOM: dom}
-      } else {
-        let {dom: inner, contentDOM: innerContent} = DOMSerializer.renderSpec(doc, child, xmlNS)
-        dom.appendChild(inner)
-        if (innerContent) {
-          if (contentDOM) throw new RangeError("Multiple content holes")
-          contentDOM = innerContent as HTMLElement
-        }
-      }
-    }
-    return {dom, contentDOM}
+    return renderSpec(doc, structure, xmlNS)
   }
 
   /// Build a serializer using the [`toDOM`](#model.NodeSpec.toDOM)
@@ -187,4 +150,83 @@ function gatherToDOM(obj: {[node: string]: NodeType | MarkType}) {
 
 function doc(options: {document?: Document}) {
   return options.document || window.document
+}
+
+const suspiciousAttributeCache = new WeakMap<any, readonly any[] | null>()
+
+function suspiciousAttributes(attrs: {[name: string]: any}): readonly any[] | null {
+  let value = suspiciousAttributeCache.get(attrs)
+  if (value === undefined)
+    suspiciousAttributeCache.set(attrs, value = suspiciousAttributesInner(attrs))
+  return value
+}
+
+function suspiciousAttributesInner(attrs: {[name: string]: any}): readonly any[] | null {
+  let result: any[] | null = null
+  function scan(value: any) {
+    if (value && typeof value == "object") {
+      if (Array.isArray(value)) {
+        if (typeof value[0] == "string") {
+          if (!result) result = []
+          result.push(value)
+        } else {
+          for (let i = 0; i < value.length; i++) scan(value[i])
+        }
+      } else {
+        for (let prop in value) scan(value[prop])
+      }
+    }
+  }
+  scan(attrs)
+  return result
+}
+
+function renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null,
+                    blockArraysIn: {[name: string]: any}): {
+  dom: DOMNode,
+  contentDOM?: HTMLElement
+} {
+  if (typeof structure == "string")
+    return {dom: doc.createTextNode(structure)}
+  if ((structure as DOMNode).nodeType != null)
+    return {dom: structure as DOMNode}
+  if ((structure as any).dom && (structure as any).dom.nodeType != null)
+    return structure as {dom: DOMNode, contentDOM?: HTMLElement}
+  let tagName = (structure as [string])[0], suspicious
+  if (typeof tagName != "string") throw new RangeError("Invalid array passed to renderSpec")
+  if (blockArraysIn && (suspicious = suspiciousAttributes(blockArraysIn)) &&
+      suspicious.indexOf(structure) > -1)
+    throw new RangeError("Using an array from an attribute object as a DOM spec. This may be an attempted cross site scripting attack.")
+  let space = tagName.indexOf(" ")
+  if (space > 0) {
+    xmlNS = tagName.slice(0, space)
+    tagName = tagName.slice(space + 1)
+  }
+  let contentDOM: HTMLElement | undefined
+  let dom = (xmlNS ? doc.createElementNS(xmlNS, tagName) : doc.createElement(tagName)) as HTMLElement
+  let attrs = (structure as any)[1], start = 1
+  if (attrs && typeof attrs == "object" && attrs.nodeType == null && !Array.isArray(attrs)) {
+    start = 2
+    for (let name in attrs) if (attrs[name] != null) {
+      let space = name.indexOf(" ")
+      if (space > 0) dom.setAttributeNS(name.slice(0, space), name.slice(space + 1), attrs[name])
+      else dom.setAttribute(name, attrs[name])
+    }
+  }
+  for (let i = start; i < (structure as readonly any[]).length; i++) {
+    let child = (structure as any)[i] as DOMOutputSpec | 0
+    if (child === 0) {
+      if (i < (structure as readonly any[]).length - 1 || i > start)
+        throw new RangeError("Content hole must be the only child of its parent node")
+      return {dom, contentDOM: dom}
+    } else {
+      let {dom: inner, contentDOM: innerContent} = renderSpec(doc, child, xmlNS, blockArraysIn)
+      dom.appendChild(inner)
+      if (innerContent) {
+        if (contentDOM) throw new RangeError("Multiple content holes")
+        contentDOM = innerContent as HTMLElement
+      }
+    }
+  }
+  return {dom, contentDOM}
 }
