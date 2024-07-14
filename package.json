@@ -1,6 +1,6 @@
 {
   "name": "prosemirror-model",
-  "version": "1.21.3",
+  "version": "1.22.0",
   "description": "ProseMirror's document model",
   "type": "module",
   "main": "dist/index.cjs",

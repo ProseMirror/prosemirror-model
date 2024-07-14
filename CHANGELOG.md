@@ -1,3 +1,9 @@
+## 1.22.0 (2024-07-14)
+
+### New features
+
+Attribute specs now support a `validate` property that can be used to provide a validation function for the attribute, to guard against corrupt JSON input.
+
 ## 1.21.3 (2024-06-26)
 
 ### Bug fixes
