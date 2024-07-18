@@ -113,7 +113,7 @@ export class DOMSerializer {
   /// node with the hole.
   static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null = null, blockArraysIn?: {[name: string]: any}): {
     dom: DOMNode,
-    contentDOM?: HTMLElement,
+    contentDOM?: HTMLElement
   } {
     return renderSpec(doc, structure, xmlNS, blockArraysIn)
   }
