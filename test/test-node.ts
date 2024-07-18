@@ -167,7 +167,7 @@ describe("Node", () => {
 
     it("notices wrong attribute types", () => {
       ist.throws(() => schema.nodes.image.create({src: true}).check(),
-                 /Expected value of type string, got boolean/)
+                 /Expected value of type string for attribute src on type image, got boolean/)
     })
   })
 

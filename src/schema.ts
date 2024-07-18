@@ -47,9 +47,9 @@ export function checkAttrs(attrs: {[name: string]: Attribute}, values: Attrs, ty
   }
 }
 
-function initAttrs(attrs?: {[name: string]: AttributeSpec}) {
+function initAttrs(typeName: string, attrs?: {[name: string]: AttributeSpec}) {
   let result: {[name: string]: Attribute} = Object.create(null)
-  if (attrs) for (let name in attrs) result[name] = new Attribute(attrs[name])
+  if (attrs) for (let name in attrs) result[name] = new Attribute(typeName, name, attrs[name])
   return result
 }
 
@@ -75,7 +75,7 @@ export class NodeType {
     readonly spec: NodeSpec
   ) {
     this.groups = spec.group ? spec.group.split(" ") : []
-    this.attrs = initAttrs(spec.attrs)
+    this.attrs = initAttrs(name, spec.attrs)
     this.defaultAttrs = defaultAttrs(this.attrs)
 
     // Filled in later
@@ -240,11 +240,11 @@ export class NodeType {
   }
 }
 
-function validateType(type: string) {
+function validateType(typeName: string, attrName: string, type: string) {
   let types = type.split("|")
   return (value: any) => {
     let name = value === null ? "null" : typeof value
-    if (types.indexOf(name) < 0) throw new RangeError(`Expected value of type ${types}, got ${name}`)
+    if (types.indexOf(name) < 0) throw new RangeError(`Expected value of type ${types} for attribute ${attrName} on type ${typeName}, got ${name}`)
   }
 }
 
@@ -255,10 +255,10 @@ class Attribute {
   default: any
   validate: undefined | ((value: any) => void)
 
-  constructor(options: AttributeSpec) {
+  constructor(typeName: string, attrName: string, options: AttributeSpec) {
     this.hasDefault = Object.prototype.hasOwnProperty.call(options, "default")
     this.default = options.default
-    this.validate = typeof options.validate == "string" ? validateType(options.validate) : options.validate
+    this.validate = typeof options.validate == "string" ? validateType(typeName, attrName, options.validate) : options.validate
   }
 
   get isRequired() {
@@ -291,7 +291,7 @@ export class MarkType {
     /// The spec on which the type is based.
     readonly spec: MarkSpec
   ) {
-    this.attrs = initAttrs(spec.attrs)
+    this.attrs = initAttrs(name, spec.attrs)
     ;(this as any).excluded = null
     let defaults = defaultAttrs(this.attrs)
     this.instance = defaults ? new Mark(this, defaults) : null
