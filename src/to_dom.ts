@@ -111,11 +111,12 @@ export class DOMSerializer {
   /// Render an [output spec](#model.DOMOutputSpec) to a DOM node. If
   /// the spec has a hole (zero) in it, `contentDOM` will point at the
   /// node with the hole.
-  static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null = null): {
+  static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null = null, blockArraysIn?: {[name: string]: any}): {
     dom: DOMNode,
-    contentDOM?: HTMLElement
+    contentDOM?: HTMLElement,
+    blockArraysIn?: {[name: string]: any}
   } {
-    return renderSpec(doc, structure, xmlNS)
+    return renderSpec(doc, structure, xmlNS, blockArraysIn)
   }
 
   /// Build a serializer using the [`toDOM`](#model.NodeSpec.toDOM)
