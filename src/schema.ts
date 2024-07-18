@@ -542,7 +542,7 @@ export interface AttributeSpec {
   /// created.
   default?: any
   /// A function or type name used to validate values of this
-  /// attibute. This will be used when deserializing the attribute
+  /// attribute. This will be used when deserializing the attribute
   /// from JSON, and when running [`Node.check`](#model.Node.check).
   /// When a function, it should raise an exception if the value isn't
   /// of the expected type or shape. When a string, it should be a
