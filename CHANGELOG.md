@@ -1,3 +1,9 @@
+## 1.22.2 (2024-07-18)
+
+### Bug fixes
+
+Make attribute validation messages more informative.
+
 ## 1.22.1 (2024-07-14)
 
 ### Bug fixes
