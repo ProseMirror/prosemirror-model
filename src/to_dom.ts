@@ -182,7 +182,7 @@ function suspiciousAttributesInner(attrs: {[name: string]: any}): readonly any[]
 }
 
 function renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null,
-                    blockArraysIn: {[name: string]: any}): {
+                    blockArraysIn?: {[name: string]: any}): {
   dom: DOMNode,
   contentDOM?: HTMLElement
 } {
