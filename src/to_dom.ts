@@ -114,7 +114,6 @@ export class DOMSerializer {
   static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null = null, blockArraysIn?: {[name: string]: any}): {
     dom: DOMNode,
     contentDOM?: HTMLElement,
-    blockArraysIn?: {[name: string]: any}
   } {
     return renderSpec(doc, structure, xmlNS, blockArraysIn)
   }
