@@ -1,3 +1,9 @@
+## 1.22.3 (2024-08-06)
+
+### Bug fixes
+
+Fix some corner cases in the way the DOM parser tracks active marks.
+
 ## 1.22.2 (2024-07-18)
 
 ### Bug fixes
