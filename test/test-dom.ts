@@ -408,6 +408,21 @@ describe("DOMParser", () => {
       ), 1, 1), eq)
     })
 
+    it("can temporary shadow a mark with another configuration of the same type", () => {
+      let s = new Schema({nodes: schema.spec.nodes, marks: {color: {
+        attrs: {color: {}},
+        toDOM: m => ["span", {style: `color: ${m.attrs.color}`}],
+        parseDOM: [{style: "color", getAttrs: v => ({color: v})}]
+      }}})
+      let d = DOMParser.fromSchema(s)
+        .parse(domFrom('<p><span style="color: red">abc<span style="color: blue">def</span>ghi</span></p>'))
+      ist(d, s.node("doc", null, [s.node("paragraph", null, [
+        s.text("abc", [s.mark("color", {color: "red"})]),
+        s.text("def", [s.mark("color", {color: "blue"})]),
+        s.text("ghi", [s.mark("color", {color: "red"})])
+      ])]), eq)
+    })
+
     function find(html: string, doc: PMNode) {
       return () => {
         let dom = document.createElement("div")
