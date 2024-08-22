@@ -574,6 +574,7 @@ class ParseContext {
       else if (rule.contentElement) contentDOM = rule.contentElement
       this.findAround(dom, contentDOM, true)
       this.addAll(contentDOM, marks)
+      this.findAround(dom, contentDOM, false)
     }
     if (sync && this.sync(startIn)) this.open--
   }
