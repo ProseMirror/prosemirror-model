@@ -1,3 +1,9 @@
+## 1.23.0 (2024-10-05)
+
+### New features
+
+The new `NodeType.isInGroup` method can be used to query group membership.
+
 ## 1.22.3 (2024-08-06)
 
 ### Bug fixes
