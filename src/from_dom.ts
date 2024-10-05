@@ -753,7 +753,7 @@ class ParseContext {
           let next = depth > 0 || (depth == 0 && useRoot) ? this.nodes[depth].type
               : option && depth >= minDepth ? option.node(depth - minDepth).type
               : null
-          if (!next || (next.name != part && next.groups.indexOf(part) == -1))
+          if (!next || (next.name != part && !next.isInGroup(part)))
             return false
           depth--
         }

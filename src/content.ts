@@ -249,7 +249,7 @@ function resolveName(stream: TokenStream, name: string): readonly NodeType[] {
   let result: NodeType[] = []
   for (let typeName in types) {
     let type = types[typeName]
-    if (type.groups.indexOf(name) > -1) result.push(type)
+    if (type.isInGroup(name)) result.push(type)
   }
   if (result.length == 0) stream.err("No node type or group '" + name + "' found")
   return result

@@ -107,6 +107,12 @@ export class NodeType {
   /// directly editable content.
   get isAtom() { return this.isLeaf || !!this.spec.atom }
 
+  /// Return true when this node type is part of the given
+  /// [group](#model.NodeSpec.group).
+  isInGroup(group: string) {
+    return this.groups.indexOf(group) > -1
+  }
+
   /// The starting match of the node type's content expression.
   contentMatch!: ContentMatch
 
