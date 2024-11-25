@@ -147,7 +147,7 @@ export class Node {
   /// and updated Fragment of children Nodes.
   map(f: ((Node) => Node)): Node {
     const mappedFragment = this.content.map(node => f(node));
-    return new Node(this.type, this.attrs, mappedFragment, this.marks);
+    return this.copy(mappedFragment);
   }
 
   /// Create a copy of this node with only the content between the
