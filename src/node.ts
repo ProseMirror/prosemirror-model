@@ -67,10 +67,10 @@ export class Node {
   /// Invoke a callback for all descendant nodes recursively between
   /// the given two positions that are relative to start of this
   /// node's content. The callback is invoked with the node, its
-  /// position relative to the original node (method receiver), 
+  /// position relative to the original node (method receiver),
   /// its parent node, and its child index. When the callback returns
   /// false for a given node, that node's children will not be
-  /// recursed over. The last parameter can be used to specify a 
+  /// recursed over. The last parameter can be used to specify a
   /// starting position to count from.
   nodesBetween(from: number, to: number,
                f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean,
@@ -140,6 +140,14 @@ export class Node {
   /// of the node's own marks.
   mark(marks: readonly Mark[]): Node {
     return marks == this.marks ? this : new Node(this.type, this.attrs, this.content, marks)
+  }
+
+  /// Call `f` for every child node, passing the node, and
+  /// returning a new Node with the same type, attrs, and marks
+  /// and updated Fragment of children Nodes.
+  map(f: ((Node) => Node)): Node {
+    const mappedFragment = this.content.map(node => f(node));
+    return new Node(this.type, this.attrs, mappedFragment, this.marks);
   }
 
   /// Create a copy of this node with only the content between the

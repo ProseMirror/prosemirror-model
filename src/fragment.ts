@@ -204,6 +204,11 @@ export class Fragment {
     }
   }
 
+  /// Calling `f` over each child node and returning a new fragment.
+  map(f: ((Node) => Node)): Fragment {
+    return new Fragment(this.content.map(node => f(node)));
+  }
+
   /// Return a debugging string that describes this fragment.
   toString(): string { return "<" + this.toStringInner() + ">" }
 
