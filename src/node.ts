@@ -145,8 +145,8 @@ export class Node {
   /// Call `f` for every child node, passing the node, and
   /// returning a new Node with the same type, attrs, and marks
   /// and updated Fragment of children Nodes.
-  map(f: ((Node) => Node)): Node {
-    const mappedFragment = this.content.map(node => f(node));
+  map(f: ((node: Node) => Node)): Node {
+    const mappedFragment = this.content.map(f);
     return this.copy(mappedFragment);
   }
 
