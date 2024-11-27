@@ -1,3 +1,9 @@
+## 1.24.0 (2024-11-27)
+
+### New features
+
+`Fragment.content` and `Node.children` now expose a node's set of children as an array.
+
 ## 1.23.0 (2024-10-05)
 
 ### New features
