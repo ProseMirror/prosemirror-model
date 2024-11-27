@@ -40,6 +40,9 @@ export class Node {
   /// A container holding the node's children.
   readonly content: Fragment
 
+  /// The array of this node's child nodes.
+  get children() { return this.content.content }
+
   /// For text nodes, this contains the node's text content.
   readonly text: string | undefined
 

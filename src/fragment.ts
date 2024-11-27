@@ -14,7 +14,7 @@ export class Fragment {
 
   /// @internal
   constructor(
-    /// @internal
+    /// The child nodes in this fragment.
     readonly content: readonly Node[],
     size?: number
   ) {
