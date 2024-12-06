@@ -1,5 +1,5 @@
 import {Fragment} from "./fragment"
-import {Schema} from "./schema"
+import {Attrs, Schema} from "./schema"
 import {Node, TextNode} from "./node"
 import {ResolvedPos} from "./resolvedpos"
 
@@ -68,9 +68,9 @@ export class Slice {
   }
 
   /// Convert a slice to a JSON-serializable representation.
-  toJSON(): any {
+  toJSON(filterAttrs?: (attrs: Attrs) => Attrs): any {
     if (!this.content.size) return null
-    let json: any = {content: this.content.toJSON()}
+    let json: any = {content: this.content.toJSON(filterAttrs)}
     if (this.openStart > 0) json.openStart = this.openStart
     if (this.openEnd > 0) json.openEnd = this.openEnd
     return json

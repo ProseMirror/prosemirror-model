@@ -68,9 +68,10 @@ export class Mark {
   }
 
   /// Convert this mark to a JSON-serializeable representation.
-  toJSON(): any {
+  toJSON(filterAttrs?: (attrs: Attrs) => Attrs): any {
     let obj: any = {type: this.type.name}
-    for (let _ in this.attrs) {
+    let attrs = filterAttrs ? filterAttrs(this.attrs) : this.attrs
+    for (let _ in attrs) {
       obj.attrs = this.attrs
       break
     }

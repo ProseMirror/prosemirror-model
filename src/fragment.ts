@@ -1,6 +1,6 @@
 import {findDiffStart, findDiffEnd} from "./diff"
 import {Node, TextNode} from "./node"
-import {Schema} from "./schema"
+import {Attrs, Schema} from "./schema"
 
 /// A fragment represents a node's collection of child nodes.
 ///
@@ -211,8 +211,8 @@ export class Fragment {
   toStringInner() { return this.content.join(", ") }
 
   /// Create a JSON-serializeable representation of this fragment.
-  toJSON(): any {
-    return this.content.length ? this.content.map(n => n.toJSON()) : null
+  toJSON(filterAttrs?: (attrs: Attrs) => Attrs): any {
+    return this.content.length ? this.content.map(n => n.toJSON(filterAttrs)) : null
   }
 
   /// Deserialize a fragment from its JSON representation.

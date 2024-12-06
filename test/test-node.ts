@@ -1,5 +1,5 @@
 import ist from "ist"
-import {Fragment, Schema, Node} from "prosemirror-model"
+import {Fragment, Schema, Node, Attrs} from "prosemirror-model"
 import {schema, eq, doc, blockquote, p, li, ul, em, strong, code, a, br, hr, img} from "prosemirror-test-builder"
 
 let customSchema = new Schema({
@@ -193,8 +193,8 @@ describe("Node", () => {
   })
 
   describe("toJSON", () => {
-    function roundTrip(doc: Node) {
-      ist(schema.nodeFromJSON(doc.toJSON()), doc, eq)
+    function roundTrip(doc: Node, filterAttrs?: (attrs: Attrs) => Attrs) {
+      ist(schema.nodeFromJSON(doc.toJSON(filterAttrs)), doc, eq)
     }
 
     it("can serialize a simple node", () => roundTrip(doc(p("foo"))))
@@ -206,6 +206,12 @@ describe("Node", () => {
     it("can serialize block leaf nodes", () => roundTrip(doc(p("a"), hr(), p("b"), p())))
 
     it("can serialize nested nodes", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img()))), p("c")), p("d"))))
+
+    it("can serialize nested nodes with filterAttrs", () => roundTrip(doc(blockquote(ul(li(p("a"), p("b")), li(p(img()))), p("c")), p("d")), attrs => {
+      return Object.fromEntries(
+        Object.entries(attrs).filter(([_, value]) => value != null)
+      );
+    }))
   })
 
   describe("toString", () => {

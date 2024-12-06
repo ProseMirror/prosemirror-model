@@ -315,16 +315,17 @@ export class Node {
   }
 
   /// Return a JSON-serializeable representation of this node.
-  toJSON(): any {
+  toJSON(filterAttrs?: (attrs: Attrs) => Attrs): any {
     let obj: any = {type: this.type.name}
-    for (let _ in this.attrs) {
-      obj.attrs = this.attrs
+    let attrs = filterAttrs ? filterAttrs(this.attrs) : this.attrs
+    for (let _ in attrs) {
+      obj.attrs = attrs
       break
     }
     if (this.content.size)
-      obj.content = this.content.toJSON()
+      obj.content = this.content.toJSON(filterAttrs)
     if (this.marks.length)
-      obj.marks = this.marks.map(n => n.toJSON())
+      obj.marks = this.marks.map(n => n.toJSON(filterAttrs))
     return obj
   }
 
@@ -388,8 +389,8 @@ export class TextNode extends Node {
     return this.sameMarkup(other) && this.text == other.text
   }
 
-  toJSON() {
-    let base = super.toJSON()
+  toJSON(filterAttrs?: (attrs: Attrs) => Attrs) {
+    let base = super.toJSON(filterAttrs)
     base.text = this.text
     return base
   }
