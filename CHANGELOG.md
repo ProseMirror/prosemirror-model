@@ -1,3 +1,9 @@
+## 1.24.1 (2024-12-10)
+
+### Bug fixes
+
+The parser now automatically preserves whitespace inside `<pre>` or `white-space: pre` elements.
+
 ## 1.24.0 (2024-11-27)
 
 ### New features
