@@ -558,6 +558,21 @@ describe("DOMParser", () => {
       }), doc(p("abc def")), eq)
 
     })
+
+    it("preserves whitespace in <pre> elements", () => {
+      let schema = new Schema({nodes: {
+        doc: {content: "block+"},
+        text: {group: "inline"},
+        p: {group: "block", content: "inline*"}
+      }})
+      ist(DOMParser.fromSchema(schema).parse(domFrom("<pre>  hello </pre>   ")),
+          schema.node("doc", null, [schema.node("p", null, [schema.text("  hello ")])]), eq)
+    })
+
+    it("preserves whitespace in nodes styled with white-space", () => {
+      recover("  <div style='white-space: pre'>  okay  then </div>  <p> x</p>",
+              doc(p("  okay  then "), p("x")))
+    })
   })
 
   describe("schemaRules", () => {

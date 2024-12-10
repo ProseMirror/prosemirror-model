@@ -346,7 +346,7 @@ class NodeContext {
     readonly marks: readonly Mark[],
     readonly solid: boolean,
     match: ContentMatch | null,
-    readonly options: number
+    public options: number
   ) {
     this.match = match || (options & OPT_OPEN_LEFT ? null : type!.contentMatch)
   }
@@ -370,7 +370,7 @@ class NodeContext {
     return this.match.findWrapping(node.type)
   }
 
-  finish(openEnd?: boolean): Node | Fragment {
+  finish(openEnd: boolean): Node | Fragment {
     if (!(this.options & OPT_PRESERVE_WS)) { // Strip trailing whitespace
       let last = this.content[this.content.length - 1], m
       if (last && last.isText && (m = /[ \t\r\n\u000c]+$/.exec(last.text!))) {
@@ -397,6 +397,7 @@ class ParseContext {
   find: {node: DOMNode, offset: number, pos?: number}[] | undefined
   needsBlock: boolean
   nodes: NodeContext[]
+  localPreserveWS = false
 
   constructor(
     // The parser we are using.
@@ -433,11 +434,12 @@ class ParseContext {
 
   addTextNode(dom: Text, marks: readonly Mark[]) {
     let value = dom.nodeValue!
-    let top = this.top
-    if (top.options & OPT_PRESERVE_WS_FULL ||
+    let top = this.top, preserveWS = (top.options & OPT_PRESERVE_WS_FULL) ? "full"
+      : this.localPreserveWS || (top.options & OPT_PRESERVE_WS) > 0
+    if (preserveWS === "full" ||
         top.inlineContext(dom) ||
         /[^ \t\r\n\u000c]/.test(value)) {
-      if (!(top.options & OPT_PRESERVE_WS)) {
+      if (!preserveWS) {
         value = value.replace(/[ \t\r\n\u000c]+/g, " ")
         // If this starts with whitespace, and there is no node before it, or
         // a hard break, or a text node that ends with whitespace, strip the
@@ -450,7 +452,7 @@ class ParseContext {
               (nodeBefore.isText && /[ \t\r\n\u000c]$/.test(nodeBefore.text!)))
             value = value.slice(1)
         }
-      } else if (!(top.options & OPT_PRESERVE_WS_FULL)) {
+      } else if (preserveWS !== "full") {
         value = value.replace(/\r?\n|\r/g, " ")
       } else {
         value = value.replace(/\r\n?/g, "\n")
@@ -465,17 +467,21 @@ class ParseContext {
   // Try to find a handler for the given tag and use that to parse. If
   // none is found, the element's content nodes are added directly.
   addElement(dom: HTMLElement, marks: readonly Mark[], matchAfter?: TagParseRule) {
+    let outerWS = this.localPreserveWS, top = this.top
+    if (dom.tagName == "PRE" || /pre/.test(dom.style && dom.style.whiteSpace))
+      this.localPreserveWS = true
     let name = dom.nodeName.toLowerCase(), ruleID: TagParseRule | undefined
     if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
         (ruleID = this.parser.matchTag(dom, this, matchAfter))
+    out:
     if (rule ? rule.ignore : ignoreTags.hasOwnProperty(name)) {
       this.findInside(dom)
       this.ignoreFallback(dom, marks)
     } else if (!rule || rule.skip || rule.closeParent) {
       if (rule && rule.closeParent) this.open = Math.max(0, this.open - 1)
       else if (rule && (rule.skip as any).nodeType) dom = rule.skip as any as HTMLElement
-      let sync, top = this.top, oldNeedsBlock = this.needsBlock
+      let sync, oldNeedsBlock = this.needsBlock
       if (blockTags.hasOwnProperty(name)) {
         if (top.content.length && top.content[0].isInline && this.open) {
           this.open--
@@ -485,7 +491,7 @@ class ParseContext {
         if (!top.type) this.needsBlock = true
       } else if (!dom.firstChild) {
         this.leafFallback(dom, marks)
-        return
+        break out
       }
       let innerMarks = rule && rule.skip ? marks : this.readStyles(dom, marks)
       if (innerMarks) this.addAll(dom, innerMarks)
@@ -496,6 +502,7 @@ class ParseContext {
       if (innerMarks)
         this.addElementByRule(dom, rule as TagParseRule, innerMarks, rule!.consuming === false ? ruleID : undefined)
     }
+    this.localPreserveWS = outerWS
   }
 
   // Called for leaf DOM nodes that would otherwise be ignored
@@ -678,13 +685,17 @@ class ParseContext {
   finish() {
     this.open = 0
     this.closeExtra(this.isOpen)
-    return this.nodes[0].finish(this.isOpen || this.options.topOpen)
+    return this.nodes[0].finish(!!(this.isOpen || this.options.topOpen))
   }
 
   sync(to: NodeContext) {
-    for (let i = this.open; i >= 0; i--) if (this.nodes[i] == to) {
-      this.open = i
-      return true
+    for (let i = this.open; i >= 0; i--) {
+      if (this.nodes[i] == to) {
+        this.open = i
+        return true
+      } else if (this.localPreserveWS) {
+        this.nodes[i].options |= OPT_PRESERVE_WS
+      }
     }
     return false
   }
