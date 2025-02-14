@@ -18,7 +18,7 @@ const emptyAttrs: Attrs = Object.create(null)
 /// tree shape like this (without back pointers) makes easy.
 ///
 /// **Do not** directly mutate the properties of a `Node` object. See
-/// [the guide](/docs/guide/#doc) for more information.
+/// [the guide](https://prosemirror.net/docs/guide/#doc) for more information.
 export class Node {
   /// @internal
   constructor(
@@ -47,7 +47,7 @@ export class Node {
   readonly text: string | undefined
 
   /// The size of this node, as defined by the integer-based [indexing
-  /// scheme](/docs/guide/#doc.indexing). For text nodes, this is the
+  /// scheme](https://prosemirror.net/docs/guide/#doc.indexing). For text nodes, this is the
   /// amount of characters. For other leaf nodes, it is one. For
   /// non-leaf nodes, it is the size of the content plus two (the
   /// start and end token).

@@ -371,7 +371,7 @@ export interface SchemaSpec<Nodes extends string = any, Marks extends string = a
 /// A description of a node type, used when defining a schema.
 export interface NodeSpec {
   /// The content expression for this node, as described in the [schema
-  /// guide](/docs/guide/#schema.content_expressions). When not given,
+  /// guide](https://prosemirror.net/docs/guide/#schema.content_expressions). When not given,
   /// the node does not allow any content.
   content?: string
 
