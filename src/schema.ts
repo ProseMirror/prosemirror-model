@@ -87,7 +87,7 @@ export class NodeType {
   }
 
   /// True if this node type has inline content.
-  inlineContent!: boolean
+  declare inlineContent: boolean
   /// True if this is a block type
   isBlock: boolean
   /// True if this is the text node type.
@@ -114,7 +114,7 @@ export class NodeType {
   }
 
   /// The starting match of the node type's content expression.
-  contentMatch!: ContentMatch
+  declare contentMatch: ContentMatch
 
   /// The set of marks allowed in this node. `null` means all marks
   /// are allowed.
@@ -282,7 +282,7 @@ export class MarkType {
   /// @internal
   attrs: {[name: string]: Attribute}
   /// @internal
-  excluded!: readonly MarkType[]
+  declare excluded: readonly MarkType[]
   /// @internal
   instance: Mark | null
 
