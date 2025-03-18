@@ -1,3 +1,9 @@
+## 1.25.0 (2025-03-18)
+
+### New features
+
+Mark specs can now be marked with a `code` property.
+
 ## 1.24.1 (2024-12-10)
 
 ### Bug fixes
