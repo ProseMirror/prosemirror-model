@@ -522,6 +522,10 @@ export interface MarkSpec {
   /// nodes when serialized to DOM/HTML. Defaults to true.
   spanning?: boolean
 
+  /// Marks the content of this span as being code, which causes some
+  /// commands and extensions to treat it differently.
+  code?: boolean
+
   /// Defines the default way marks of this type should be serialized
   /// to DOM/HTML. When the resulting spec contains a hole, that is
   /// where the marked content is placed. Otherwise, it is appended to
