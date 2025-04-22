@@ -1,3 +1,9 @@
+## 1.25.1 (2025-04-22)
+
+### Bug fixes
+
+Make the DOM parser not discard nodes whose document representation cannot be placed inside the represenation of some parent DOM node.
+
 ## 1.25.0 (2025-03-18)
 
 ### New features
