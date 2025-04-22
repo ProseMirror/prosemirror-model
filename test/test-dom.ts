@@ -162,10 +162,11 @@ describe("DOMParser", () => {
       ist(dom.querySelector('use').attributes[0].namespaceURI, 'http://www.w3.org/1999/xlink')
     })
 
-    function recover(html: string, doc: PMNode, options?: ParseOptions) {
+    function recover(html: string | HTMLElement, doc: PMNode, options?: ParseOptions) {
       return () => {
         let dom = document.createElement("div")
-        dom.innerHTML = html
+        if (typeof html == "string") dom.innerHTML = html
+        else dom.appendChild(html)
         ist(parser.parse(dom, options), doc, eq)
       }
     }
@@ -285,6 +286,13 @@ describe("DOMParser", () => {
     it("closes block with inline content on seeing block-level children",
        recover("<div><br><div>CCC</div><div>DDD</div><br></div>",
                doc(p(br()), p("CCC"), p("DDD"), p(br()))))
+
+    it("can move a block node out of a paragraph", () => {
+      let dom = document.createElement("p")
+      dom.appendChild(document.createTextNode("Hello"))
+      dom.appendChild(document.createElement("hr"))
+      recover(dom, doc(p("Hello"), hr()))()
+    })
 
     function parse(html: string, options: ParseOptions, doc: PMNode) {
       return () => {
