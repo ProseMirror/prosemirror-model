@@ -127,7 +127,7 @@ export interface TagParseRule extends GenericParseRule {
   /// string that the parser must use to find the actual content
   /// element, or a function that returns the actual content element
   /// to the parser.
-  contentElement?: string | HTMLElement | ((node: DOMNode) => HTMLElement)
+  contentElement?: string | HTMLElement | ((node: HTMLElement) => HTMLElement)
 
   /// Can be used to override the content of a matched node. When
   /// present, instead of parsing the node's child nodes, the result of
