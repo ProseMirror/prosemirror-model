@@ -190,14 +190,14 @@ export class Fragment {
   /// Find the index and inner offset corresponding to a given relative
   /// position in this fragment. The result object will be reused
   /// (overwritten) the next time the function is called. @internal
-  findIndex(pos: number, round = -1): {index: number, offset: number} {
+  findIndex(pos: number): {index: number, offset: number} {
     if (pos == 0) return retIndex(0, pos)
     if (pos == this.size) return retIndex(this.content.length, pos)
     if (pos > this.size || pos < 0) throw new RangeError(`Position ${pos} outside of fragment (${this})`)
     for (let i = 0, curPos = 0;; i++) {
       let cur = this.child(i), end = curPos + cur.nodeSize
       if (end >= pos) {
-        if (end == pos || round > 0) return retIndex(i + 1, end)
+        if (end == pos) return retIndex(i + 1, end)
         return retIndex(i, curPos)
       }
       curPos = end
