@@ -624,8 +624,8 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
       type.excluded = excl == null ? [type] : excl == "" ? [] : gatherMarks(this, excl.split(" "))
     }
 
-    this.nodeFromJSON = this.nodeFromJSON.bind(this)
-    this.markFromJSON = this.markFromJSON.bind(this)
+    this.nodeFromJSON = json => Node.fromJSON(this, json)
+    this.markFromJSON = json => Mark.fromJSON(this, json)
     this.topNodeType = this.nodes[this.spec.topNode || "doc"]
     this.cached.wrappings = Object.create(null)
   }
@@ -672,15 +672,11 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
 
   /// Deserialize a node from its JSON representation. This method is
   /// bound.
-  nodeFromJSON(json: any): Node {
-    return Node.fromJSON(this, json)
-  }
+  nodeFromJSON: (json: any) => Node
 
   /// Deserialize a mark from its JSON representation. This method is
   /// bound.
-  markFromJSON(json: any): Mark {
-    return Mark.fromJSON(this, json)
-  }
+  markFromJSON: (json: any) => Mark
 
   /// @internal
   nodeType(name: string) {
