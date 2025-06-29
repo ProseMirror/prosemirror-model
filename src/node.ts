@@ -99,7 +99,7 @@ export class Node {
   /// `blockSeparator` is given, it will be inserted to separate text
   /// from different block nodes. If `leafText` is given, it'll be
   /// inserted for every non-text leaf node encountered, otherwise
-  /// [`leafText`](#model.NodeSpec^leafText) will be used.
+  /// [`leafText`](#model.NodeSpec.leafText) will be used.
   textBetween(from: number, to: number, blockSeparator?: string | null,
               leafText?: null | string | ((leafNode: Node) => string)) {
     return this.content.textBetween(from, to, blockSeparator, leafText)
