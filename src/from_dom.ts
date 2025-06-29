@@ -40,7 +40,7 @@ export interface ParseOptions {
   topMatch?: ContentMatch
 
   /// A set of additional nodes to count as
-  /// [context](#model.ParseRule.context) when parsing, above the
+  /// [context](#model.GenericParseRule.context) when parsing, above the
   /// given [top node](#model.ParseOptions.topNode).
   context?: ResolvedPos
 
@@ -148,9 +148,9 @@ export interface StyleParseRule extends GenericParseRule {
   /// that list that property. May also have the form
   /// `"property=value"`, in which case the rule only matches if the
   /// property's value exactly matches the given value. (For more
-  /// complicated filters, use [`getAttrs`](#model.ParseRule.getAttrs)
+  /// complicated filters, use [`getAttrs`](#model.StyleParseRule.getAttrs)
   /// and return false to indicate that the match failed.) Rules
-  /// matching styles may only produce [marks](#model.ParseRule.mark),
+  /// matching styles may only produce [marks](#model.GenericParseRule.mark),
   /// not nodes.
   style: string
 
@@ -303,7 +303,7 @@ export class DOMParser {
 
   /// Construct a DOM parser using the parsing rules listed in a
   /// schema's [node specs](#model.NodeSpec.parseDOM), reordered by
-  /// [priority](#model.ParseRule.priority).
+  /// [priority](#model.GenericParseRule.priority).
   static fromSchema(schema: Schema) {
     return schema.cached.domParser as DOMParser ||
       (schema.cached.domParser = new DOMParser(schema, DOMParser.schemaRules(schema)))
