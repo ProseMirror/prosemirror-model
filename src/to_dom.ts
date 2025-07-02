@@ -215,6 +215,7 @@ function renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | nul
     for (let name in attrs) if (attrs[name] != null) {
       let space = name.indexOf(" ")
       if (space > 0) dom.setAttributeNS(name.slice(0, space), name.slice(space + 1), attrs[name])
+      else if (name == "style" && dom.style) dom.style.cssText = attrs[name]
       else dom.setAttribute(name, attrs[name])
     }
   }
