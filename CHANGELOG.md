@@ -1,3 +1,11 @@
+## 1.25.2 (2025-07-11)
+
+### Bug fixes
+
+Suppress lint warnings about dereferencing methods by making `Schema.nodeFromJSON` and `markFromJSON` properties instead of methods.
+
+Avoid using `setAttribute("style", ...)` to stay clear of content security policies.
+
 ## 1.25.1 (2025-04-22)
 
 ### Bug fixes
