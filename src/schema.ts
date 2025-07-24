@@ -446,7 +446,7 @@ export interface NodeSpec {
 
   /// Defines the default way a node of this type should be serialized
   /// to DOM/HTML (as used by
-  /// [`DOMSerializer.fromSchema`](#model.DOMSerializer.fromSchema)).
+  /// [`DOMSerializer.fromSchema`](#model.DOMSerializer^fromSchema)).
   /// Should return a DOM node or an [array
   /// structure](#model.DOMOutputSpec) that describes one, with an
   /// optional number zero (“hole”) in it to indicate where the node's
@@ -459,7 +459,7 @@ export interface NodeSpec {
   toDOM?: (node: Node) => DOMOutputSpec
 
   /// Associates DOM parser information with this node, which can be
-  /// used by [`DOMParser.fromSchema`](#model.DOMParser.fromSchema) to
+  /// used by [`DOMParser.fromSchema`](#model.DOMParser^fromSchema) to
   /// automatically derive a parser. The `node` field in the rules is
   /// implied (the name of this node will be filled in automatically).
   /// If you supply your own parser, you do not need to also specify
