@@ -109,13 +109,13 @@ function removeRange(content: Fragment, from: number, to: number): Fragment {
   return content.replaceChild(index, child!.copy(removeRange(child!.content, from - offset - 1, to - offset - 1)))
 }
 
-function insertInto(content: Fragment, dist: number, insert: Fragment, parent?: Node): Fragment | null {
+function insertInto(content: Fragment, dist: number, insert: Fragment, parent?: Node | null): Fragment | null {
   let {index, offset} = content.findIndex(dist), child = content.maybeChild(index)
   if (offset == dist || child!.isText) {
     if (parent && !parent.canReplace(index, index, insert)) return null
     return content.cut(0, dist).append(insert).append(content.cut(dist))
   }
-  let inner = insertInto(child!.content, dist - offset - 1, insert)
+  let inner = insertInto(child!.content, dist - offset - 1, insert, child)
   return inner && content.replaceChild(index, child!.copy(inner))
 }
 
