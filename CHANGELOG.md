@@ -1,3 +1,9 @@
+## 1.25.3 (2025-08-06)
+
+### Bug fixes
+
+Fix a bug in `Slice` that made it possible for invalid `ReplaceAroundStep`s to be applied in some situations.
+
 ## 1.25.2 (2025-07-11)
 
 ### Bug fixes
