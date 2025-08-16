@@ -62,6 +62,12 @@ describe("Node", () => {
     it("preserves marks", () =>
        cut(doc(p("foo", em("ba<a>r", img(), strong("baz"), br()), "qu<b>ux", code("xyz"))),
            doc(p(em("r", img(), strong("baz"), br()), "qu"))))
+
+    it("handles to parameter exceeding fragment size", () => {
+      const doc = p("foo")
+      const result = doc.cut(0, 1000)
+      ist(result.content.size, doc.content.size)
+    })
   })
 
   describe("between", () => {
@@ -89,6 +95,13 @@ describe("Node", () => {
     it("iterates over inline nodes", () =>
        between(doc(p(em("x"), "f<a>oo", em("bar", img(), strong("baz"), br()), "quux", code("xy<b>z"))),
                "paragraph", "foo", "bar", "image", "baz", "hard_break", "quux", "xyz"))
+
+    it("handles to parameter exceeding fragment size", () => {
+      const doc = p("foo")
+      let count = 0
+      doc.nodesBetween(0, 1000, () => { count++ })
+      ist(count > 0)
+    })
   })
 
   describe("textBetween", () => {

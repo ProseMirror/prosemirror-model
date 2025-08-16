@@ -30,7 +30,7 @@ export class Fragment {
                f: (node: Node, start: number, parent: Node | null, index: number) => boolean | void,
                nodeStart = 0,
                parent?: Node) {
-    for (let i = 0, pos = 0; pos < to; i++) {
+    for (let i = 0, pos = 0; pos < to && i < this.content.length; i++) {
       let child = this.content[i], end = pos + child.nodeSize
       if (end > from && f(child, nodeStart + pos, parent || null, i) !== false && child.content.size) {
         let start = pos + 1
@@ -86,7 +86,7 @@ export class Fragment {
   cut(from: number, to = this.size) {
     if (from == 0 && to == this.size) return this
     let result: Node[] = [], size = 0
-    if (to > from) for (let i = 0, pos = 0; pos < to; i++) {
+    if (to > from) for (let i = 0, pos = 0; pos < to && i < this.content.length; i++) {
       let child = this.content[i], end = pos + child.nodeSize
       if (end > from) {
         if (pos < from || end > to) {
