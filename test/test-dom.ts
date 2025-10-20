@@ -581,6 +581,16 @@ describe("DOMParser", () => {
       recover("  <div style='white-space: pre'>  okay  then </div>  <p> x</p>",
               doc(p("  okay  then "), p("x")))
     })
+
+    it("inserts line break replacements", () => {
+      let s = new Schema({
+        nodes: schema.spec.nodes.update("hard_break", {...schema.spec.nodes.get("hard_break"), linebreakReplacement: true})
+      })
+      ist(DOMParser.fromSchema(s).parse(domFrom("<p><span style='white-space: pre'>one\ntwo\n\nthree</span></p>")).toString(),
+          'doc(paragraph("one", hard_break, "two", hard_break, hard_break, "three"))')
+      ist(DOMParser.fromSchema(s).parse(domFrom("<p><span>one\ntwo\n\nthree</span></p>")).toString(),
+          'doc(paragraph("one two three"))')
+    })
   })
 
   describe("schemaRules", () => {

@@ -13,7 +13,8 @@ import {DOMNode} from "./dom"
 export interface ParseOptions {
   /// By default, whitespace is collapsed as per HTML's rules. Pass
   /// `true` to preserve whitespace, but normalize newlines to
-  /// spaces, and `"full"` to preserve whitespace entirely.
+  /// spaces or, if available, [line break replacements](#model.NodeSpec.linebreakReplacement),
+  /// and `"full"` to preserve whitespace entirely.
   preserveWhitespace?: boolean | "full"
 
   /// When given, the parser will, beside parsing the content,
@@ -436,6 +437,7 @@ class ParseContext {
     let value = dom.nodeValue!
     let top = this.top, preserveWS = (top.options & OPT_PRESERVE_WS_FULL) ? "full"
       : this.localPreserveWS || (top.options & OPT_PRESERVE_WS) > 0
+    let {schema} = this.parser
     if (preserveWS === "full" ||
         top.inlineContext(dom) ||
         /[^ \t\r\n\u000c]/.test(value)) {
@@ -452,12 +454,19 @@ class ParseContext {
               (nodeBefore.isText && /[ \t\r\n\u000c]$/.test(nodeBefore.text!)))
             value = value.slice(1)
         }
-      } else if (preserveWS !== "full") {
-        value = value.replace(/\r?\n|\r/g, " ")
-      } else {
+      } else if (preserveWS === "full") {
         value = value.replace(/\r\n?/g, "\n")
+      } else if (schema.linebreakReplacement && /[\r\n]/.test(value) && this.top.findWrapping(schema.linebreakReplacement.create())) {
+        let lines = value.split(/\r?\n|\r/)
+        for (let i = 0; i < lines.length; i++) {
+          if (i) this.insertNode(schema.linebreakReplacement.create(), marks, true)
+          if (lines[i]) this.insertNode(schema.text(lines[i]), marks, !/\S/.test(lines[i]))
+        }
+        value = ""
+      } else {
+        value = value.replace(/\r?\n|\r/g, " ")
       }
-      if (value) this.insertNode(this.parser.schema.text(value), marks, !/\S/.test(value))
+      if (value) this.insertNode(schema.text(value), marks, !/\S/.test(value))
       this.findInText(dom)
     } else {
       this.findInside(dom)
