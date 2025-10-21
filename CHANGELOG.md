@@ -1,3 +1,9 @@
+## 1.25.4 (2025-10-21)
+
+### Bug fixes
+
+The DOM parser will now, if a line break replacement is defined in the schema, try to use that instead of spaces to replace newlines when preserving whitespace.
+
 ## 1.25.3 (2025-08-06)
 
 ### Bug fixes
