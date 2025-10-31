@@ -83,7 +83,10 @@ export interface GenericParseRule {
   /// The name of the mark type to wrap the matched content in.
   mark?: string
 
-  /// When true, ignore content that matches this rule.
+  /// When true, ignore content that matches this rule. Any `<head>`,
+  /// `<noscript>`, `<script>`, `<object>`, `<style>`, or `<title>`
+  /// tags encountered are automatically ignored when no rules match
+  /// them..
   ignore?: boolean
 
   /// When true, finding an element that matches this rule will close
