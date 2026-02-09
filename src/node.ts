@@ -67,13 +67,14 @@ export class Node {
   /// into this parent node, and its index.
   forEach(f: (node: Node, offset: number, index: number) => void) { this.content.forEach(f) }
 
-  /// Invoke a callback for all descendant nodes recursively between
+  /// Invoke a callback for all descendant nodes recursively overlapping
   /// the given two positions that are relative to start of this
-  /// node's content. The callback is invoked with the node, its
-  /// position relative to the original node (method receiver), 
+  /// node's content. This includes all ancestors of the nodes
+  /// containing the two positions. The callback is invoked with the
+  /// node, its position relative to the original node (method receiver),
   /// its parent node, and its child index. When the callback returns
   /// false for a given node, that node's children will not be
-  /// recursed over. The last parameter can be used to specify a 
+  /// recursed over. The last parameter can be used to specify a
   /// starting position to count from.
   nodesBetween(from: number, to: number,
                f: (node: Node, pos: number, parent: Node | null, index: number) => void | boolean,
