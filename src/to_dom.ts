@@ -4,7 +4,7 @@ import {Schema, NodeType, MarkType} from "./schema"
 import {Mark} from "./mark"
 import {DOMNode} from "./dom"
 
-/// A description of a DOM structure. Can be either a DOM node, a
+/// A description of a DOM structure. Can be either a DOM element, a
 /// `{dom, contentDOM}` object, or an array.
 ///
 /// An array describes a DOM element. The first value in the array
@@ -20,7 +20,7 @@ import {DOMNode} from "./dom"
 /// where a node's child nodes should be inserted. If it occurs in an
 /// output spec, it should be the only child element in its parent
 /// node.
-export type DOMOutputSpec = DOMNode | {dom: DOMNode, contentDOM?: HTMLElement} | readonly [string, ...any[]]
+export type DOMOutputSpec = HTMLElement | {dom: HTMLElement, contentDOM?: HTMLElement} | readonly [string, ...any[]]
 
 /// A DOM serializer knows how to convert ProseMirror nodes and
 /// marks of various types to DOM nodes.
@@ -75,6 +75,7 @@ export class DOMSerializer {
 
   /// @internal
   serializeNodeInner(node: Node, options: {document?: Document}) {
+    if (node.isText) return doc(options).createTextNode(node.text!)
     let {dom, contentDOM} =
       renderSpec(doc(options), this.nodes[node.type.name](node), null, node.attrs)
     if (contentDOM) {
@@ -112,14 +113,17 @@ export class DOMSerializer {
   /// the spec has a hole (zero) in it, `contentDOM` will point at the
   /// node with the hole.
   static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS?: string | null): {
-    dom: DOMNode,
+    dom: HTMLElement,
     contentDOM?: HTMLElement
   }
   static renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null = null,
                     blockArraysIn?: {[name: string]: any}): {
-    dom: DOMNode,
+    dom: HTMLElement,
     contentDOM?: HTMLElement
   } {
+    // Kludge for backwards-compatibility with accidental original behavious
+    if (typeof structure == "string") return {dom: doc.createTextNode(structure) as any}
+
     return renderSpec(doc, structure, xmlNS, blockArraysIn)
   }
 
@@ -186,17 +190,15 @@ function suspiciousAttributesInner(attrs: {[name: string]: any}): readonly any[]
   return result
 }
 
-function renderSpec(doc: Document, structure: DOMOutputSpec | string, xmlNS: string | null,
+function renderSpec(doc: Document, structure: DOMOutputSpec, xmlNS: string | null,
                     blockArraysIn?: {[name: string]: any}): {
-  dom: DOMNode,
+  dom: HTMLElement,
   contentDOM?: HTMLElement
 } {
-  if (typeof structure == "string")
-    return {dom: doc.createTextNode(structure)}
-  if ((structure as DOMNode).nodeType != null)
-    return {dom: structure as DOMNode}
-  if ((structure as any).dom && (structure as any).dom.nodeType != null)
-    return structure as {dom: DOMNode, contentDOM?: HTMLElement}
+  if ((structure as DOMNode).nodeType == 3)
+    return {dom: structure as HTMLElement}
+  if ((structure as any).dom && (structure as any).dom.nodeType == 3)
+    return structure as {dom: HTMLElement, contentDOM?: HTMLElement}
   let tagName = (structure as [string])[0], suspicious
   if (typeof tagName != "string") throw new RangeError("Invalid array passed to renderSpec")
   if (blockArraysIn && (suspicious = suspiciousAttributes(blockArraysIn)) &&
@@ -225,6 +227,8 @@ function renderSpec(doc: Document, structure: DOMOutputSpec | string, xmlNS: str
       if (i < (structure as readonly any[]).length - 1 || i > start)
         throw new RangeError("Content hole must be the only child of its parent node")
       return {dom, contentDOM: dom}
+    } else if (typeof child == "string") {
+      dom.appendChild(doc.createTextNode(child))
     } else {
       let {dom: inner, contentDOM: innerContent} = renderSpec(doc, child, xmlNS, blockArraysIn)
       dom.appendChild(inner)
