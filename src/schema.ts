@@ -573,7 +573,7 @@ export class Schema<Nodes extends string = any, Marks extends string = any> {
   /// The [spec](#model.SchemaSpec) on which the schema is based,
   /// with the added guarantee that its `nodes` and `marks`
   /// properties are
-  /// [`OrderedMap`](https://github.com/marijnh/orderedmap) instances
+  /// [`OrderedMap`](https://code.haverbeke.berlin/marijn/orderedmap) instances
   /// (not raw objects).
   spec: {
     nodes: OrderedMap<NodeSpec>,

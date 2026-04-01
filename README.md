@@ -1,6 +1,6 @@
 # prosemirror-model
 
-[ [**WEBSITE**](https://prosemirror.net) | [**ISSUES**](https://github.com/prosemirror/prosemirror/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**CHANGELOG**](https://github.com/ProseMirror/prosemirror-model/blob/master/CHANGELOG.md) ]
+[ [**WEBSITE**](https://prosemirror.net) | [**ISSUES**](https://code.haverbeke.berlin/prosemirror/prosemirror/issues) | [**FORUM**](https://discuss.prosemirror.net) | [**CHANGELOG**](https://code.haverbeke.berlin/prosemirror/prosemirror-model/blob/master/CHANGELOG.md) ]
 
 This is a [core module](https://prosemirror.net/docs/ref/#model) of [ProseMirror](https://prosemirror.net).
 ProseMirror is a well-behaved rich semantic content editor based on
@@ -17,10 +17,10 @@ number of [examples](https://prosemirror.net/examples/) and the
 [documentation](https://prosemirror.net/docs/).
 
 This code is released under an
-[MIT license](https://github.com/prosemirror/prosemirror/tree/master/LICENSE).
+[MIT license](https://code.haverbeke.berlin/prosemirror/prosemirror/tree/master/LICENSE).
 There's a [forum](http://discuss.prosemirror.net) for general
 discussion and support requests, and the
-[Github bug tracker](https://github.com/prosemirror/prosemirror/issues)
+[Github bug tracker](https://code.haverbeke.berlin/prosemirror/prosemirror/issues)
 is the place to report issues.
 
 We aim to be an inclusive, welcoming community. To make that explicit,
